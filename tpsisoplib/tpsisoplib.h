@@ -13,7 +13,6 @@
 
 #endif /* TPSISOPLIB_H_ */
 
-#include <commons/collections/list.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,7 +24,7 @@
 #include <commons/config.h>
 #include <pthread.h>
 
-typedef struct{
+typedef struct {
 	int pid;
 	int tid;
 	int km;
@@ -39,10 +38,11 @@ typedef struct{
 	int C;
 	int D;
 	int E;
-}t_tid;
+} t_tid;
+
 
 char * recibir_serializado(int socketCliente);
-char * imprimir_consola(char * mensaje, int socket);
-char * serializar_enviar_mensaje(char * mensaje, int socket);
+char * enviar_serializado(int codigo, char * mensaje, int socket);
 int conectarse(char * ip, char * puerto);
-int crearServer_y_escuchar(char * puerto);
+int crearServer(char * puerto);
+int aceptarConexion(int listenningSocket);

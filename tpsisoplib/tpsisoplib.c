@@ -26,42 +26,43 @@ char * recibir_serializado(int socketCliente) {
 
 }
 
-char * imprimir_consola(char * mensaje, int socket) {
-	int enviados;
-	int codigo = 1;
-	int size = strlen(mensaje) + 1;
-	char * mensaje_serializado = malloc(sizeof(codigo) + sizeof(size) + size);
-	memcpy(mensaje_serializado, &codigo, sizeof(codigo));
-	memcpy(mensaje_serializado + sizeof(codigo), &size, sizeof(size));
-	memcpy(mensaje_serializado + sizeof(codigo) + sizeof(size), mensaje, size);
-
-	//printf("%d\n%d\n%s\n",*mensaje_serializado,*(mensaje_serializado+sizeof(codigo)),mensaje_serializado+sizeof(codigo)+sizeof(size));
-	if ((enviados = send(socket, mensaje_serializado,
-			sizeof(codigo) + sizeof(size) + size, 0)) == -1) {
-		printf("Fallo el send");
-		exit(1);
-	}
-
-	return mensaje_serializado;
-}
-
-char * serializar_enviar_mensaje(char * mensaje, int socket) { //Debe tener '/0' al final el mensaje!
+char * enviar_serializado(int codigo, char * mensaje, int socket) { //Debe tener '/0' al final el mensaje!
 //Serializa un char * y lo manda por el socket indicado
-	int enviados;
-	int size = strlen(mensaje) + 1;
-	char * mensaje_serializado = malloc(sizeof(size) + size);
-	memcpy(mensaje_serializado, &size, sizeof(size));
-	memcpy(mensaje_serializado + sizeof(size), mensaje, size);
+//Mandar con codigo == -1 si solo se quiere mandar el size y el mensaje
+
+	char * mensaje_serializado;
+	if (codigo == -1) {
+		int enviados;
+		int size = strlen(mensaje) + 1;
+		mensaje_serializado = malloc(sizeof(size) + size);
+		memcpy(mensaje_serializado, &size, sizeof(size));
+		memcpy(mensaje_serializado + sizeof(size), mensaje, size);
 
 //printf("%d\n%s\n",*mensaje_serializado,mensaje_serializado+sizeof(size));
-	if ((enviados = send(socket, mensaje_serializado, sizeof(size) + size, 0))
-			== -1) {
-		printf("Fallo el send");
-		exit(1);
+		if ((enviados = send(socket, mensaje_serializado, sizeof(size) + size,
+				0)) == -1) {
+			printf("Fallo el send");
+			exit(1);
+		}
 	}
+	if(codigo != -1){
+				int enviados;
+				int size = strlen(mensaje) + 1;
+				mensaje_serializado = malloc(sizeof(codigo)+sizeof(size) + size);
+				memcpy(mensaje_serializado,&codigo,sizeof(codigo));
+				memcpy(mensaje_serializado+sizeof(codigo), &size, sizeof(size));
+				memcpy(mensaje_serializado +sizeof(codigo)+ sizeof(size), mensaje, size);
 
+		//printf("%d\n%s\n",*mensaje_serializado,mensaje_serializado+sizeof(size));
+				if ((enviados = send(socket, mensaje_serializado, sizeof(codigo)+sizeof(size) + size,
+						0)) == -1) {
+					printf("Fallo el send");
+					exit(1);
+				}
+	}
 	return mensaje_serializado;
 }
+
 int conectarse(char * ip, char * puerto) { //Devuelve el socketServer ya conectado al server
 
 	int status;
@@ -94,18 +95,13 @@ int conectarse(char * ip, char * puerto) { //Devuelve el socketServer ya conecta
 	return serverSocket;
 
 }
-
-
-
-
-int crearServer_y_escuchar(char * puerto) {
+int crearServer(char * puerto) {
 
 	int status;
 	struct addrinfo hints;
 	struct addrinfo *servinfo;
 	int listenningSocket;
 	int yes = 1;
-	int socketCliente;
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_INET;     //IPv4
@@ -137,6 +133,11 @@ int crearServer_y_escuchar(char * puerto) {
 		printf("Fallo el listen\n");
 		exit(1);
 	}
+
+	return listenningSocket;
+}
+int aceptarConexion(int listenningSocket) {
+	int socketCliente;
 	struct sockaddr_in addr;
 	socklen_t addrlen = sizeof(addr);
 
