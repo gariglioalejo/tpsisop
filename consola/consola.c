@@ -12,7 +12,7 @@ char * direccion_beso;
 struct stat stat_beso;
 char * literal_beso;
 int i;
-t_config *eso_config;
+t_config *consola_config;
 char * ip_kernel;
 char * puerto_kernel;
 int socketKernel;
@@ -47,11 +47,11 @@ int main(int argc, char ** argv) {
 //Para mostrar el contenido:
 //echo $ESO_CONFIG
 
-	eso_config = config_create(getenv("ESO_CONFIG"));
-	ip_kernel = config_get_string_value(eso_config, "IP_KERNEL");
-	puerto_kernel = config_get_string_value(eso_config, "PUERTO_KERNEL");
+	consola_config = config_create(getenv("ESO_CONFIG"));
+	ip_kernel = config_get_string_value(consola_config, "IP_KERNEL");
+	puerto_kernel = config_get_string_value(consola_config, "PUERTO_KERNEL");
 	socketKernel = conectarse(ip_kernel, puerto_kernel);
-	serializar_enviar_mensaje(literal_beso, socketKernel);
+	enviar_serializado(1,literal_beso, socketKernel);		//Cambie el -1 por 1
 
 	while (i) {
 		if ((recibido = recv(socketKernel, &codigo, sizeof(int), 0)) == -1) {
