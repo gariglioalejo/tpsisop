@@ -24,6 +24,11 @@
 
 typedef struct{
 
+	int listen_port;
+	char* ip_MSP;
+	int puerto_MSP;
+	int quantum;
+	char* ruta_syscall;
 
 }t_kernel;
 

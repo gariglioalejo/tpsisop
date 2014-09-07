@@ -48,6 +48,14 @@ int cargarArchivoConfig(char * config_path){
 	int result = 0;
 
 	kernel_config = config_create(config_path);
+
+	kernel->listen_port = config_get_string_value(kernel_config, "PUERTO");
+	kernel->ip_MSP = config_get_string_value(kernel_config, "IP_MSP");
+	kernel->puerto_MSP = config_get_string_value(kernel_config, "PUERTO_MSP");
+	kernel->quantum = config_get_string_value(kernel_config, "QUANTUM");
+	kernel->ruta_syscall = config_get_string_value(kernel_config, "SYSCALLS");
+
+
 	//param = config_get_string_value(kernel_config, "PARAM");
 	//TODO Agregar IF para manejar errores de cargar config
 
