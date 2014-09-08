@@ -57,4 +57,6 @@ int conectarse(char * ip, char * puerto);
 int crearServer(char * puerto);
 int aceptarConexion(int listenningSocket);
 t_msp_dir * convertirIntADir(uint32_t dir);
+uint32_t convertirDirAInt(t_msp_dir * direccion);
+
 
