@@ -18,16 +18,19 @@
 #include <unistd.h>
 #include <commons/config.h>
 #include <pthread.h>
-
+#include <stdint.h>
+#include <math.h>
+#include <tpsisoplib.h>
 
 //ESTRUCTURAS
 
 typedef struct{
 
-	int listen_port;
+	uint32_t listen_port;
 	char* ip_MSP;
-	int puerto_MSP;
-	int quantum;
+	char* puerto_MSP;
+	uint32_t socketMSP;
+	uint32_t quantum;
 	char* ruta_syscall;
 
 }t_kernel;
@@ -36,7 +39,8 @@ typedef struct{
 //^ESTRUCTURAS
 
 int main(int argc, char ** argv);
-int cargarArchivoConfig(char * config_path);
+uint32_t cargarArchivoConfig(char * config_path);
+uint32_t conectarAMSP(void);
 
 
 #endif /* KERNEL_H_ */
