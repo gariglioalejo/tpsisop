@@ -6,6 +6,7 @@ PPT: https://docs.google.com/presentation/d/13vYoJBIZo7AsnYFZMZ3x84nrvkm9ghjrfnb
 1er Checkpoint
 Fecha: 13 de Septiembre
 Objetivos:
+
 ★ Familiarizarse con Linux y su consola, el entorno de desarrollo y el repositorio
 
 ★ Aplicar las Commons Libraries, principalmente las funciones para listas, archivos de conf y logs
