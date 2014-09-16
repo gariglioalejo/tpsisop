@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <math.h>
 #include <tpsisoplib.h>
+#include <pthread.h>
+
 
 //ESTRUCTURAS
 
@@ -41,6 +43,8 @@ typedef struct{
 int main(int argc, char ** argv);
 uint32_t cargarArchivoConfig(char * config_path);
 uint32_t conectarAMSP(void);
+void * fn_hiloLoader(void *args);
+void * fn_hiloPlanificador(void * args);
 
 
 #endif /* KERNEL_H_ */
