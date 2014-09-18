@@ -1,5 +1,19 @@
 #include <commons/log.h>
-#include "tpsisoplib.h"
+#include <commons/config.h>
+#include <commons/error.h>
+#include <commons/process.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <stdint.h>
+#include <math.h>
+#include "tpsisoplib/tpsisoplib.h"
 
 int main (int argc, char** argv){
 
@@ -8,6 +22,7 @@ int main (int argc, char** argv){
 	char* ip_kernel;
 	char* ip_memoria;
 	int retardo;
+	t_tid tcb;
 
 	t_log * log_de_cpu;
 	log_de_cpu = log_create("log_de_cpu", "cpu.c", 0, LOG_LEVEL_TRACE);
@@ -58,9 +73,23 @@ int main (int argc, char** argv){
 	//Envio handshake AVISAAAAARRR
 	send(socketM,&handshake,sizeof(int),0);
 
-	//Recivo el quantum del kernel AVISAAAAAAAR
+	//Recibo el quantum del kernel AVISAAAAAAAR
 	int quantum;
 	recv(socketK,&quantum,sizeof(int),0);
+
+
+	while(1){
+
+		//se recibe el tcb a ejecutar
+		int validador = recv(socketK,&tcb,sizeof(t_tid),0);
+
+		if (validador<0){
+			log_info(log_de_cpu,"Se recibio el tcb a ejecutar");
+		}
+		else{
+			log_error(log_de_cpu,"ERROR AL RECIBIR EL TCB");
+		}
+	}
 
 
 	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x- \n");
