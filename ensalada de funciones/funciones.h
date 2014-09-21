@@ -23,13 +23,12 @@
 #include <math.h>
 #include <stdbool.h>
 #include <sys/select.h>
+#include <semaphore.h>
 
-typedef struct{
+typedef struct {
 	uint32_t base;
 	bool exito;
-}t_crearSegmento;
-
-
+} t_crearSegmento;
 
 typedef struct {
 	int pid;
@@ -47,11 +46,10 @@ typedef struct {
 	int E;
 } t_tcb;
 
-typedef struct{
+typedef struct {
 	t_tcb * tcb;
 	bool exito;
-}t_reservarSegmentos;
-
+} t_reservarSegmentos;
 
 int recibirInt(int socket) {
 	int unInt;
@@ -61,21 +59,21 @@ int recibirInt(int socket) {
 		exit(1);
 	}
 	/*
-	if (recibido == 0) {
-			printf("Fallo el recv de recibirInt por desconexion\n");
-			//exit(1);
-		}
-	*/
+	 if (recibido == 0) {
+	 printf("Fallo el recv de recibirInt por desconexion\n");
+	 //exit(1);
+	 }
+	 */
 	return unInt;
 }
 
-uint32_t recibirInt32(int socket){
+uint32_t recibirInt32(int socket) {
 	uint32_t int32;
 	int recibido;
-	if ((recibido = recv(socket, &int32, sizeof(uint32_t), 0)) == -1) {//DETALLE, el size del recv es de int y no de u_32int, anda en la vm de la catedra,pero en una implementacion con otro size de int puede generar problemas al enviar u_32int
-			printf("Fallo el recv de recibirInt32\n");
-			exit(1);
-		}
+	if ((recibido = recv(socket, &int32, sizeof(uint32_t), 0)) == -1) {	//DETALLE, el size del recv es de int y no de u_32int, anda en la vm de la catedra,pero en una implementacion con otro size de int puede generar problemas al enviar u_32int
+		printf("Fallo el recv de recibirInt32\n");
+		exit(1);
+	}
 	return int32;
 
 }
@@ -94,7 +92,7 @@ void enviarInt(int mensaje, int socket) {
 		exit(1);
 	}
 }
-void enviarBeso(int  size_beso, char * beso, int socket) {
+void enviarBeso(int size_beso, char * beso, int socket) {
 	int enviados;
 
 	if ((enviados = send(socket, beso, size_beso, 0)) == -1) {
@@ -113,6 +111,24 @@ char * recibirBeso(int size_beso, int socket) {
 		exit(1);
 	}
 	return literal_beso;
+}
+void enviarTcb(t_tcb * tcb, int socket) {
+	int enviados;
+	if ((enviados = send(socket, tcb, sizeof(t_tcb), 0)) == -1) {
+		printf("Fallo el send de enviarTcb\n");
+		exit(1);
+	}
+}
+
+t_tcb * recibirTcb(int socket) {
+	t_tcb * tcb = malloc(sizeof(t_tcb));
+	int recibido;
+	//printf("%d\n",*size_beso);
+	if ((recibido = recv(socket, tcb, sizeof(t_tcb), 0)) == -1) {
+		printf("Fallo el recv de recibirTcb\n");
+		exit(1);
+	}
+	return tcb;
 }
 char * copiarArchivo(char * direccion) {
 
@@ -139,22 +155,22 @@ char * copiarArchivo(char * direccion) {
 }
 
 /*
-int sizeArchivo(char * direccionArchivo) {
-	FILE * archivo;
-	struct stat stat_archivo;
-	int i;
-	archivo = fopen(direccionArchivo, "rb");
-	if (archivo == NULL ) {
-		printf("No pudo abrirse el archivo\n");
-		exit(1);
-	}
-	if (stat(direccionArchivo, &stat_archivo)) {
-		printf("Fallo el stat\n");
-		exit(1);
-	}
-	return stat_archivo.st_size;
-}
-*/
+ int sizeArchivo(char * direccionArchivo) {
+ FILE * archivo;
+ struct stat stat_archivo;
+ int i;
+ archivo = fopen(direccionArchivo, "rb");
+ if (archivo == NULL ) {
+ printf("No pudo abrirse el archivo\n");
+ exit(1);
+ }
+ if (stat(direccionArchivo, &stat_archivo)) {
+ printf("Fallo el stat\n");
+ exit(1);
+ }
+ return stat_archivo.st_size;
+ }
+ */
 
 char * recibir_serializado(int socketCliente) {
 	int size;
@@ -180,9 +196,10 @@ char * recibir_serializado_beso(int socketCliente) {
 		printf("Fallo el recv1");
 		exit(1);
 	}
-	char * mensaje = malloc(sizeof(size)+size);
+	char * mensaje = malloc(sizeof(size) + size);
 	memcpy(mensaje, &size, sizeof(size));
-	if ((recibido = recv(socketCliente, mensaje+sizeof(size), size, 0)) == -1) {
+	if ((recibido = recv(socketCliente, mensaje + sizeof(size), size, 0))
+			== -1) {
 		printf("Fallo el recv2");
 		exit(1);
 	}
@@ -191,8 +208,6 @@ char * recibir_serializado_beso(int socketCliente) {
 	return mensaje;
 
 }
-
-
 
 void enviar_serializado_beso(int codigo, int size_beso, char *beso, int socket) {
 	//Serializa un char * con codigo Beso (radioactivo, no imprimible) y lo manda por el socket indicado
@@ -361,87 +376,91 @@ int aceptarConexion(int listenningSocket) {
 }
 
 t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
-		int crear_segmento = 1;
-		int hayLugar;
-		enviarInt(crear_segmento, socket);
-		enviarInt(pid, socket);
-		enviarInt(tam, socket);
-		hayLugar = recibirInt(socket);
-		t_crearSegmento * resultado=malloc(sizeof(t_crearSegmento));
-		if (hayLugar == 1) {
-			resultado->base = recibirInt32(socket);
-			resultado->exito=true;
-			return resultado;
-		} else {
-			resultado->exito=false;
-			return resultado;
-		}
+	int crear_segmento = 1;
+	int hayLugar;
+	enviarInt(crear_segmento, socket);
+	enviarInt(pid, socket);
+	enviarInt(tam, socket);
+	hayLugar = recibirInt(socket);
+	t_crearSegmento * resultado = malloc(sizeof(t_crearSegmento));
+	if (hayLugar == 1) {
+		resultado->base = recibirInt32(socket);
+		resultado->exito = true;
+		return resultado;
+	} else {
+		resultado->exito = false;
+		return resultado;
 	}
+}
 
 bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,
-			int socket) {
-		enviarInt(3, socket);
-		enviarInt(pid, socket);
-		enviarInt32(direccion, socket);
-		enviarInt(size, socket);
-		int hayLugar=recibirInt(socket);
-		if (hayLugar) {
-			enviarBeso(size, mensaje, socket);
-			return true;
-		}
-		return false;
+		int socket) {
+	enviarInt(3, socket);
+	enviarInt(pid, socket);
+	enviarInt32(direccion, socket);
+	enviarInt(size, socket);
+	int hayLugar = recibirInt(socket);
+	if (hayLugar) {
+		enviarBeso(size, mensaje, socket);
+		return true;
 	}
+	return false;
+}
 
-t_reservarSegmentos reservarSegmentos(int pid,int sizeBeso,char * beso,int stack,int socketMsp,int socketCliente){
+t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso,
+		int stack, int socketMsp, int socketCliente) {
 
 	t_reservarSegmentos tcb_resultado;
 	t_tcb * tcb = malloc(sizeof(t_tcb));
 	t_crearSegmento * resultado;
-	resultado = crearSegmento(pid,sizeBeso,socketMsp);
+	resultado = crearSegmento(pid, sizeBeso, socketMsp);
 	if (resultado->exito) {
 		tcb->M = resultado->base;
-		tcb->P=resultado->base;
-	}
-	else{
+		tcb->P = resultado->base;
+	} else {
 		printf("No pudo crear segmento para el codigo en reservarSegmentos\n");
-		enviar_serializado(1,"No hay memoria disponible para crear segmento de codigo",socketCliente);
-		tcb_resultado.exito=false;
+		enviar_serializado(1,
+				"No hay memoria disponible para crear segmento de codigo",
+				socketCliente);
+		tcb_resultado.exito = false;
 		return tcb_resultado;
 		//falta aca como abortar
 
 	}
-	if(escribirMemoria(pid,resultado->base,sizeBeso,beso,socketMsp)){
-		tcb->tam_seg_cod=sizeBeso;
-	}
-	else{
+	if (escribirMemoria(pid, resultado->base, sizeBeso, beso, socketMsp)) {
+		tcb->tam_seg_cod = sizeBeso;
+	} else {
 		printf("Segmentation Fault al Escribir Memoria en reservarSegmentos\n");
-		enviar_serializado(1,"Segmentation Fault al escribir el segmento de codigo",socketCliente);
-		tcb_resultado.exito=false;
+		enviar_serializado(1,
+				"Segmentation Fault al escribir el segmento de codigo",
+				socketCliente);
+		tcb_resultado.exito = false;
 		return tcb_resultado;
 	}
-	resultado = crearSegmento(pid,stack,socketMsp);
-	if(resultado->exito){
-			tcb->X=resultado->base;
-			tcb->S=resultado->base;
-		}
-	else{
-			printf("No pudo crear segmento para el stack en reservarSegmentos\n");
-			enviar_serializado(1,"No hay memoria disponible para crear segmento de stack",socketCliente);
-			tcb_resultado.exito=false;
-			return tcb_resultado;
-		}
-	tcb_resultado.tcb=tcb;
-	tcb_resultado.exito=true;
+	resultado = crearSegmento(pid, stack, socketMsp);
+	if (resultado->exito) {
+		tcb->X = resultado->base;
+		tcb->S = resultado->base;
+	} else {
+		printf("No pudo crear segmento para el stack en reservarSegmentos\n");
+		enviar_serializado(1,
+				"No hay memoria disponible para crear segmento de stack",
+				socketCliente);
+		tcb_resultado.exito = false;
+		return tcb_resultado;
+	}
+	tcb_resultado.tcb = tcb;
+	tcb_resultado.exito = true;
 	return tcb_resultado;
 }
 
 struct stat hacerStat(char * direccion) {
-		struct stat stat_beso;
-		if (stat(direccion, &stat_beso)) {
-			printf("Fallo el stat de hacerStat\n");
-			exit(1);
-		}
-		return stat_beso;
+	struct stat stat_beso;
+	if (stat(direccion, &stat_beso)) {
+		printf("Fallo el stat de hacerStat\n");
+		exit(1);
 	}
+	return stat_beso;
+}
 
 #endif /* CONSOLA_H_ */

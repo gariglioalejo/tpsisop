@@ -1,157 +1,197 @@
 /*
  * kernel.c
  *
- *  Created on: 05/09/2014
+ *  Created on: Sep 1, 2014
  *      Author: utnso
  */
 
-#include "kernel.h"
+#include "../ensalada de funciones/funciones.h"
 
-//SEMAFOROS
-//^SEMAFOROS
+int socketMsp;
+t_config * kernel_config;
+char * ip_msp;
+char * puerto_msp;
+char * puerto_kernel;
+int quantum;
+char * syscalls;
+int size_stack;
+int listenningSocket;
+t_tcb * tcbKM;
+t_queue * colaKM;
+t_queue * colaReady;
+int i;
+int size_syscalls;
+int handshake;
+int pid = 1, tid = 1;
+int iret1;
+pthread_t cpuLibres;
+fd_set readfds;
+fd_set master;
+int setmax;
+int rv;
+int x = 1;
+t_reservarSegmentos tcb_resultado;
+pthread_mutex_t mutexReady = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexListaCpu = PTHREAD_MUTEX_INITIALIZER;
+sem_t hayEnReady;
+sem_t hayCpu;
+t_list * listaCpuLibres;
+/*
+ void * funcionLoader(void* arg) {
+ int socketCliente = *((int*) arg);
+ char * beso = recibir_serializado_beso(socketCliente);
+ //printf("%d\n",socketMsp);
+ enviar_serializado_beso(1, *(int*) beso, beso + 4, socketMsp);
+ //printf("%s\n", mensaje);
+ return NULL ;
+ }
+ */
+void * manejoCpuLibres(void * arg) {
+	int  socketCpu;
+	t_tcb * tcb;
+	int posicion=0;
 
-//HILOS
-pthread_t hiloLoader;
-pthread_t hiloPlanificador;
-//^HILOS
+	sem_wait(&hayCpu);
+	sem_wait(&hayEnReady);
+	pthread_mutex_unlock(&mutexReady);
+	pthread_mutex_unlock(&mutexListaCpu);
+	tcb = queue_pop(colaReady);
+	socketCpu = *(int *)(list_remove(listaCpuLibres, posicion));
+	if (tcb->km == 1) {
+		enviarInt(-1, socketCpu);
+	} else {
+		enviarInt(quantum, socketCpu);
+	}
+	enviarTcb(tcb, socketCpu);
+	pthread_mutex_unlock(&mutexListaCpu);
+	pthread_mutex_unlock(&mutexReady);
 
-//VARIABLES GLOBALES
-t_config *kernel_config;
-char *config_path;
-
-t_kernel *kernel;
+	free(tcb);
 
 
+}
 
-//^VARIABLES GLOBALES
 
+void checkArgument( argc) {
+	if (argc != 3) {
+		printf("No hay suficients argumentos\n");
+		exit(1);
+	}
+}
 
-int main(int argc, char ** argv){
+int main(int argc, char ** argv) {
 
-	/*TEST Convertir Direcciones
-	t_msp_dir *direccion = convertirIntADir(1772423663);
-	printf("Segmento: %d \n Pagina: %d\n Offset: %d\n",direccion->segmento,direccion->pagina,direccion->offset);
-	uint32_t intdir = convertirDirAInt(direccion);
-	printf("Dir en int: %d\n",intdir);
-	*/
+	checkArgument(argc);
 
-	config_path = "kernel.conf";
+	kernel_config = config_create(argv[1]);
 
-	kernel = malloc(sizeof(t_kernel));
-	uint32_t result_config = cargarArchivoConfig(config_path);
+	puerto_kernel = config_get_string_value(kernel_config, "PUERTO");
+	ip_msp = config_get_string_value(kernel_config, "IP_MSP");
+	puerto_msp = config_get_string_value(kernel_config, "PUERTO_MSP");
+	syscalls = config_get_string_value(kernel_config, "SYSCALLS");
+	quantum = config_get_int_value(kernel_config, "QUANTUM");
+	size_stack = config_get_int_value(kernel_config, "STACK");
 
-	if (result_config != 0){
-		perror("\nError al cargar Archivo de configuracion\n");
-		exit (EXIT_FAILURE);
+	colaKM = queue_create();
+	colaReady = queue_create();
+	listaCpuLibres = list_create();
+
+	sem_init(&hayEnReady, 0, 0);
+	sem_init(&hayCpu, 0, 0);
+
+	syscalls = copiarArchivo(argv[2]);
+	size_syscalls = hacerStat(argv[2]).st_size;
+	socketMsp = conectarse(ip_msp, puerto_msp);
+	handshake = 1;
+	enviarInt(handshake, socketMsp);
+
+	tcb_resultado = reservarSegmentos(pid, size_syscalls, syscalls, size_stack,
+			socketMsp, -1);	//No implemente la posibilidad de que falle al copiar el de syscalls, es algo a considerar? Dsps lo hago :P
+//printf("%d\n%d\n%d\n", tcbKM->X, tcbKM->P, tcbKM->tam_seg_cod);
+	tcbKM = tcb_resultado.tcb;
+	tcbKM->km = 1;
+	tcbKM->pid = pid;
+	tcbKM->tid = tid;
+	queue_push(colaKM, tcbKM);
+//printf("%d\n",queue_size(colaKM));
+
+	listenningSocket = crearServer(puerto_kernel);
+
+	iret1 = pthread_create(&cpuLibres, NULL, manejoCpuLibres, NULL );
+	if (iret1) {
+		fprintf(stderr, "Fallo  creacion hilo manejoCpuLibres retorno: %d\n", iret1);
+		exit(1);
 	}
 
+	FD_ZERO(&readfds);
+	FD_ZERO(&master);
+	FD_SET(listenningSocket, &master);
+	setmax = listenningSocket;
 
-	uint32_t result_conexion_msp = 1;//conectarAMSP();
+	while (x) {
+		readfds = master;
+		rv = select(setmax + 1, &readfds, NULL, NULL, NULL );
+		if (rv == -1) {
+			perror("select");
+			printf("Error en el select\n");
+		} else {
+			for (i = 0; i <= setmax; i++) {
+				if (FD_ISSET(i,&readfds)) {
+					if (i == listenningSocket) {
+						int socketCliente = aceptarConexion(listenningSocket);
+						int codigo = recibirInt(socketCliente);
+						if (codigo == 1) {
+							char * sizeConBeso = recibir_serializado_beso(
+									socketCliente);
+							t_reservarSegmentos tcb_resultado =
+									reservarSegmentos(pid, *(int *) sizeConBeso,
+											sizeConBeso + sizeof(int),
+											size_stack, socketMsp,
+											socketCliente);
+							if (tcb_resultado.exito) {
+								t_tcb * tcb = tcb_resultado.tcb;
+								pid++;
+								tid++;
+								tcb->km = 0;
+								tcb->pid = pid;
+								tcb->tid;
+								FD_SET(socketCliente, &master);
+								if (socketCliente > setmax) {
+									setmax = socketCliente;
+								}
+								pthread_mutex_lock(&mutexReady);
+								queue_push(colaReady, tcb);
+								sem_post(&hayEnReady);
+								pthread_mutex_unlock(&mutexReady);
 
-	if (result_conexion_msp == 0){
-		perror("\nError al conectarse a la MSP\n");
-		exit (EXIT_FAILURE);
+								printf("%d\n%d\n%d\n", tcb->X, tcb->P,
+										tcb->tam_seg_cod);
+							}
+						}
+						if (codigo == 2) {	//CPU
+							FD_SET(socketCliente, &master);
+							if (socketCliente > setmax) {
+								setmax = socketCliente;
+							}
+							//printf("socatoa\n");
+							pthread_mutex_lock(&mutexListaCpu);
+							list_add(listaCpuLibres, &socketCliente);
+							sem_post(&hayCpu);
+							pthread_mutex_unlock(&mutexListaCpu);
+
+							//x = 0;
+
+						}
+					}
+
+				}
+			}
+		}
+
 	}
 
-
-
-	//Lanzo el Hilo Loader
-	if ( pthread_create( &hiloLoader, NULL, fn_hiloLoader, NULL) ) {
-	    printf("error al crear el hilo Loader.");
-	    exit(EXIT_FAILURE);
-	 }
-
-	//Lanzo el Hilo Planificador
-	if ( pthread_create( &hiloPlanificador, NULL, fn_hiloPlanificador, NULL) ) {
-	    printf("error al crear el hilo Planificador.");
-	    exit(EXIT_FAILURE);
-	 }
-
-
-
-	printf("Soy el hilo principal\n");
-
-
-
-	//Join del Hilo Loader
-	if ( pthread_join ( hiloPlanificador, NULL ) ) {
-	    printf("error al joinear el hilo Planificador.");
-	    exit(EXIT_FAILURE);
-	}
-
-	//Join del Hilo Loader
-	  if ( pthread_join ( hiloLoader, NULL ) ) {
-	    printf("error al joinear el hilo Loader.");
-	    exit(EXIT_FAILURE);
-	  }
-
-
-
-	free(kernel);
+	pthread_join(cpuLibres,NULL);
 	return 0;
 }
-
-
-
-void * fn_hiloLoader(void * args){
-
-	//Funcionalidad del Hilo Loader
-
-	printf("Soy el Hilo Loader\n");
-
-	// TODO Crear socket de escucha de nuevas conexiones
-	// TODO Al recibir un nuevo proceso consola crear su TCB y luego reservar en MSP
-
-	return NULL;
-}
-
-void * fn_hiloPlanificador(void * args){
-
-	//Funcionalidad del Hilo Planificador
-
-	printf("Soy el Hilo Planificador\n");
-	// TODO Crear socket de escucha de nuevas conexiones de CPU
-	// TODO Queda a la espera de nuevos programas
-
-	return NULL;
-}
-
-
-
-uint32_t cargarArchivoConfig(char * config_path){
-
-	uint32_t result = 0;
-
-
-	kernel_config = config_create(config_path);
-
-	kernel->listen_port = (uint32_t) config_get_string_value(kernel_config, "PUERTO");
-	kernel->ip_MSP = config_get_string_value(kernel_config, "IP_MSP");
-	kernel->puerto_MSP = config_get_string_value(kernel_config, "PUERTO_MSP");
-	kernel->quantum = (uint32_t) config_get_string_value(kernel_config, "QUANTUM");
-	kernel->ruta_syscall = config_get_string_value(kernel_config, "SYSCALLS");
-
-
-	//param = config_get_string_value(kernel_config, "PARAM");
-	//TODO Agregar IF para manejar errores de cargar config
-
-
-	return result;
-}
-
-uint32_t conectarAMSP(void){
-
-	uint32_t result = 0;
-
-	kernel->socketMSP = (uint32_t) conectarse(kernel->ip_MSP,kernel->puerto_MSP);
-
-	if (kernel->socketMSP > 0){
-		result = 1;
-	}
-
-
-	return result;
-}
-
 
 
