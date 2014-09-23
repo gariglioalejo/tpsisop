@@ -13,7 +13,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <math.h>
-#include "tpsisoplib/tpsisoplib.h"
+#include "funcionesComunes/funciones.h"
 
 int main (int argc, char** argv){
 
@@ -22,7 +22,9 @@ int main (int argc, char** argv){
 	char* ip_kernel;
 	char* ip_memoria;
 	int retardo;
-	t_tid tcb;
+	t_tcb * tcb;
+	int i;
+	int systemcall;
 
 	t_log * log_de_cpu;
 	log_de_cpu = log_create("log_de_cpu", "cpu.c", 0, LOG_LEVEL_TRACE);
@@ -34,7 +36,7 @@ int main (int argc, char** argv){
 			exit(1);
 		}
 
-	//Leo el archivo de cfg
+	//Leo el archivo de cf
 	t_config* config = config_create(argv[1]);
 
 	ip_kernel = config_get_string_value(config, "IP_KERNEL");
@@ -78,17 +80,42 @@ int main (int argc, char** argv){
 	recv(socketK,&quantum,sizeof(int),0);
 
 
+	//ciclo infinito
 	while(1){
 
-		//se recibe el tcb a ejecutar
-		int validador = recv(socketK,&tcb,sizeof(t_tid),0);
+		//se recibe el tcb del kernel
+		tcb=recibirTcb(socketK);
 
-		if (validador<0){
-			log_info(log_de_cpu,"Se recibio el tcb a ejecutar");
+		i=0;
+
+		//mientras el quantum deje y no haya una llamada al sistema
+		while((i<quantum)&&(!systemcall)){
+
+			systemcall=0;
+			log_info(log_de_cpu,"XXXXXXXXXXXXXX QUANTUM %d XXXXXXXXXXXXX",quantum-i);
+			i++;
+
+
+
+
+
+
+
+
+
 		}
-		else{
-			log_error(log_de_cpu,"ERROR AL RECIBIR EL TCB");
-		}
+
+
+
+
+
+
+
+
+
+
+
+
 	}
 
 
