@@ -1,19 +1,5 @@
-#include <commons/log.h>
-#include <commons/config.h>
-#include <commons/error.h>
-#include <commons/process.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <stdint.h>
-#include <math.h>
-#include "funcionesComunes/funciones.h"
+#include "cpu.h"
+
 
 int main (int argc, char** argv){
 
@@ -23,6 +9,7 @@ int main (int argc, char** argv){
 	char* ip_memoria;
 	int retardo;
 	t_tcb * tcb;
+	int instruccion = 0;
 	int i;
 	int systemcall;
 
@@ -95,8 +82,25 @@ int main (int argc, char** argv){
 			log_info(log_de_cpu,"XXXXXXXXXXXXXX QUANTUM %d XXXXXXXXXXXXX",quantum-i);
 			i++;
 
+			//Solicitar instruccion a la MSP
+			//intruccion = solicitarInstruccion(tcb->P);
 
 
+			switch (instruccion){
+
+			//Ejemplo
+			case 000000:
+				//funcion LOAD
+				break;
+
+
+			default:
+
+				break;
+
+
+
+			}
 
 
 
