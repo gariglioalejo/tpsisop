@@ -27,6 +27,18 @@
 #include "../ensalada de funciones/funciones.h"
 
 
+//Funciones Privilegiadas
+int fnMALC (t_tcb * cpu);
+int fnFREE (void);
+int fnINNN (void);
+int fnINNC (void);
+int fnOUTN (void);
+int fnOUTC (void);
+int fnCREA (void);
+int fnJOIN (void);
+int fnBLOK (void);
+int fnWAKE (void);
+
 
 
 #endif /* CPU_H_ */
