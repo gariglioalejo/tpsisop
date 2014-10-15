@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "funcionesCpu.h"
+#include "funcionesNoBloqueantes.h"
 #include "../ensalada de funciones/funciones.h"
 
 

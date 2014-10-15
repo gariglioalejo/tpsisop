@@ -25,10 +25,20 @@
 #include <sys/select.h>
 #include <semaphore.h>
 
+
+typedef struct {
+	int PID;
+	uint32_t direccion;
+	int tamanio;
+} t_solicitarMemoria;
+
+
 typedef struct {
 	uint32_t base;
 	bool exito;
 } t_crearSegmento;
+
+
 
 typedef struct {
 	int pid;
@@ -461,6 +471,23 @@ struct stat hacerStat(char * direccion) {
 		exit(1);
 	}
 	return stat_beso;
+}
+
+char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
+
+	char* palabra;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,palabra,4,0);
+
+	return palabra;
 }
 
 #endif /* CONSOLA_H_ */

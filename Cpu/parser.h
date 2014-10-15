@@ -10,8 +10,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "../ensalada de funciones/funciones.h"
+#include "funcionesCpu.h"
 
-int parseador(char* palabra){
+int parseador(char* palabra, t_tcb* tcb){
 
 	int i;
 
