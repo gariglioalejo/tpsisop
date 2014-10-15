@@ -27,6 +27,13 @@
 #include <sys/select.h>
 #include <semaphore.h>
 
+
+typedef struct {
+	int PID;
+	uint32_t direccion;
+	int tamanio;
+} t_solicitarMemoria;
+
 typedef struct {
 	uint32_t base;
 	bool exito;
