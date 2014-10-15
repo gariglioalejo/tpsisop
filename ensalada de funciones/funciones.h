@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
+#include <commons/collections/list.h>
+#include <commons/collections/dictionary.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <math.h>
@@ -44,6 +46,9 @@ typedef struct {
 	int C;
 	int D;
 	int E;
+	int socketConsola;
+	int socketCpu;
+	uint32_t direccionSyscallPendiente;
 } t_tcb;
 
 typedef struct {
