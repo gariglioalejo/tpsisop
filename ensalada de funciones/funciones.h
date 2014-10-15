@@ -57,6 +57,13 @@ typedef struct {
 	bool exito;
 } t_reservarSegmentos;
 
+typedef struct {
+	int PID;
+	uint32_t direccion;
+	int tamanio;
+} t_solicitarMemoria;
+
+
 int recibirInt(int socket) {
 	int unInt;
 	int recibido;
