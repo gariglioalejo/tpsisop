@@ -86,17 +86,9 @@ int main (int argc, char** argv){
 			//intruccion = solicitarInstruccion(tcb->P);
 
 
-			switch (instruccion){
-
-			//Ejemplo
-			case 000000:
-				//funcion LOAD
-				break;
-
-
-			default:
-
-				break;
+			//LLama al parser creado por cada instruccion y a dicha funcion
+			char* instruccion;
+			parseador(instruccion);
 
 
 

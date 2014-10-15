@@ -8,6 +8,7 @@
 #ifndef CPU_H_
 #define CPU_H_
 
+#include "parser.h"
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/error.h>
@@ -40,5 +41,7 @@ int fnBLOK (void);
 int fnWAKE (void);
 
 
+//PARSER
+int parseador(char*);
 
 #endif /* CPU_H_ */
