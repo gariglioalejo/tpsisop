@@ -48,9 +48,6 @@ int load(t_tcb * tcb){
 	recv(socketK,valor,4,0);
 
 
-
-
-
 	return 0;
 }
 
