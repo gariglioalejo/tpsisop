@@ -29,12 +29,6 @@
 
 
 typedef struct {
-	int PID;
-	uint32_t direccion;
-	int tamanio;
-} t_solicitarMemoria;
-
-typedef struct {
 	uint32_t base;
 	bool exito;
 } t_crearSegmento;
