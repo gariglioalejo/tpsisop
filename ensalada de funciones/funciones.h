@@ -469,4 +469,21 @@ struct stat hacerStat(char * direccion) {
 	return stat_beso;
 }
 
+char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
+
+	char* palabra;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,palabra,4,0);
+
+	return palabra;
+}
+
 #endif /* CONSOLA_H_ */
