@@ -34,6 +34,11 @@ typedef struct {
 } t_crearSegmento;
 
 typedef struct {
+	char nombre;
+	int valores;
+}t_registro;
+
+typedef struct {
 	int pid;
 	int tid;
 	int km;
@@ -42,11 +47,11 @@ typedef struct {
 	uint32_t P;	//Ok el tipo?	//Puntero de instruccion
 	uint32_t X;	//Ok el tipo?	//Base del stack
 	uint32_t S;	//Ok el tipo?	//Cursor de stack
-	int A;
-	int B;
-	int C;
-	int D;
-	int E;
+	t_registro registroA;
+	t_registro registroB;
+	t_registro registroC;
+	t_registro registroD;
+	t_registro registroE;
 	int socketConsola;
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
