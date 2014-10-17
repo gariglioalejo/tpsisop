@@ -480,12 +480,15 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 
 	char* palabra;
 
+	int codigoSolicitarMemoria=2;
+
 	t_solicitarMemoria solicitarMemoria;
 
 	solicitarMemoria.PID=tcb->pid;
 	solicitarMemoria.direccion=tcb->P;
 	solicitarMemoria.tamanio=4;
 
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
 	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
 	recv(socketMSP,palabra,4,0);
