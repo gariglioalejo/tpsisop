@@ -90,7 +90,7 @@ int main (int argc, char** argv){
 			primeras4=pedirPrimeraPalabra(socketM,tcb);
 
 			//LLama al parser creado por cada instruccion y a dicha funcion
-			parseador(primeras4);
+			parseador(primeras4,tcb);
 
 
 
@@ -103,20 +103,6 @@ int main (int argc, char** argv){
 
 		}
 
-
-
-
-
-
-
-
-
-
-
-
-	}
-
-
-	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x- \n");
+	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x-");
 	return 0;
 }

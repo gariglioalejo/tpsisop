@@ -8,7 +8,7 @@
 #ifndef CPU_H_
 #define CPU_H_
 
-#include "parser.h"
+
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/error.h>
@@ -25,7 +25,6 @@
 #include <stdint.h>
 #include <math.h>
 #include "funcionesCpu.h"
-#include "funcionesNoBloqueantes.h"
 #include "../ensalada de funciones/funciones.h"
 
 
@@ -41,8 +40,11 @@ int fnJOIN (void);
 int fnBLOK (void);
 int fnWAKE (void);
 
+//Parser
+int parseador(char*,t_tcb*);
 
-//PARSER
-int parseador(char*);
+//FuncionesNoPrivilegiadas
+int load(t_tcb*);
+
 
 #endif /* CPU_H_ */
