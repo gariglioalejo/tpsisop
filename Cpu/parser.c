@@ -27,7 +27,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"GETM");
 	if(i==0){
 	printf("ENTRO EN GETM \n");
-	//poner funcion
+	getm(tcb);
 	}
 
 	else if (i!=0){

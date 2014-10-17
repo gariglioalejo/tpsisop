@@ -45,6 +45,7 @@ int parseador(char*,t_tcb*);
 
 //FuncionesNoPrivilegiadas
 int load(t_tcb*);
+int getm(t_tcb*);
 
 
 #endif /* CPU_H_ */
