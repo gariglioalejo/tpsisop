@@ -4,13 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../main.c 
+../funcionesNoBloqueantes.c \
+../main.c \
+../parser.c 
 
 OBJS += \
-./main.o 
+./funcionesNoBloqueantes.o \
+./main.o \
+./parser.o 
 
 C_DEPS += \
-./main.d 
+./funcionesNoBloqueantes.d \
+./main.d \
+./parser.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
