@@ -4,7 +4,7 @@
  *  Created on: 26/08/2014
  *      Author: utnso
  */
-
+/*
 #ifndef TPSISOPLIB_H_
 #define TPSISOPLIB_H_
 
@@ -112,3 +112,4 @@ t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso, int st
 struct stat hacerStat(char * direccion);
 
 
+*/
