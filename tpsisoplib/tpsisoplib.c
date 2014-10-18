@@ -4,7 +4,7 @@
  *  Created on: 26/08/2014
  *      Author: utnso
  */
-
+/*
 #include "tpsisoplib.h"
 
 //CONVERTIR UN INT32 A UNA ESTRUCTURA DE DIRECCIONES
@@ -466,3 +466,4 @@ struct stat hacerStat(char * direccion) {
 	}
 	return stat_beso;
 }
+*/
