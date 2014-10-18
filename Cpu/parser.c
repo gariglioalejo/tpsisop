@@ -5,39 +5,45 @@
  *      Author: utnso
  */
 
-#ifndef PARSER_H_
-#define PARSER_H_
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "../ensalada de funciones/funciones.h"
+#include "funcionesCpu.h"
 
-int parseador(char* palabra){
+
+int parseador(char* palabra, t_tcb* tcb){
 
 	int i;
 
 	i=strcmp(palabra,"LOAD");
 	if(i==0){
 	printf("ENTRO EN LOAD \n");
-	//poner funcion aca
-	}
+	load(tcb);
+		}
+
 	else if (i!=0){
 	i=strcmp(palabra,"GETM");
 	if(i==0){
 	printf("ENTRO EN GETM \n");
-	//poner funcion
+	getm(tcb);
 	}
+
 	else if (i!=0){
 	i=strcmp(palabra,"SETM");
 	if(i==0){
 	printf("ENTRO EN SETM \n");
 	//poner funcion
 	}
+
 	else if (i!=0){
 	i=strcmp(palabra,"MOVR");
 	if(i==0){
 	printf("ENTRO EN MOVR \n");
 	//poner funcion
 	}
+
 	else if (i!=0){
 	i=strcmp(palabra,"ADDR");
 	if(i==0){
@@ -50,6 +56,7 @@ int parseador(char* palabra){
 	printf("ENTRO EN SUBR \n");
 	//poner funcion
 	}
+
 	else if (i!=0){
 	i=strcmp(palabra,"MULR");
 	if(i==0){
@@ -255,4 +262,3 @@ int parseador(char* palabra){
 	return 0;
 }
 
-#endif /* PARSER_H_ */

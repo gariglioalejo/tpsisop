@@ -1,5 +1,7 @@
 #include "cpu.h"
 
+int socketM;
+int socketK;
 
 int main (int argc, char** argv){
 
@@ -34,7 +36,7 @@ int main (int argc, char** argv){
 
 
 	//Creo el socket Kernel
-	int socketK = conectarse(ip_kernel,puerto_kernel);
+	socketK = conectarse(ip_kernel,puerto_kernel);
 
 	if(socketK>0){
 		log_info(log_de_cpu,"Se conecto la cpu al kernel\n");
@@ -49,7 +51,7 @@ int main (int argc, char** argv){
 	send(socketK,&handshake,sizeof(int),0);
 
 	//Creo el socket MSP
-	int socketM = conectarse(ip_memoria,puerto_memoria);
+	socketM = conectarse(ip_memoria,puerto_memoria);
 
 	if(socketM>0){
 			log_info(log_de_cpu,"Se conecto la cpu a la MSP\n");
@@ -83,12 +85,12 @@ int main (int argc, char** argv){
 			i++;
 
 			//Solicitar instruccion a la MSP
-			//intruccion = solicitarInstruccion(tcb->P);
 
+			char* primeras4;
+			primeras4=pedirPrimeraPalabra(socketM,tcb);
 
 			//LLama al parser creado por cada instruccion y a dicha funcion
-			char* instruccion;
-			parseador(instruccion);
+			parseador(primeras4,tcb);
 
 
 
@@ -101,20 +103,6 @@ int main (int argc, char** argv){
 
 		}
 
-
-
-
-
-
-
-
-
-
-
-
-	}
-
-
-	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x- \n");
+	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x-");
 	return 0;
 }

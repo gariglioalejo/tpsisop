@@ -27,10 +27,16 @@
 #include <sys/select.h>
 #include <semaphore.h>
 
+
 typedef struct {
 	uint32_t base;
 	bool exito;
 } t_crearSegmento;
+
+typedef struct {
+	char nombre;
+	int valores;
+}t_registro;
 
 typedef struct {
 	int pid;
@@ -41,11 +47,11 @@ typedef struct {
 	uint32_t P;	//Ok el tipo?	//Puntero de instruccion
 	uint32_t X;	//Ok el tipo?	//Base del stack
 	uint32_t S;	//Ok el tipo?	//Cursor de stack
-	int A;
-	int B;
-	int C;
-	int D;
-	int E;
+	t_registro registroA;
+	t_registro registroB;
+	t_registro registroC;
+	t_registro registroD;
+	t_registro registroE;
 	int socketConsola;
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
@@ -55,6 +61,13 @@ typedef struct {
 	t_tcb * tcb;
 	bool exito;
 } t_reservarSegmentos;
+
+typedef struct {
+	int PID;
+	uint32_t direccion;
+	int tamanio;
+} t_solicitarMemoria;
+
 
 int recibirInt(int socket) {
 	int unInt;
@@ -466,6 +479,26 @@ struct stat hacerStat(char * direccion) {
 		exit(1);
 	}
 	return stat_beso;
+}
+
+char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
+
+	char* palabra;
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,palabra,4,0);
+
+	return palabra;
 }
 
 #endif /* CONSOLA_H_ */
