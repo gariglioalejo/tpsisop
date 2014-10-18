@@ -1,26 +1,33 @@
+
 #include "cpu.h"
 #include "../ensalada de funciones/funciones.h"
-
+int socketK; //Pasarlas al .h para que las tome como variables globales
+int socketM;
 //Funciones Privilegiadas
 
 /*MALC: Reserva una cantidad de memoria especificada por el registro A. La direccion de esta se
 almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
 al programa en ejecución.*/
-int fnMALC (t_tcb * cpu){
+int fnMALC (t_tcb * tcb){
 
+	t_crearSegmento * segmentoCreado = malloc(sizeof(t_crearSegmento));
 	int result = 0;
-	int size = cpu->A;
-	int dir = 0;
+	int size = tcb->registroA.valores;
+	int pid = tcb->pid;
 
-	// dir = solicitarMemoriaAMSP(size, cpu) --> Esta funcion solicita memoria a la MSP y devuelve la direccion del segmento
+	segmentoCreado = crearSegmento(pid, size, socketM);
 
-	if (dir > 0){
 
-		cpu->A = dir;
+	if (segmentoCreado->exito){
+
+		 tcb->registroA.valores = segmentoCreado->base;
+
 	} else {
 		result = -1; //TODO Logear?
 	}
 
+	free(segmentoCreado);
+	printf("MALC Ejecutada \n");
 	return result;
 }
 
@@ -29,7 +36,29 @@ int fnMALC (t_tcb * cpu){
 /*26. FREE
 Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alocada por la
 instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.*/
-int fnFREE (void){
+int fnFREE (t_tcb * tcb){
+
+	//todo preguntarSiElSegmento fue allocado por MALC... agregar lista de Segmentos en t_tcb
+	int result = 0;
+	int dir = tcb->registroA.valores;
+	int pid = tcb->pid;
+
+	bool exito = destruirSegmentoAllocado(pid, dir, socketM);
+
+	if (exito){
+
+
+
+		} else {
+			result = -1; //TODO Logear?
+		}
+
+
+		printf("FREE Ejecutada \n");
+		return result;
+
+
+
 
 	return 0;
 }

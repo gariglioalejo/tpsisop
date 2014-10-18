@@ -33,6 +33,8 @@ typedef struct {
 	bool exito;
 } t_crearSegmento;
 
+
+
 typedef struct {
 	char nombre;
 	int valores;
@@ -67,6 +69,7 @@ typedef struct {
 	uint32_t direccion;
 	int tamanio;
 } t_solicitarMemoria;
+
 
 
 int recibirInt(int socket) {
@@ -408,6 +411,26 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 	} else {
 		resultado->exito = false;
 		return resultado;
+	}
+}
+
+bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
+	int destruir_segmento = 2;
+	bool exito;
+	int resultado;
+
+	enviarInt(destruir_segmento, socket);
+	enviarInt(pid, socket);
+	enviarInt(base, socket);
+
+	resultado = recibirInt(socket);
+
+	if (exito == 1) {
+		exito = true;
+		return exito;
+	} else {
+		exito = false;
+		return exito;
 	}
 }
 

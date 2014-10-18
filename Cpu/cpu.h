@@ -24,13 +24,13 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <math.h>
-#include "funcionesCpu.h"
+
 #include "../ensalada de funciones/funciones.h"
 
 
 //Funciones Privilegiadas
-int fnMALC (t_tcb * cpu);
-int fnFREE (void);
+int fnMALC (t_tcb * tcb);
+int fnFREE (t_tcb * tcb);
 int fnINNN (void);
 int fnINNC (void);
 int fnOUTN (void);
