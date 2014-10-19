@@ -84,7 +84,7 @@ int load(t_tcb * tcb){
 	return 0;
 }
 
-int getm(t_tcb * tcb){
+int movr(t_tcb * tcb){
 
 	char registro1;
 	char registro2;
@@ -162,10 +162,142 @@ int getm(t_tcb * tcb){
 
 		tcb->P=tcb->P+6;
 
-		printf("Termino GETM");
+		printf("Termino MOVR");
 
 	return 0;
 }
 
+int getm(t_tcb * tcb){
+
+	char reg1;
+	char reg2;
+	int valor;
+
+	t_solicitarMemoria solicitador;
+
+	int solicitarMemoria=2;
+
+	send(socketM,&solicitarMemoria,sizeof(int),0);
+
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
+
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	recv(socketM,&reg1,sizeof(char),0);
+
+	send(socketM,&solicitarMemoria,sizeof(int),0);
+
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+5;
+	solicitador.tamanio=1;
+
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	recv(socketM,&reg2,sizeof(char),0);
+
+	if(reg2==tcb->registroA.nombre){
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->registroA.valores;
+		solicitador.tamanio=4;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&valor,sizeof(int),0);
+
+		}
+
+	if(reg2==tcb->registroB.nombre){
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->registroB.valores;
+		solicitador.tamanio=4;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&valor,sizeof(int),0);
+
+		}
+
+	if(reg2==tcb->registroC.nombre){
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->registroC.valores;
+		solicitador.tamanio=4;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&valor,sizeof(int),0);
+
+		}
+
+			if(reg2==tcb->registroD.nombre){
+
+				send(socketM,&solicitarMemoria,sizeof(int),0);
+
+				solicitador.PID=tcb->pid;
+				solicitador.direccion=tcb->registroD.valores;
+				solicitador.tamanio=4;
+
+				send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+				recv(socketM,&valor,sizeof(int),0);
+			}
+
+			if(reg2==tcb->registroE.nombre){
+
+				send(socketM,&solicitarMemoria,sizeof(int),0);
+
+				solicitador.PID=tcb->pid;
+				solicitador.direccion=tcb->registroE.valores;
+				solicitador.tamanio=4;
+
+				send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+				recv(socketM,&valor,sizeof(int),0);
+			}
+
+
+			if(reg1==tcb->registroA.nombre){
+					tcb->registroA.valores=valor;
+					printf("El registro: %c, vale: %d",tcb->registroA.nombre,valor);
+				}
+
+				if(reg1==tcb->registroB.nombre){
+						tcb->registroB.valores=valor;
+						printf("El registro: %c, vale: %d",tcb->registroB.nombre,valor);
+				}
+
+				if(reg1==tcb->registroC.nombre){
+						tcb->registroC.valores=valor;
+						printf("El registro: %c, vale: %d",tcb->registroC.nombre,valor);
+				}
+
+				if(reg1==tcb->registroD.nombre){
+						tcb->registroD.valores=valor;
+						printf("El registro: %c, vale: %d",tcb->registroD.nombre,valor);
+				}
+
+				if(reg1==tcb->registroE.nombre){
+						tcb->registroE.valores=valor;
+						printf("El registro: %c, vale: %d",tcb->registroE.nombre,valor);
+				}
+
+
+				tcb->P=tcb->P+6;
+
+				printf("Se salio del GETM");
+
+return 0;
+
+}
 
 

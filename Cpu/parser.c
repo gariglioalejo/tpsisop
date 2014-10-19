@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../ensalada de funciones/funciones.h"
-#include "funcionesCpu.h"
+#include "cpu.h"
 
 
 int parseador(char* palabra, t_tcb* tcb){
@@ -41,7 +41,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"MOVR");
 	if(i==0){
 	printf("ENTRO EN MOVR \n");
-	//poner funcion
+	movr(tcb);
 	}
 
 	else if (i!=0){
