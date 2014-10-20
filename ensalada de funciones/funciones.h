@@ -29,16 +29,15 @@
 
 
 typedef struct {
+	char nombre;
+	uint32_t valores;
+}t_registro;
+
+typedef struct {
 	uint32_t base;
 	bool exito;
 } t_crearSegmento;
 
-
-
-typedef struct {
-	char nombre;
-	uint32_t valores;
-}t_registro;
 
 typedef struct {
 	int pid;
