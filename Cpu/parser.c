@@ -79,13 +79,13 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"INCR");
 	if(i==0){
 	printf("ENTRO EN INCR \n");
-	//poner funcion
+	incr(tcb);
 	}
 	else if (i!=0){
 	i=strcmp(palabra,"DECR");
 	if(i==0){
 	printf("ENTRO EN DECR \n");
-	//poner funcion
+	decr(tcb);
 	}
 	else if (i!=0){
 	i=strcmp(palabra,"COMP");

@@ -47,5 +47,7 @@ int parseador(char*,t_tcb*);
 int load(t_tcb*);
 int movr(t_tcb*);
 int getm(t_tcb*);
+int decr(t_tcb*);
+int incr(t_tcb*);
 
 #endif /* CPU_H_ */

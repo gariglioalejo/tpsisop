@@ -169,6 +169,8 @@ int movr(t_tcb * tcb){
 
 int getm(t_tcb * tcb){
 
+
+
 	char reg1;
 	char reg2;
 	int valor;
@@ -300,4 +302,88 @@ return 0;
 
 }
 
+int decr(t_tcb * tcb){
 
+	char registro;
+
+	int solicitar=2;
+
+	t_solicitarMemoria solicitador;
+
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
+
+	send(socketM,&solicitar,sizeof(int),0);
+
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	recv(socketM,&registro,sizeof(char),0);
+
+	if(registro==tcb->registroA.nombre){
+		tcb->registroA.valores=tcb->registroA.valores-1;
+	}
+
+	if(registro==tcb->registroB.nombre){
+		tcb->registroB.valores=tcb->registroB.valores-1;
+	}
+
+	if(registro==tcb->registroC.nombre){
+		tcb->registroC.valores=tcb->registroC.valores-1;
+	}
+	if(registro==tcb->registroD.nombre){
+		tcb->registroD.valores=tcb->registroD.valores-1;
+	}
+	if(registro==tcb->registroE.nombre){
+		tcb->registroE.valores=tcb->registroE.valores-1;
+	}
+
+	printf("Se decremento el registro: %c en una unidad",registro);
+
+	tcb->P=tcb->P+5;
+
+	return 0;
+}
+
+int incr(t_tcb * tcb){
+
+	char registro;
+
+	int solicitar=2;
+
+	t_solicitarMemoria solicitador;
+
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
+
+	send(socketM,&solicitar,sizeof(int),0);
+
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	recv(socketM,&registro,sizeof(char),0);
+
+	if(registro==tcb->registroA.nombre){
+		tcb->registroA.valores=tcb->registroA.valores+1;
+	}
+
+	if(registro==tcb->registroB.nombre){
+		tcb->registroB.valores=tcb->registroB.valores+1;
+	}
+
+	if(registro==tcb->registroC.nombre){
+		tcb->registroC.valores=tcb->registroC.valores+1;
+	}
+	if(registro==tcb->registroD.nombre){
+		tcb->registroD.valores=tcb->registroD.valores+1;
+	}
+	if(registro==tcb->registroE.nombre){
+		tcb->registroE.valores=tcb->registroE.valores+1;
+	}
+
+	printf("Se incremento el registro: %c en una unidad",registro);
+
+	tcb->P=tcb->P+5;
+
+	return 0;
+}
