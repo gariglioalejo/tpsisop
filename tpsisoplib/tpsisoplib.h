@@ -39,9 +39,10 @@ typedef struct {
 	bool exito;
 } t_crearSegmento;
 
+
 typedef struct {
 	char nombre;
-	int valores;
+	long long valores;
 }t_registro;
 
 typedef struct {
