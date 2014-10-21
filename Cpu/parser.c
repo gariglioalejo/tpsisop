@@ -145,7 +145,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"NOPP");
 	if(i==0){
 	printf("ENTRO EN NOPP \n");
-	//poner funcion
+	nopp(tcb);
 	}
 	else if (i!=0){
 	i=strcmp(palabra,"PUSH");

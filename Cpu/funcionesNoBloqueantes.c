@@ -387,3 +387,12 @@ int incr(t_tcb * tcb){
 
 	return 0;
 }
+
+int nopp(t_tcb * tcb){
+
+	printf("Se consumió un ciclo de quantum");
+
+	tcb->P=tcb->P+4;
+
+	return 0;
+}
