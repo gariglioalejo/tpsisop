@@ -30,7 +30,7 @@
 
 typedef struct {
 	char nombre;
-	long long valores;
+	int32_t valores;
 }t_registro;
 
 typedef struct {
