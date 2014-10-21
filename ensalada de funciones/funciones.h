@@ -523,4 +523,24 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	return palabra;
 }
 
+int pedirDireccion(int socketMSP,t_tcb* tcb){
+
+	int direccion;
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P+4;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,direccion,4,0);
+
+	return direccion;
+}
+
 #endif /* CONSOLA_H_ */

@@ -53,7 +53,6 @@ uint32_t convertirDirAInt(t_msp_dir * direccion){
 }
 
 
-
 int recibirInt(int socket) {
 	int unInt;
 	int recibido;
@@ -398,7 +397,7 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 
 bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
 	int destruir_segmento = 2;
-	bool exito = false;
+	bool exito;
 	int resultado;
 
 	enviarInt(destruir_segmento, socket);
@@ -407,7 +406,7 @@ bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
 
 	resultado = recibirInt(socket);
 
-	if (resultado == 1) {
+	if (exito == 1) {
 		exito = true;
 		return exito;
 	} else {
@@ -506,5 +505,24 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	return palabra;
 }
 
+int pedirDireccion(int socketMSP,t_tcb* tcb){
+
+	int direccion;
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P+4;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,direccion,4,0);
+
+	return direccion;
+}
 
 

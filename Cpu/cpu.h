@@ -27,6 +27,7 @@
 
 #include "../ensalada de funciones/funciones.h"
 
+int systemcall;
 
 //Funciones Privilegiadas
 int fnMALC (t_tcb * tcb);
@@ -50,5 +51,7 @@ int getm(t_tcb*);
 int decr(t_tcb*);
 int incr(t_tcb*);
 int nopp(t_tcb*);
+
+int inte(t_tcb * tcb);
 
 #endif /* CPU_H_ */

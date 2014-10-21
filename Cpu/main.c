@@ -13,7 +13,7 @@ int main (int argc, char** argv){
 	t_tcb * tcb;
 	int instruccion = 0;
 	int i;
-	int systemcall;
+
 
 	t_log * log_de_cpu;
 	log_de_cpu = log_create("log_de_cpu", "cpu.c", 0, LOG_LEVEL_TRACE);
