@@ -37,7 +37,7 @@ Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alo
 instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.*/
 int fnFREE (t_tcb * tcb){
 
-	//todo preguntarSiElSegmento fue allocado por MALC... agregar lista de Segmentos en t_tcb
+
 	int result = 0;
 	int dir = tcb->registroA.valores;
 	int pid = tcb->pid;
@@ -70,28 +70,21 @@ Pide por consola del programa que se ingrese un número, con signo entre –2.14
 el proceso Kernel.*/
 int fnINNN (t_tcb * tcb){
 
-	//Invocar servicio en Kernel?
+		int codigo = 4; //Entrada Standard
+		int tipo = 1; //1 es INNN, 2 es INNC
+
+
+
 		int32_t valorIngresado = 0;
 
-		printf("Ingrese valor entre –2.147.483.648 y 2.147.483.647: \n");
-		int input = scanf("%d", &valorIngresado);
+		//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
+		enviarInt(codigo,socketK);
+		//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
+		enviarInt(tipo,socketK);
 
-		while (input != 1){
-			printf("Valor ingresado incorrectamente \n");
-			printf("Ingrese valor entre –2.147.483.648 y 2.147.483.647: \n");
-			getchar();
-			input = scanf("%d", &valorIngresado);
-		}
-
-		if (valorIngresado >= 0){
+		valorIngresado = recibirInt32(socketK);
 
 		tcb->registroA.valores = valorIngresado;
-		enviarTcb(tcb, socketK);
-
-
-		} else { //Valor negativo en registroA
-
-	}
 
 
 	return 0;
@@ -105,30 +98,39 @@ registro B. La misma será almacenada en la posición de memoria apuntada por el
 Invoca al servicio correspondiente en el proceso Kernel.*/
 int fnINNC (t_tcb * tcb){
 
-	//Invocar servicio en Kernel?
-	char * cadenaIngresada = 0;
-	uint32_t longcadena = tcb->registroB.valores;
-			printf("Ingrese una cadena no mas larga que %d caracteres: \n", longcadena);
-			char * input = scanf("%s", &cadenaIngresada);
+			int codigo = 4; //Entrada Standard
+			int tipo = 2; //1 es INNN, 2 es INNC
+			int nbytes;
 
-			while ((input != 1) || strlen(cadenaIngresada) > longcadena){
-				printf("Cadena Invalidad\n");
-				printf("Ingrese una cadena no mas larga que %d caracteres: \n", longcadena);
-				getchar();
-				input = scanf("%s", &cadenaIngresada);
+
+			int32_t tamanioCadena = tcb->registroB.valores;
+			int32_t posMemoria = tcb->registroA.valores;
+			int32_t pid = tcb->pid;
+
+			char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
+			char buff[tamanioCadena];
+
+			//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
+			//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
+
+			enviarInt(codigo,socketK);
+			enviarInt(tipo,socketK);
+
+
+			nbytes = recv(socketK, buff, sizeof(buff), 0);
+
+			if (nbytes > 0){
+				cadenaIngresada = buff;
+
+				if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
+
+					//TODO Ejecucion Erronea?
+				}
+
 			}
 
-			if ((strlen(cadenaIngresada) > 0) && (strlen(cadenaIngresada) <= longcadena)){
-
-			uint32_t direccion = tcb->registroA.valores;
-			int pid = tcb->pid;
-			escribirMemoria(pid,direccion,sizeof(cadenaIngresada),cadenaIngresada,socketM);
 
 
-
-			} else { //Valor negativo en registroA
-
-		}
 
 
 
@@ -142,6 +144,30 @@ Imprime por consola del programa el número, con signo almacenado en el registro
 servicio correspondiente en el proceso Kernel.*/
 int fnOUTN (t_tcb * tcb){
 
+
+				int codigo = 5; //Salida Standard
+				int tipo = 1; //1 es OUTN, 2 es OUTC
+				int result = 0;
+
+				int32_t valorAimprimir = tcb->registroA.valores;
+
+
+				//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
+				//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
+
+				enviarInt(codigo,socketK);
+				enviarInt(tipo,socketK);
+
+
+				enviarInt(valorAimprimir,socketK);
+
+
+				result = recibirInt(socketK); //Esperar resultado
+
+				//TODO Evaluar resultado
+
+
+
 	return 0;
 }
 
@@ -153,6 +179,30 @@ Imprime por consola del programa una cadena de tamaño indicado por el registro 
 encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 proceso Kernel.*/
 int fnOUTC (t_tcb * tcb){
+
+			int codigo = 5; //Salida Standard
+			int tipo = 2; //1 es OUTN, 2 es OUTC
+			int result = 0;
+
+			int32_t direccion = tcb->registroA.valores;
+			int32_t tamanio = tcb->registroB.valores;
+
+			char * cadena = malloc(tamanio * sizeof(char));
+
+
+			enviarInt(codigo,socketK); //Aviso de un pedido de entrada estandar
+			enviarInt(tipo,socketK); //Aviso tipo de dato a pedir
+
+			cadena = pedirString(socketM,tcb);
+
+			send(socketK,cadena,sizeof(cadena),0);
+
+
+			result = recibirInt(socketK); //Esperar resultado
+
+			//TODO Evaluar resultado
+
+			free(cadena);
 
 	return 0;
 }

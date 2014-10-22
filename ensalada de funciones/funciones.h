@@ -543,4 +543,25 @@ int pedirDireccion(int socketMSP,t_tcb* tcb){
 	return direccion;
 }
 
+char* pedirString(int socketMSP,t_tcb* tcb){
+
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->registroA.valores;
+	solicitarMemoria.tamanio=tcb->registroB.valores;
+
+	char buff[tcb->registroB.valores];
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,buff,sizeof(buff),0);
+
+	return buff;
+}
+
 #endif /* CONSOLA_H_ */

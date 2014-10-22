@@ -101,6 +101,8 @@ bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,	int 
 t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso, int stack, int socketMsp, int socketCliente);
 struct stat hacerStat(char * direccion);
 char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb);
+char* pedirString(int socketMSP,t_tcb* tcb);
+int pedirDireccion(int socketMSP,t_tcb* tcb);
 
 
 
