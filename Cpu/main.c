@@ -1,7 +1,5 @@
 #include "cpu.h"
 
-int socketM;
-int socketK;
 
 int main (int argc, char** argv){
 

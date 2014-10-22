@@ -1,8 +1,7 @@
 
 #include "cpu.h"
 
-int socketK; //Pasarlas al .h para que las tome como variables globales
-int socketM;
+
 //Funciones Privilegiadas
 
 /*MALC: Reserva una cantidad de memoria especificada por el registro A. La direccion de esta se

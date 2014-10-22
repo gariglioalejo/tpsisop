@@ -28,6 +28,8 @@
 #include "../ensalada de funciones/funciones.h"
 
 int systemcall;
+int socketK;
+int socketM;
 
 //Funciones Privilegiadas
 int fnMALC (t_tcb * tcb);

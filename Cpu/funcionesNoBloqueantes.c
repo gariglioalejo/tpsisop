@@ -19,8 +19,7 @@
 #include <stdint.h>
 #include <math.h>
 
-int socketK;
-int socketM;
+
 
 int load(t_tcb * tcb){
 
@@ -403,11 +402,11 @@ int inte(t_tcb * tcb){
 	int dirSyscall = pedirDireccion(socketM, tcb);
 	int codigo = 3; //enum SYSCALL
 
-	send(socketM,codigo,sizeof(int),0);
+	send(socketM,&codigo,sizeof(int),0);
 
-	send(socketM,dirSyscall,sizeof(int),0);
+	send(socketM,&dirSyscall,sizeof(int),0);
 
-	send(socketM,tcb,sizeof(t_tcb),0);
+	send(socketM,&tcb,sizeof(t_tcb),0);
 
 
 
@@ -870,3 +869,4 @@ int comp(t_tcb * tcb){
 
 	return 0;
 }
+
