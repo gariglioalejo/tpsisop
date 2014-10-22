@@ -57,6 +57,7 @@ int mulr(t_tcb*);
 int gotoo(t_tcb*);
 int jmpz(t_tcb*);
 int jpnz(t_tcb*);
+int comp(t_tcb*);
 
 int inte(t_tcb * tcb);
 

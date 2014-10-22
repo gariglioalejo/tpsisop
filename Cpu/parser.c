@@ -97,7 +97,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"COMP");
 	if(i==0){
 	printf("ENTRO EN COMP \n");
-	//poner funcion
+	comp(tcb);
 	}
 
 	else if (i!=0){
