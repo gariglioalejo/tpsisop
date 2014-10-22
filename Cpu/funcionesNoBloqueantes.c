@@ -679,23 +679,23 @@ int gotoo(t_tcb * tcb){
 	switch(reg){
 
 	case tcb->registroA.nombre:
-	tcb->P=(uint32_t)tcb->registroA.valores;
+	tcb->P=(uint32_t)tcb->registroA.valores+tcb->M;
 	break;
 
 	case tcb->registroB.nombre:
-	tcb->P=(uint32_t)tcb->registroB.valores;
+	tcb->P=(uint32_t)tcb->registroB.valores+tcb->M;
 	break;
 
 	case tcb->registroC.nombre:
-	tcb->P=(uint32_t)tcb->registroC.valores;
+	tcb->P=(uint32_t)tcb->registroC.valores+tcb->M;
 	break;
 
 	case tcb->registroD.nombre:
-	tcb->P=(uint32_t)tcb->registroD.valores;
+	tcb->P=(uint32_t)tcb->registroD.valores+tcb->M;
 	break;
 
 	case tcb->registroE.nombre:
-	tcb->P=(uint32_t)tcb->registroE.valores;
+	tcb->P=(uint32_t)tcb->registroE.valores+tcb->M;
 	break;
 
 	}
@@ -724,7 +724,7 @@ int jmpz(t_tcb * tcb){
 
 	recv(socketM,&nuevadir,sizeof(uint32_t),0);
 
-	tcb->P=nuevadir;
+	tcb->P=nuevadir+tcb->M;
 
 	printf("Se cambio la ejecución porque A vale 0, al pc: %u",nuevadir);
 
@@ -762,7 +762,7 @@ int jpnz(t_tcb * tcb){
 
 		recv(socketM,&nuevadir,sizeof(uint32_t),0);
 
-		tcb->P=nuevadir;
+		tcb->P=nuevadir+tcb->M;
 
 		printf("Se cambio la ejecución porque A vale:%d, al pc: %u",tcb->registroA.valores,nuevadir);
 
