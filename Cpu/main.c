@@ -98,8 +98,19 @@ int main (int argc, char** argv){
 
 
 
+		//Ready
+		if (quantum==i){
+			int encolarEnReady=1;
+			send(socketK,&encolarEnReady,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
 
-
+		//Block
+		if(systemcall>0){
+			int encolarEnBloqueado=2;
+			send(socketK,&encolarEnBloqueado,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
 
 		}
 

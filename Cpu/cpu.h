@@ -51,6 +51,12 @@ int getm(t_tcb*);
 int decr(t_tcb*);
 int incr(t_tcb*);
 int nopp(t_tcb*);
+int addr(t_tcb*);
+int subr(t_tcb*);
+int mulr(t_tcb*);
+int gotoo(t_tcb*);
+int jmpz(t_tcb*);
+int jpnz(t_tcb*);
 
 int inte(t_tcb * tcb);
 
