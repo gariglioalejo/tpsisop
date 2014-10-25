@@ -53,8 +53,6 @@ uint32_t convertirDirAInt(t_msp_dir * direccion){
 }
 
 
-
-
 int recibirInt(int socket) {
 	int unInt;
 	int recibido;
@@ -397,6 +395,26 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 	}
 }
 
+bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
+	int destruir_segmento = 2;
+	bool exito;
+	int resultado;
+
+	enviarInt(destruir_segmento, socket);
+	enviarInt(pid, socket);
+	enviarInt(base, socket);
+
+	resultado = recibirInt(socket);
+
+	if (exito == 1) {
+		exito = true;
+		return exito;
+	} else {
+		exito = false;
+		return exito;
+	}
+}
+
 bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,
 		int socket) {
 	enviarInt(3, socket);
@@ -466,3 +484,66 @@ struct stat hacerStat(char * direccion) {
 	}
 	return stat_beso;
 }
+
+char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
+
+	char* palabra;
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,palabra,4,0);
+
+	return palabra;
+}
+
+int pedirDireccion(int socketMSP,t_tcb* tcb){
+
+	int direccion;
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->P+4;
+	solicitarMemoria.tamanio=4;
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,direccion,4,0);
+
+	return direccion;
+}
+
+char* pedirString(int socketMSP,t_tcb* tcb){
+
+
+	int codigoSolicitarMemoria=2;
+
+	t_solicitarMemoria solicitarMemoria;
+
+	solicitarMemoria.PID=tcb->pid;
+	solicitarMemoria.direccion=tcb->registroA.valores;
+	solicitarMemoria.tamanio=tcb->registroB.valores;
+
+	char buff[tcb->registroB.valores];
+
+	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+	recv(socketMSP,buff,sizeof(buff),0);
+
+	return buff;
+}
+
+

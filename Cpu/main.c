@@ -1,7 +1,5 @@
 #include "cpu.h"
 
-int socketM;
-int socketK;
 
 int main (int argc, char** argv){
 
@@ -13,7 +11,7 @@ int main (int argc, char** argv){
 	t_tcb * tcb;
 	int instruccion = 0;
 	int i;
-	int systemcall;
+
 
 	t_log * log_de_cpu;
 	log_de_cpu = log_create("log_de_cpu", "cpu.c", 0, LOG_LEVEL_TRACE);
@@ -98,8 +96,19 @@ int main (int argc, char** argv){
 
 
 
+		//Ready
+		if (quantum==i){
+			int encolarEnReady=1;
+			send(socketK,&encolarEnReady,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
 
-
+		//Block
+		if(systemcall>0){
+			int encolarEnBloqueado=2;
+			send(socketK,&encolarEnBloqueado,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
 
 		}
 

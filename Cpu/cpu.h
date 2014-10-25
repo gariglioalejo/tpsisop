@@ -24,13 +24,16 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <math.h>
-#include "funcionesCpu.h"
+
 #include "../ensalada de funciones/funciones.h"
 
+int systemcall;
+int socketK;
+int socketM;
 
 //Funciones Privilegiadas
-int fnMALC (t_tcb * cpu);
-int fnFREE (void);
+int fnMALC (t_tcb * tcb);
+int fnFREE (t_tcb * tcb);
 int fnINNN (void);
 int fnINNC (void);
 int fnOUTN (void);
@@ -45,7 +48,19 @@ int parseador(char*,t_tcb*);
 
 //FuncionesNoPrivilegiadas
 int load(t_tcb*);
+int movr(t_tcb*);
 int getm(t_tcb*);
+int decr(t_tcb*);
+int incr(t_tcb*);
+int nopp(t_tcb*);
+int addr(t_tcb*);
+int subr(t_tcb*);
+int mulr(t_tcb*);
+int gotoo(t_tcb*);
+int jmpz(t_tcb*);
+int jpnz(t_tcb*);
+int comp(t_tcb*);
 
+int inte(t_tcb * tcb);
 
 #endif /* CPU_H_ */
