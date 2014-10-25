@@ -55,6 +55,7 @@ int tipoEE;
 int inputMax;
 char * string;
 int intIngresado;
+int pidSE;
 
 enum {
 	TERMINO_QUANTUM,
@@ -428,6 +429,17 @@ int main(int argc, char ** argv) {
 									enviar_serializado(-1, string,
 											tcbDeCpu->socketCpu);
 								}
+								break;
+							case SALIDA_ESTANDAR:
+								pidSE = recibirInt(i);
+								string = recibir_serializado(i);
+								pthread_mutex_lock(&mutexListaExec);
+								tcbDeCpu = list_find(listaExec,
+										compararTcbSocket);
+								pthread_mutex_unlock(&mutexListaExec);
+								enviarInt(1, tcbDeCpu->socketConsola);
+								enviar_serializado(-1, string,
+										tcbDeCpu->socketConsola);
 								break;
 
 							}
