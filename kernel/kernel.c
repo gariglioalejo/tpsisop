@@ -5,7 +5,7 @@
  *      Author: utnso
  */
 
-#include "../ensalada de funciones/funciones.h"
+#include "../consola/funciones.h"
 
 int socketMsp;
 t_config * kernel_config;
@@ -43,12 +43,18 @@ t_list * listaSocketsCpu;
 t_list * listaExec;
 t_list * listaExit;
 t_list * listaBloq;
+t_list * listaSocketsConsola;
 int unaOperacion;
 int recibido;
 int tidTcb;
 t_tcb * tcbDeCpu;
 uint32_t direccionSyscall;
 t_tcb * tcbBloq;
+int pidEE;
+int tipoEE;
+int inputMax;
+char * string;
+int intIngresado;
 
 enum {
 	TERMINO_QUANTUM,
@@ -69,6 +75,10 @@ bool comparar(void * socketConCambios) {
 bool compararTcb(void * tcb) {
 	t_tcb * tcbaux = tcb;
 	return tcbaux->tid == tidTcb;
+}
+bool compararTcbSocket(void * tcb) {
+	t_tcb * tcbaux = tcb;
+	return tcbaux->socketCpu == i;
 }
 
 void * manejoCpuLibres(void * arg) {
@@ -156,6 +166,7 @@ int main(int argc, char ** argv) {
 	listaExec = list_create();
 	listaExit = list_create();
 	listaBloq = list_create();
+	listaSocketsConsola = list_create();
 
 	sem_init(&hayEnReady, 0, 0);
 	sem_init(&hayCpu, 0, 0);
@@ -178,7 +189,7 @@ int main(int argc, char ** argv) {
 
 	listenningSocket = crearServer(puerto_kernel);
 
-	iret1 = pthread_create(&cpuLibres, NULL, manejoCpuLibres, NULL);
+	iret1 = pthread_create(&cpuLibres, NULL, manejoCpuLibres, NULL );
 	if (iret1) {
 		fprintf(stderr, "Fallo  creacion hilo manejoCpuLibres retorno: %d\n",
 				iret1);
@@ -192,13 +203,34 @@ int main(int argc, char ** argv) {
 
 	while (x) {
 		readfds = master;
-		rv = select(setmax + 1, &readfds, NULL, NULL, NULL);
+		rv = select(setmax + 1, &readfds, NULL, NULL, NULL );
 		if (rv == -1) {
 			perror("select");
 			printf("Error en el select\n");
 		} else {
 			for (i = 0; i <= setmax; i++) {
 				if (FD_ISSET(i, &readfds)) {
+					/*if (list_any_satisfy(listaSocketsConsola, comparar)) {
+					 puts("esoSeViene");
+					 pthread_mutex_lock(&mutexListaExec);
+					 tcbDeCpu = list_find(listaExec, compararTcbSocket);
+					 pthread_mutex_unlock(&mutexListaExec);
+					 int tipoMensaje = recibirInt(tcbDeCpu->socketConsola);
+					 switch (tipoMensaje) {
+					 case (0):
+					 intIngresado = recibirInt(tcbDeCpu->socketConsola);
+					 printf("intIngresado:%d\n", intIngresado);
+					 enviarInt(intIngresado, tcbDeCpu->socketCpu);
+					 break;
+					 case (1):
+					 string = recibir_serializado(
+					 tcbDeCpu->socketConsola);
+					 printf("wenas\n");
+					 printf("%s\n", string);
+					 enviar_serializado(-1, string, tcbDeCpu->socketCpu);
+					 break;
+					 }
+					 }*/
 					if (i == listenningSocket) {
 						int socketCliente = aceptarConexion(listenningSocket);
 						int codigo = recibirInt(socketCliente);
@@ -217,8 +249,6 @@ int main(int argc, char ** argv) {
 								tcb->km = 0;
 								tcb->pid = pid;
 								tcb->tid;
-								printf("valor socketCliente:%d\n",
-										socketCliente);
 								tcb->socketConsola = socketCliente;
 								printf("valor tcb->socketConsola:%d\n",
 										tcb->socketConsola);
@@ -226,6 +256,7 @@ int main(int argc, char ** argv) {
 								if (socketCliente > setmax) {
 									setmax = socketCliente;
 								}
+								list_add(listaSocketsConsola, &socketCliente);
 								pthread_mutex_lock(&mutexReady);
 								queue_push(colaReady, tcb);
 								sem_post(&hayEnReady);
@@ -285,7 +316,7 @@ int main(int argc, char ** argv) {
 								if (tcbDeCpu->km == 1) {
 									queue_push(colaKM, tcbDeCpu);
 									printf("Volvio el KM: %d\n", tcbDeCpu->km);
-									tcbBloq=list_remove(listaBloq, 0);
+									tcbBloq = list_remove(listaBloq, 0);
 									tcbBloq->A = tcbDeCpu->A;
 									tcbBloq->B = tcbDeCpu->B;
 									tcbBloq->C = tcbDeCpu->C;
@@ -304,15 +335,6 @@ int main(int argc, char ** argv) {
 								pthread_mutex_unlock(&mutexListaExec);
 								sem_post(&hayEnReady);
 								sem_post(&hayCpu);
-								/*
-								 int valorHayEnReady,valorHayCpu;
-								 sem_getvalue(&hayEnReady,&valorHayEnReady);
-								 sem_getvalue(&hayCpu,&valorHayCpu);
-								 printf("ready:%d\n",valorHayEnReady);
-								 printf("cpu:%d\n",valorHayCpu);
-								 //printf("final\n");
-								 */
-
 								break;
 							case CONCLUYO_EJECUCION:
 								tcbDeCpu = recibirTcb(i);
@@ -373,11 +395,46 @@ int main(int argc, char ** argv) {
 								pthread_mutex_unlock(&mutexListaCpu);
 								pthread_mutex_unlock(&mutexListaBloq);
 								pthread_mutex_unlock(&mutexListaExec);
+								break;
+							case ENTRADA_ESTANDAR:
+								pidEE = recibirInt(i);
+								tipoEE = recibirInt(i);
+								if (tipoEE == 0) {
+									pthread_mutex_lock(&mutexListaExec);
+									tcbDeCpu = list_find(listaExec,
+											compararTcbSocket);
+									pthread_mutex_unlock(&mutexListaExec);
+									enviarInt(3, tcbDeCpu->socketConsola);
+									intIngresado = recibirInt(
+											tcbDeCpu->socketConsola);
+									printf("intIngresado:%d\n", intIngresado);
+									enviarInt(intIngresado, i);
+									break;
+
+								}
+								if (tipoEE == 1) {
+									inputMax = recibirInt(i);
+									pthread_mutex_lock(&mutexListaExec);
+									tcbDeCpu = list_find(listaExec,
+											compararTcbSocket);
+									pthread_mutex_unlock(&mutexListaExec);
+									enviarInt(2, tcbDeCpu->socketConsola);
+									enviarInt(inputMax,
+											tcbDeCpu->socketConsola);
+									string = recibir_serializado(
+											tcbDeCpu->socketConsola);
+									printf("EltopoSalto\n");
+									printf("%s\n", string);
+									enviar_serializado(-1, string,
+											tcbDeCpu->socketCpu);
+								}
+								break;
 
 							}
 
 						}
 					}
+
 				}
 
 			}
@@ -385,6 +442,6 @@ int main(int argc, char ** argv) {
 		}
 
 	}
-	pthread_join(cpuLibres, NULL);
+	pthread_join(cpuLibres, NULL );
 	return 0;
 }

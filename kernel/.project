@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>kernel</name>
+	<name>kernel2.0</name>
 	<comment></comment>
 	<projects>
-		<project>tpsisoplib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
