@@ -69,14 +69,14 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"MODR");
 	if(i==0){
 	printf("ENTRO EN MODR \n");
-	//poner funcion
+	modr(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"DIVR");
 	if(i==0){
 	printf("ENTRO EN DIVR \n");
-	//poner funcion
+	divr(tcb);
 	}
 
 	else if (i!=0){

@@ -872,3 +872,177 @@ int comp(t_tcb * tcb){
 	return 0;
 }
 
+int divr(t_tcb* tcb){
+
+	char reg1;
+		char reg2;
+		int32_t aux1;
+		int32_t aux2;
+
+		int solicitarMemoria=2;
+
+		t_solicitarMemoria solicitador;
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=1;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&reg1,sizeof(char),0);
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.direccion=tcb->P+5;
+		solicitador.tamanio=1;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&reg2,sizeof(char),0);
+
+		switch(reg1){
+
+		case tcb->registroA.nombre:
+		aux1=tcb->registroA.valores;
+		break;
+
+		case tcb->registroB.nombre:
+		aux1=tcb->registroB.valores;
+		break;
+
+		case tcb->registroC.nombre:
+		aux1=tcb->registroC.valores;
+		break;
+
+		case tcb->registroD.nombre:
+		aux1=tcb->registroD.valores;
+		break;
+
+		case tcb->registroE.nombre:
+		aux1=tcb->registroE.valores;
+		break;
+		}
+
+		switch(reg2){
+
+		case tcb->registroA.nombre:
+		aux2=tcb->registroA.valores;
+		break;
+
+		case tcb->registroB.nombre:
+		aux2=tcb->registroB.valores;
+		break;
+
+		case tcb->registroC.nombre:
+		aux2=tcb->registroC.valores;
+		break;
+
+		case tcb->registroD.nombre:
+		aux2=tcb->registroD.valores;
+		break;
+
+		case tcb->registroE.nombre:
+		aux2=tcb->registroE.valores;
+		break;
+		}
+
+		if(aux2==0){
+			printf("DIVR sobre 0, ERROR");
+		}
+		else {
+			tcb->registroA.valores=(aux1/aux2);
+		}
+
+		tcb->P=tcb->P+6;
+
+		printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
+
+	return 0;
+}
+
+int modr(t_tcb* tcb){
+
+	char reg1;
+		char reg2;
+		int32_t aux1;
+		int32_t aux2;
+
+		int solicitarMemoria=2;
+
+		t_solicitarMemoria solicitador;
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=1;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&reg1,sizeof(char),0);
+
+		send(socketM,&solicitarMemoria,sizeof(int),0);
+
+		solicitador.direccion=tcb->P+5;
+		solicitador.tamanio=1;
+
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		recv(socketM,&reg2,sizeof(char),0);
+
+		switch(reg1){
+
+		case tcb->registroA.nombre:
+		aux1=tcb->registroA.valores;
+		break;
+
+		case tcb->registroB.nombre:
+		aux1=tcb->registroB.valores;
+		break;
+
+		case tcb->registroC.nombre:
+		aux1=tcb->registroC.valores;
+		break;
+
+		case tcb->registroD.nombre:
+		aux1=tcb->registroD.valores;
+		break;
+
+		case tcb->registroE.nombre:
+		aux1=tcb->registroE.valores;
+		break;
+		}
+
+		switch(reg2){
+
+		case tcb->registroA.nombre:
+		aux2=tcb->registroA.valores;
+		break;
+
+		case tcb->registroB.nombre:
+		aux2=tcb->registroB.valores;
+		break;
+
+		case tcb->registroC.nombre:
+		aux2=tcb->registroC.valores;
+		break;
+
+		case tcb->registroD.nombre:
+		aux2=tcb->registroD.valores;
+		break;
+
+		case tcb->registroE.nombre:
+		aux2=tcb->registroE.valores;
+		break;
+		}
+
+		tcb->registroA.valores=(aux1%aux2);
+
+		tcb->P=tcb->P+6;
+
+		printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
+
+	return 0;
+}
