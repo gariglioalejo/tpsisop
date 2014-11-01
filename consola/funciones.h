@@ -32,6 +32,7 @@ typedef struct {
 	bool exito;
 } t_crearSegmento;
 
+
 typedef struct {
 	int pid;
 	int tid;
@@ -50,6 +51,11 @@ typedef struct {
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
 } t_tcb;
+
+typedef struct{
+	t_tcb * tcb;
+	int idRecurso;
+}t_nodoRecurso;
 
 typedef struct {
 	t_tcb * tcb;
