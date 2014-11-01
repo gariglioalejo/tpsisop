@@ -546,4 +546,23 @@ char* pedirString(int socketMSP,t_tcb* tcb){
 	return buff;
 }
 
+char *inputString(FILE* fp, size_t size){
+
+    char *str;
+    int ch;
+    size_t len = 0;
+    str = realloc(NULL, sizeof(char)*size);
+    if(!str)return str;
+    while(EOF!=(ch=fgetc(fp)) && ch != '\n'){
+        str[len++]=ch;
+        if(len==size){
+            str = realloc(str, sizeof(char)*(size+=1));
+            if(!str)return str;
+        }
+    }
+    str[len++]='\0';
+
+    return realloc(str, sizeof(char)*len);
+}
+
 
