@@ -27,6 +27,9 @@ int fnMALC (t_tcb * tcb){
 
 	free(segmentoCreado);
 	printf("MALC Ejecutada \n");
+
+	systemcall++;
+	tcb->P=tcb->P+4;
 	return result;
 }
 
@@ -57,8 +60,8 @@ int fnFREE (t_tcb * tcb){
 		return result;
 
 
-
-
+		systemcall++;
+		tcb->P=tcb->P+4;
 	return 0;
 }
 
@@ -86,7 +89,8 @@ int fnINNN (t_tcb * tcb){
 
 		tcb->registroA.valores = valorIngresado;
 
-
+		systemcall++;
+		tcb->P=tcb->P+4;
 	return 0;
 }
 
@@ -132,8 +136,8 @@ int fnINNC (t_tcb * tcb){
 
 
 
-
-
+			systemcall++;
+			tcb->P=tcb->P+4;
 	return 0;
 }
 
@@ -166,6 +170,8 @@ int fnOUTN (t_tcb * tcb){
 
 				//TODO Evaluar resultado
 
+				systemcall++;
+				tcb->P=tcb->P+4;
 
 
 	return 0;
@@ -204,6 +210,11 @@ int fnOUTC (t_tcb * tcb){
 
 			free(cadena);
 
+
+			tcb->P=tcb->P+4;
+
+			systemcall++;
+
 	return 0;
 }
 
@@ -214,11 +225,32 @@ tendrá su Program Counter apuntado al número almacenado en el registro B. El i
 nuevo hilo se almacena en el registro A.
 Para lograrlo debe generar un nuevo TCB como copia del TCB actual, asignarle un nuevo TID
 correlativo al actual, cargar en el Puntero de Instrucción la rutina donde comenzará a ejecutar el
-nuevo hilo (registro B), pasarlo de modo Kernel a modo Usuario, duplicar el segmento de stack
+nuevo hilo (registro B), pasarlo de modo Kernel a modo Usuario,
+
+duplicar el segmento de stack
 desde la base del stack, hasta el cursor del stack. Asignar la base y cursor de forma acorde (tal
 que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al servicio
 correspondiente en el proceso Kernel con el TCB recién generado.*/
 int fnCREA (t_tcb * tcb){
+
+	int codigo = 6;
+
+	t_tcb * nuevotcb = malloc(sizeof(t_tcb));
+
+	copiarTcb(tcb,nuevotcb);
+
+	nuevotcb->P = tcb->registroB.valores;
+	nuevotcb->pid = tcb->registroA.valores;
+	nuevotcb->tid = tcb->tid + 1;
+	nuevotcb->km = 0;
+
+	enviarint(codigo,socketK);
+	enviarTcb(nuevotcb, socketK);
+
+	//Duplicar Segmento Stack
+
+	tcb->P=tcb->P+4;
+	systemcall++;
 
 	return 0;
 }
@@ -231,6 +263,16 @@ almacenado en el registro A haya finalizado. Invoca al servicio correspondiente 
 Kernel.*/
 int fnJOIN (t_tcb * tcb){
 
+	int codigo = 7;
+	int recurso = tcb->registroA.valores;
+
+
+	enviarint(codigo,socketK);
+	enviarint(recurso,socketK);
+
+	tcb->P=tcb->P+4;
+	systemcall++;
+
 	return 0;
 }
 
@@ -242,6 +284,18 @@ La evaluación y decisión de si el recurso está libre o no es hecha por la lla
 pre-compilada.*/
 int fnBLOK (t_tcb * tcb){
 
+	//TODO Lista de Bloqueados???
+	int codigo = 8; //Bloquear
+
+	int32_t recurso = tcb->registroB.valores;
+
+
+	enviarInt(codigo,socketK); //Aviso de un pedido de Bloqueo
+	enviarInt(recurso,socketK);
+
+
+	systemcall++;
+	tcb->P=tcb->P+4;
 	return 0;
 }
 
@@ -251,5 +305,15 @@ La evaluación y decisión de si el recurso está libre o no es hecha por la lla
 SIGNAL pre-compilada.*/
 int fnWAKE (t_tcb * tcb){
 
+	int codigo = 9; //Wake
+
+	int32_t recurso = tcb->registroB.valores;
+
+
+	enviarInt(codigo,socketK); //Aviso de un pedido de Bloqueo
+	enviarInt(recurso,socketK);
+
+	systemcall++;
+	tcb->P=tcb->P+4;
 	return 0;
 }
