@@ -1046,3 +1046,12 @@ int modr(t_tcb* tcb){
 
 	return 0;
 }
+
+int xxxx(t_tcb* tcb){
+
+	tcb->P=tcb->P+4;
+
+	ultimainstruccion++;
+
+	return 0;
+}

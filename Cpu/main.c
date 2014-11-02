@@ -76,9 +76,10 @@ int main (int argc, char** argv){
 		i=0;
 
 		//mientras el quantum deje y no haya una llamada al sistema
-		while((i<quantum)&&(!systemcall)){
+		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)){
 
 			systemcall=0;
+			ultimainstruccion=0;
 			log_info(log_de_cpu,"XXXXXXXXXXXXXX QUANTUM %d XXXXXXXXXXXXX",quantum-i);
 			i++;
 
@@ -107,6 +108,13 @@ int main (int argc, char** argv){
 		if(systemcall>0){
 			int encolarEnBloqueado=2;
 			send(socketK,&encolarEnBloqueado,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
+
+		//Exit
+		if(ultimainstruccion>0){
+			int encolarEnExit=3;
+			send(socketK,&encolarEnExit,sizeof(int),0);
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
 

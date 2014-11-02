@@ -143,13 +143,6 @@ int parseador(char* palabra, t_tcb* tcb){
 	}
 
 	else if (i!=0){
-	i=strcmp(palabra,"FLCL");
-	if(i==0){
-	printf("ENTRO EN FLCL \n");
-	//poner funcion
-	}
-
-	else if (i!=0){
 	i=strcmp(palabra,"SHIF");
 	if(i==0){
 	printf("ENTRO EN SHIF \n");
@@ -181,7 +174,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"XXXX");
 	if(i==0){
 	printf("ENTRO EN XXXX \n");
-	//poner funcion
+	xxxx(tcb);
 	}
 
 	else if (i!=0){
@@ -254,7 +247,6 @@ int parseador(char* palabra, t_tcb* tcb){
 	//poner funcion
 	}
 
-	}
 	}
 	}
 	}

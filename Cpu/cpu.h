@@ -28,6 +28,7 @@
 #include "../ensalada de funciones/funciones.h"
 
 int systemcall;
+int ultimainstruccion;
 int socketK;
 int socketM;
 
@@ -62,6 +63,7 @@ int jpnz(t_tcb*);
 int comp(t_tcb*);
 int divr(t_tcb*);
 int modr(t_tcb*);
+int xxxx(t_tcb*);
 
 int inte(t_tcb * tcb);
 
