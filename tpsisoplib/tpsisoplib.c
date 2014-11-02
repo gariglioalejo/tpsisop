@@ -566,3 +566,31 @@ char *inputString(FILE* fp, size_t size){
 }
 
 
+int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo){
+
+	tcbnuevo->M = tcbviejo->M;
+	tcbnuevo->P = tcbviejo->P;
+	tcbnuevo->S = tcbviejo->S;
+	tcbnuevo->X = tcbviejo->X;
+	tcbnuevo->direccionSyscallPendiente = tcbviejo->direccionSyscallPendiente;
+	tcbnuevo->km = tcbviejo->km;
+	tcbnuevo->pid = tcbviejo->pid;
+	tcbnuevo->registroA.nombre = tcbviejo->registroA.nombre;
+	tcbnuevo->registroA.valores = tcbviejo->registroA.valores;
+	tcbnuevo->registroB.nombre = tcbviejo->registroB.nombre;
+	tcbnuevo->registroB.valores = tcbviejo->registroB.valores;
+	tcbnuevo->registroC.nombre = tcbviejo->registroC.nombre;
+	tcbnuevo->registroC.valores = tcbviejo->registroC.valores;
+	tcbnuevo->registroD.nombre = tcbviejo->registroD.nombre;
+	tcbnuevo->registroD.valores = tcbviejo->registroD.valores;
+	tcbnuevo->registroE.nombre = tcbviejo->registroE.nombre;
+	tcbnuevo->registroE.valores = tcbviejo->registroE.valores;
+	tcbnuevo->socketConsola = tcbviejo->socketConsola;
+	tcbnuevo->socketCpu = tcbviejo->socketCpu;
+	tcbnuevo->tam_seg_cod = tcbviejo->tam_seg_cod;
+	tcbnuevo->tid = tcbviejo->tid;
+
+	return 0;
+}
+
+

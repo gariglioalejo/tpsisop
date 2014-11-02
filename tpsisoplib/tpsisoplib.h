@@ -104,6 +104,8 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb);
 char* pedirString(int socketMSP,t_tcb* tcb);
 int pedirDireccion(int socketMSP,t_tcb* tcb);
 char *inputString(FILE* fp, size_t size);
+int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo);
+
 
 
 
