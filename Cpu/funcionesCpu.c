@@ -284,7 +284,6 @@ La evaluación y decisión de si el recurso está libre o no es hecha por la lla
 pre-compilada.*/
 int fnBLOK (t_tcb * tcb){
 
-	//TODO Lista de Bloqueados???
 	int codigo = 8; //Bloquear
 
 	int32_t recurso = tcb->registroB.valores;

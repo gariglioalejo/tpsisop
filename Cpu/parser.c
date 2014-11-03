@@ -181,70 +181,70 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"MALC");
 	if(i==0){
 	printf("ENTRO EN MALC \n");
-	//poner funcion
+	fnMALC(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"FREE");
 	if(i==0){
 	printf("ENTRO EN FREE \n");
-	//poner funcion
+	fnFREE(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"INNN");
 	if(i==0){
 	printf("ENTRO EN INNN \n");
-	//poner funcion
+	fnINNN(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"INNC");
 	if(i==0){
 	printf("ENTRO EN INNC \n");
-	//poner funcion
+	fnINNC(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"OUTN");
 	if(i==0){
 	printf("ENTRO EN OUTN \n");
-	//poner funcion
+	fnOUTN(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"OUTC");
 	if(i==0){
 	printf("ENTRO EN OUTC \n");
-	//poner funcion
+	fnOUTC(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"CREA");
 	if(i==0){
 	printf("ENTRO EN CREA \n");
-	//poner funcion
+	fnCREA(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"JOIN");
 	if(i==0){
 	printf("ENTRO EN JOIN \n");
-	//poner funcion
+	fnJOIN(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"BLOK");
 	if(i==0){
 	printf("ENTRO EN BLOK \n");
-	//poner funcion
+	fnBLOK(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"WAKE");
 	if(i==0){
 	printf("ENTRO EN WAKE \n");
-	//poner funcion
+	fnWAKE(tcb);
 	}
 
 	}
