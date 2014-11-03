@@ -52,10 +52,7 @@ uint32_t direccionSyscall;
 t_tcb * tcbBloq;
 int pidEE;
 int tipoEE;
-int inputMax;
-char * string;
-int intIngresado;
-int pidSE;
+int socketEE;
 
 enum {
 	TERMINO_QUANTUM,
@@ -73,20 +70,21 @@ enum {
 bool comparar(void * socketConCambios) {
 	return *(int *) socketConCambios == i;
 }
-bool compararTcb(void * tcb) {
-	t_tcb * tcbaux = tcb;
-	return tcbaux->tid == tidTcb;
-}
 bool compararTcbSocket(void * tcb) {
 	t_tcb * tcbaux = tcb;
 	return tcbaux->socketCpu == i;
 }
 
+bool compararTcb(void * tcb) {
+	t_tcb * tcbaux = tcb;
+	return tcbaux->tid == tidTcb;
+}
+
 void * manejoCpuLibres(void * arg) {
 	int socketCpu;
-	t_tcb * tcb;
+
 	int posicion = 0;
-	t_tcb *tcbKernelMode;
+
 	while (1) {
 
 		sem_wait(&hayCpu);
@@ -96,6 +94,8 @@ void * manejoCpuLibres(void * arg) {
 		pthread_mutex_lock(&mutexListaCpu);
 
 		if (list_size(listaBloq) && queue_size(colaKM)) {
+			t_tcb * tcb = malloc(sizeof(t_tcb));
+			t_tcb *tcbKernelMode = malloc(sizeof(t_tcb));
 			tcbKernelMode = queue_pop(colaKM);
 			tcb = list_get(listaBloq, 0);
 			tcbKernelMode->pid = tcb->pid;
@@ -107,32 +107,31 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->E = tcb->E;
 			tcbKernelMode->P = tcb->direccionSyscallPendiente;
 			socketCpu = *(int *) (list_remove(listaCpuLibres, posicion));
-			enviarInt(-1, socketCpu);		//comentar esta convencion con cpu
+			enviarInt(-1, socketCpu);
 			enviarTcb(tcbKernelMode, socketCpu);
 			tcbKernelMode->socketCpu = socketCpu;
 			list_add(listaExec, tcbKernelMode);
 			pthread_mutex_unlock(&mutexListaCpu);
-			pthread_mutex_unlock(&mutexListaBloq);//se ve poco eficiente poner estos dos unlock aca...
+			pthread_mutex_unlock(&mutexListaBloq); //feo
 			pthread_mutex_unlock(&mutexColaKM);
 			pthread_mutex_unlock(&mutexListaExec);
 		} else {
 
 			pthread_mutex_unlock(&mutexListaCpu);
-			pthread_mutex_unlock(&mutexListaBloq);//se ve poco eficiente poner estos dos unlock aca...
+			pthread_mutex_unlock(&mutexListaBloq); //feo
 			pthread_mutex_unlock(&mutexColaKM);
 			pthread_mutex_unlock(&mutexListaExec);
 			sem_wait(&hayEnReady);
 			pthread_mutex_lock(&mutexListaExec);
 			pthread_mutex_lock(&mutexListaCpu);
 			pthread_mutex_lock(&mutexReady);
+			t_tcb * tcb = malloc(sizeof(t_tcb));
 			tcb = queue_pop(colaReady);
 			socketCpu = *(int *) (list_remove(listaCpuLibres, posicion));
-			//printf("Tamanio Lista CpuLibres: %d\n", list_size(listaCpuLibres));
 			enviarInt(quantum, socketCpu);
 			enviarTcb(tcb, socketCpu);
 			tcb->socketCpu = socketCpu;
 			list_add(listaExec, tcb);
-			//printf("Tamanio Lista Exec: %d\n", list_size(listaExec));
 			pthread_mutex_unlock(&mutexListaCpu);
 			pthread_mutex_unlock(&mutexReady);
 			pthread_mutex_unlock(&mutexListaExec);
@@ -211,27 +210,6 @@ int main(int argc, char ** argv) {
 		} else {
 			for (i = 0; i <= setmax; i++) {
 				if (FD_ISSET(i, &readfds)) {
-					/*if (list_any_satisfy(listaSocketsConsola, comparar)) {
-					 puts("esoSeViene");
-					 pthread_mutex_lock(&mutexListaExec);
-					 tcbDeCpu = list_find(listaExec, compararTcbSocket);
-					 pthread_mutex_unlock(&mutexListaExec);
-					 int tipoMensaje = recibirInt(tcbDeCpu->socketConsola);
-					 switch (tipoMensaje) {
-					 case (0):
-					 intIngresado = recibirInt(tcbDeCpu->socketConsola);
-					 printf("intIngresado:%d\n", intIngresado);
-					 enviarInt(intIngresado, tcbDeCpu->socketCpu);
-					 break;
-					 case (1):
-					 string = recibir_serializado(
-					 tcbDeCpu->socketConsola);
-					 printf("wenas\n");
-					 printf("%s\n", string);
-					 enviar_serializado(-1, string, tcbDeCpu->socketCpu);
-					 break;
-					 }
-					 }*/
 					if (i == listenningSocket) {
 						int socketCliente = aceptarConexion(listenningSocket);
 						int codigo = recibirInt(socketCliente);
@@ -250,6 +228,8 @@ int main(int argc, char ** argv) {
 								tcb->km = 0;
 								tcb->pid = pid;
 								tcb->tid;
+								printf("valor socketCliente:%d\n",
+										socketCliente);
 								tcb->socketConsola = socketCliente;
 								printf("valor tcb->socketConsola:%d\n",
 										tcb->socketConsola);
@@ -257,7 +237,7 @@ int main(int argc, char ** argv) {
 								if (socketCliente > setmax) {
 									setmax = socketCliente;
 								}
-								list_add(listaSocketsConsola, &socketCliente);
+
 								pthread_mutex_lock(&mutexReady);
 								queue_push(colaReady, tcb);
 								sem_post(&hayEnReady);
@@ -276,9 +256,11 @@ int main(int argc, char ** argv) {
 								setmax = socketCliente;
 							}
 							printf("socatoa\n");
-							list_add(listaSocketsCpu, &socketCliente);
+							int * socketClienteAux = malloc(sizeof(int));
+							*socketClienteAux = socketCliente;
+							list_add(listaSocketsCpu, socketClienteAux);
 							pthread_mutex_lock(&mutexListaCpu);
-							list_add(listaCpuLibres, &socketCliente);
+							list_add(listaCpuLibres, socketClienteAux);
 							sem_post(&hayCpu);
 							pthread_mutex_unlock(&mutexListaCpu);
 
@@ -302,10 +284,10 @@ int main(int argc, char ** argv) {
 						} else {
 
 							switch (unaOperacion) {
-							case TERMINO_QUANTUM:
-								//printf("Aloha\n");
-								tcbDeCpu = recibirTcb(i);
-								tidTcb = tcbDeCpu->tid;
+							case TERMINO_QUANTUM: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								tidTcb = tcbCpu->tid;
 								pthread_mutex_lock(&mutexListaExec);
 								pthread_mutex_lock(&mutexReady);
 								pthread_mutex_lock(&mutexListaCpu);
@@ -314,20 +296,24 @@ int main(int argc, char ** argv) {
 										compararTcb);
 								printf("Tamanio Lista Exec: %d\n",
 										list_size(listaExec));
-								if (tcbDeCpu->km == 1) {
-									queue_push(colaKM, tcbDeCpu);
-									printf("Volvio el KM: %d\n", tcbDeCpu->km);
-									tcbBloq = list_remove(listaBloq, 0);
-									tcbBloq->A = tcbDeCpu->A;
-									tcbBloq->B = tcbDeCpu->B;
-									tcbBloq->C = tcbDeCpu->C;
-									tcbBloq->D = tcbDeCpu->D;
-									tcbBloq->E = tcbDeCpu->E;
-									queue_push(colaReady, tcbBloq);
+								if (tcbCpu->km == 1) {
+									queue_push(colaKM, tcbCpu);
+									printf("Volvio el KM: %d\n", tcbCpu->km);
+									t_tcb * tcbBloqueado = malloc(
+											sizeof(t_tcb));
+									tcbBloqueado = list_remove(listaBloq, 0);
+									tcbBloqueado->A = tcbCpu->A;
+									tcbBloqueado->B = tcbCpu->B;
+									tcbBloqueado->C = tcbCpu->C;
+									tcbBloqueado->D = tcbCpu->D;
+									tcbBloqueado->E = tcbCpu->E;
+									queue_push(colaReady, tcbBloqueado);
 								} else {
-									queue_push(colaReady, tcbDeCpu);
+									queue_push(colaReady, tcbCpu);
 								}
-								list_add(listaCpuLibres, &i);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
 								printf("Tamanio Lista CpuLibres: %d\n",
 										list_size(listaCpuLibres));
 								pthread_mutex_unlock(&mutexListaBloq);
@@ -336,52 +322,71 @@ int main(int argc, char ** argv) {
 								pthread_mutex_unlock(&mutexListaExec);
 								sem_post(&hayEnReady);
 								sem_post(&hayCpu);
+								/*
+								 int valorHayEnReady,valorHayCpu;
+								 sem_getvalue(&hayEnReady,&valorHayEnReady);
+								 sem_getvalue(&hayCpu,&valorHayCpu);
+								 printf("ready:%d\n",valorHayEnReady);
+								 printf("cpu:%d\n",valorHayCpu);
+								 //printf("final\n");
+								 */
+
 								break;
-							case CONCLUYO_EJECUCION:
-								tcbDeCpu = recibirTcb(i);
-								tidTcb = tcbDeCpu->tid;
+							}
+							case CONCLUYO_EJECUCION: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								tidTcb = tcbCpu->tid;
 								pthread_mutex_lock(&mutexListaExec);
 								pthread_mutex_lock(&mutexListaCpu);
 								list_remove_by_condition(listaExec,
 										compararTcb);
 								printf("Tamanio Lista Exec: %d\n",
 										list_size(listaExec));
-								list_add(listaCpuLibres, &i);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
 								sem_post(&hayCpu);
 								pthread_mutex_unlock(&mutexListaCpu);
 								pthread_mutex_unlock(&mutexListaExec);
-								list_add(listaExit, tcbDeCpu);
-								printf("%d\n", tcbDeCpu->socketConsola);
+								list_add(listaExit, tcbCpu);
+								printf("%d\n", tcbCpu->socketConsola);
 								enviar_serializado(1,
 										"Concluyo ejecucion normalmente",
-										tcbDeCpu->socketConsola);
-								enviarInt(0, tcbDeCpu->socketConsola);
+										tcbCpu->socketConsola);
+								enviarInt(0, tcbCpu->socketConsola);
 								break;
-							case EJECUCION_ERRONEA:
-								tcbDeCpu = recibirTcb(i);
-								tidTcb = tcbDeCpu->tid;
+							}
+							case EJECUCION_ERRONEA: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								tidTcb = tcbCpu->tid;
 								pthread_mutex_lock(&mutexListaExec);
 								pthread_mutex_lock(&mutexListaCpu);
 								list_remove_by_condition(listaExec,
 										compararTcb);
 								printf("Tamanio Lista Exec: %d\n",
 										list_size(listaExec));
-								list_add(listaCpuLibres, &i);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
 								sem_post(&hayCpu);
 								pthread_mutex_unlock(&mutexListaCpu);
 								pthread_mutex_unlock(&mutexListaExec);
-								list_add(listaExit, tcbDeCpu);
-								printf("%d\n", tcbDeCpu->socketConsola);
+								list_add(listaExit, tcbCpu);
+								printf("%d\n", tcbCpu->socketConsola);
 								enviar_serializado(1,
 										"Concluyo por ejecucion erronea",
-										tcbDeCpu->socketConsola);
-								enviarInt(0, tcbDeCpu->socketConsola);
+										tcbCpu->socketConsola);
+								enviarInt(0, tcbCpu->socketConsola);
 								break;
-							case SYSCALL:
-								tcbDeCpu = recibirTcb(i);
-								tidTcb = tcbDeCpu->tid;
+							}
+							case SYSCALL: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								tidTcb = tcbCpu->tid;
 								direccionSyscall = recibirInt32(i);
-								tcbDeCpu->direccionSyscallPendiente =
+								tcbCpu->direccionSyscallPendiente =
 										direccionSyscall;
 								pthread_mutex_lock(&mutexListaExec);
 								pthread_mutex_lock(&mutexListaCpu);
@@ -390,70 +395,82 @@ int main(int argc, char ** argv) {
 										compararTcb);
 								printf("Tamanio Lista Exec: %d\n",
 										list_size(listaExec));
-								list_add(listaCpuLibres, &i);
-								list_add(listaBloq, tcbDeCpu);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
+								list_add(listaBloq, tcbCpu);
 								sem_post(&hayCpu);
 								pthread_mutex_unlock(&mutexListaCpu);
 								pthread_mutex_unlock(&mutexListaBloq);
 								pthread_mutex_unlock(&mutexListaExec);
 								break;
-							case ENTRADA_ESTANDAR:
+							}
+							case ENTRADA_ESTANDAR: {
 								pidEE = recibirInt(i);
 								tipoEE = recibirInt(i);
 								if (tipoEE == 0) {
 									pthread_mutex_lock(&mutexListaExec);
-									tcbDeCpu = list_find(listaExec,
+									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+									tcbCpu = list_find(listaExec,
 											compararTcbSocket);
 									pthread_mutex_unlock(&mutexListaExec);
-									enviarInt(3, tcbDeCpu->socketConsola);
+									enviarInt(3, tcbCpu->socketConsola);
+									int intIngresado;
 									intIngresado = recibirInt(
-											tcbDeCpu->socketConsola);
+											tcbCpu->socketConsola);
 									printf("intIngresado:%d\n", intIngresado);
 									enviarInt(intIngresado, i);
 									break;
 
 								}
 								if (tipoEE == 1) {
+									int inputMax;
 									inputMax = recibirInt(i);
 									pthread_mutex_lock(&mutexListaExec);
-									tcbDeCpu = list_find(listaExec,
+									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+									tcbCpu = list_find(listaExec,
 											compararTcbSocket);
 									pthread_mutex_unlock(&mutexListaExec);
-									enviarInt(2, tcbDeCpu->socketConsola);
-									enviarInt(inputMax,
-											tcbDeCpu->socketConsola);
+									enviarInt(2, tcbCpu->socketConsola);
+									enviarInt(inputMax, tcbCpu->socketConsola);
+									char * string;
 									string = recibir_serializado(
-											tcbDeCpu->socketConsola);
-									printf("EltopoSalto\n");
+											tcbCpu->socketConsola);
 									printf("%s\n", string);
 									enviar_serializado(-1, string,
-											tcbDeCpu->socketCpu);
+											tcbCpu->socketCpu);
 								}
 								break;
-							case SALIDA_ESTANDAR:
+							}
+							case SALIDA_ESTANDAR: {
+								int pidSE;
+								char * string;
 								pidSE = recibirInt(i);
 								string = recibir_serializado(i);
 								pthread_mutex_lock(&mutexListaExec);
-								tcbDeCpu = list_find(listaExec,
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = list_find(listaExec,
 										compararTcbSocket);
 								pthread_mutex_unlock(&mutexListaExec);
-								enviarInt(1, tcbDeCpu->socketConsola);
+								enviarInt(1, tcbCpu->socketConsola);
 								enviar_serializado(-1, string,
-										tcbDeCpu->socketConsola);
+										tcbCpu->socketConsola);
 								break;
+							}
 
 							}
 
 						}
+
 					}
-
 				}
-
 			}
 
 		}
 
 	}
-	pthread_join(cpuLibres, NULL );
-	return 0;
+
+
+pthread_join(cpuLibres, NULL );
+return 0;
 }
