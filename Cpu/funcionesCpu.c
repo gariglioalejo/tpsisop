@@ -9,6 +9,15 @@ almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especifi
 al programa en ejecución.*/
 int fnMALC (t_tcb * tcb){
 
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
+
+
 	t_crearSegmento * segmentoCreado = malloc(sizeof(t_crearSegmento));
 	int result = 0;
 	int size = tcb->registroA.valores;
@@ -40,6 +49,13 @@ Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alo
 instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.*/
 int fnFREE (t_tcb * tcb){
 
+	if (tcb->km != 1){
+			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+			//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+			return -1;
+		}
 
 	int result = 0;
 	int dir = tcb->registroA.valores;
@@ -73,6 +89,14 @@ Pide por consola del programa que se ingrese un número, con signo entre –2.14
 el proceso Kernel.*/
 int fnINNN (t_tcb * tcb){
 
+	if (tcb->km != 1){
+			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+			//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+			return -1;
+		}
+
 		int codigo = 4; //Entrada Standard
 		int tipo = 1; //1 es INNN, 2 es INNC
 
@@ -89,8 +113,12 @@ int fnINNN (t_tcb * tcb){
 
 		tcb->registroA.valores = valorIngresado;
 
+		printf("INNN Ejecutada \n");
+
 		systemcall++;
 		tcb->P=tcb->P+4;
+
+
 	return 0;
 }
 
@@ -102,42 +130,52 @@ registro B. La misma será almacenada en la posición de memoria apuntada por el
 Invoca al servicio correspondiente en el proceso Kernel.*/
 int fnINNC (t_tcb * tcb){
 
-			int codigo = 4; //Entrada Standard
-			int tipo = 2; //1 es INNN, 2 es INNC
-			int nbytes;
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
 
 
-			int32_t tamanioCadena = tcb->registroB.valores;
-			int32_t posMemoria = tcb->registroA.valores;
-			int32_t pid = tcb->pid;
+		int codigo = 4; //Entrada Standard
+		int tipo = 2; //1 es INNN, 2 es INNC
+		int nbytes;
 
-			char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
-			char buff[tamanioCadena];
+
+		int32_t tamanioCadena = tcb->registroB.valores;
+		int32_t posMemoria = tcb->registroA.valores;
+		int32_t pid = tcb->pid;
+
+		char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
+		char buff[tamanioCadena];
 
 			//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
 			//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
 
-			enviarInt(codigo,socketK);
-			enviarInt(tipo,socketK);
+		enviarInt(codigo,socketK);
+		enviarInt(tipo,socketK);
 
 
-			nbytes = recv(socketK, buff, sizeof(buff), 0);
+		nbytes = recv(socketK, buff, sizeof(buff), 0);
 
-			if (nbytes > 0){
-				cadenaIngresada = buff;
+		if (nbytes > 0){
+			cadenaIngresada = buff;
 
-				if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
+			if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
 
-					//TODO Ejecucion Erronea?
-				}
-
+				//TODO Ejecucion Erronea?
 			}
 
+		}
 
 
 
-			systemcall++;
-			tcb->P=tcb->P+4;
+		printf("INNC Ejecutada \n");
+
+		systemcall++;
+		tcb->P=tcb->P+4;
 	return 0;
 }
 
@@ -148,30 +186,34 @@ Imprime por consola del programa el número, con signo almacenado en el registro
 servicio correspondiente en el proceso Kernel.*/
 int fnOUTN (t_tcb * tcb){
 
-
-				int codigo = 5; //Salida Standard
-				int tipo = 1; //1 es OUTN, 2 es OUTC
-				int result = 0;
-
-				int32_t valorAimprimir = tcb->registroA.valores;
-
-
-				//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
-				//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
-
-				enviarInt(codigo,socketK);
-				enviarInt(tipo,socketK);
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
 
 
-				enviarInt(valorAimprimir,socketK);
+		int codigo = 5; //Salida Standard
+		int tipo = 1; //1 es OUTN, 2 es OUTC
+		int result = 0;
+
+		int32_t valorAimprimir = tcb->registroA.valores;
+
+		enviarInt(codigo,socketK);
+		enviarInt(tipo,socketK);
+		enviarInt(valorAimprimir,socketK);
 
 
-				result = recibirInt(socketK); //Esperar resultado
+		result = recibirInt(socketK); //Esperar resultado
 
-				//TODO Evaluar resultado
+		//TODO Evaluar resultado
 
-				systemcall++;
-				tcb->P=tcb->P+4;
+		printf("OUTN Ejecutada \n");
+
+		systemcall++;
+		tcb->P=tcb->P+4;
 
 
 	return 0;
@@ -186,34 +228,42 @@ encuentra en la direccion apuntada por el registro A. Invoca al servicio corresp
 proceso Kernel.*/
 int fnOUTC (t_tcb * tcb){
 
-			int codigo = 5; //Salida Standard
-			int tipo = 2; //1 es OUTN, 2 es OUTC
-			int result = 0;
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
 
-			int32_t direccion = tcb->registroA.valores;
-			int32_t tamanio = tcb->registroB.valores;
+		int codigo = 5; //Salida Standard
+		int tipo = 2; //1 es OUTN, 2 es OUTC
+		int result = 0;
 
-			char * cadena = malloc(tamanio * sizeof(char));
+		int32_t direccion = tcb->registroA.valores;
+		int32_t tamanio = tcb->registroB.valores;
 
-
-			enviarInt(codigo,socketK); //Aviso de un pedido de entrada estandar
-			enviarInt(tipo,socketK); //Aviso tipo de dato a pedir
-
-			cadena = pedirString(socketM,tcb);
-
-			send(socketK,cadena,sizeof(cadena),0);
-
-
-			result = recibirInt(socketK); //Esperar resultado
-
-			//TODO Evaluar resultado
-
-			free(cadena);
+		char * cadena = malloc(tamanio * sizeof(char));
 
 
-			tcb->P=tcb->P+4;
+		enviarInt(codigo,socketK); //Aviso de un pedido de entrada estandar
+		enviarInt(tipo,socketK); //Aviso tipo de dato a pedir
 
-			systemcall++;
+		cadena = pedirString(socketM,tcb);
+
+		send(socketK,cadena,sizeof(cadena),0);
+
+
+		result = recibirInt(socketK); //Esperar resultado
+
+		//TODO Evaluar resultado
+
+		free(cadena);
+
+		printf("OUTC Ejecutada \n");
+
+		tcb->P=tcb->P+4;
+		systemcall++;
 
 	return 0;
 }
@@ -233,6 +283,15 @@ que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al se
 correspondiente en el proceso Kernel con el TCB recién generado.*/
 int fnCREA (t_tcb * tcb){
 
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
+
+
 	int codigo = 6;
 
 	t_tcb * nuevotcb = malloc(sizeof(t_tcb));
@@ -249,6 +308,8 @@ int fnCREA (t_tcb * tcb){
 
 	//Duplicar Segmento Stack
 
+	printf("CREA Ejecutada \n");
+
 	tcb->P=tcb->P+4;
 	systemcall++;
 
@@ -263,12 +324,23 @@ almacenado en el registro A haya finalizado. Invoca al servicio correspondiente 
 Kernel.*/
 int fnJOIN (t_tcb * tcb){
 
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
+
+
 	int codigo = 7;
 	int recurso = tcb->registroA.valores;
 
 
 	enviarint(codigo,socketK);
 	enviarint(recurso,socketK);
+
+	printf("JOIN Ejecutada \n");
 
 	tcb->P=tcb->P+4;
 	systemcall++;
@@ -284,7 +356,16 @@ La evaluación y decisión de si el recurso está libre o no es hecha por la lla
 pre-compilada.*/
 int fnBLOK (t_tcb * tcb){
 
-	//TODO Lista de Bloqueados???
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
+
+
+
 	int codigo = 8; //Bloquear
 
 	int32_t recurso = tcb->registroB.valores;
@@ -293,6 +374,7 @@ int fnBLOK (t_tcb * tcb){
 	enviarInt(codigo,socketK); //Aviso de un pedido de Bloqueo
 	enviarInt(recurso,socketK);
 
+	printf("BLOK Ejecutada \n");
 
 	systemcall++;
 	tcb->P=tcb->P+4;
@@ -305,6 +387,15 @@ La evaluación y decisión de si el recurso está libre o no es hecha por la lla
 SIGNAL pre-compilada.*/
 int fnWAKE (t_tcb * tcb){
 
+	if (tcb->km != 1){
+		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
+		//TODO Logear!
+		systemcall++;
+		tcb->P=tcb->P+4;
+		return -1;
+	}
+
+
 	int codigo = 9; //Wake
 
 	int32_t recurso = tcb->registroB.valores;
@@ -312,6 +403,8 @@ int fnWAKE (t_tcb * tcb){
 
 	enviarInt(codigo,socketK); //Aviso de un pedido de Bloqueo
 	enviarInt(recurso,socketK);
+
+	printf("WAIT Ejecutada \n");
 
 	systemcall++;
 	tcb->P=tcb->P+4;
