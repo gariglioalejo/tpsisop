@@ -111,7 +111,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"CLEQ");
 	if(i==0){
 	printf("ENTRO EN CLEQ \n");
-	int cleq(tcb);
+	cleq(tcb);
 	}
 
 	else if (i!=0){
