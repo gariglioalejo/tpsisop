@@ -104,14 +104,14 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"CGEQ");
 	if(i==0){
 	printf("ENTRO EN CGEQ \n");
-	//poner funcion
+	cgeq(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"CLEQ");
 	if(i==0){
 	printf("ENTRO EN CLEQ \n");
-	//poner funcion
+	int cleq(tcb);
 	}
 
 	else if (i!=0){

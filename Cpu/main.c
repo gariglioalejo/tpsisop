@@ -91,7 +91,7 @@ int main (int argc, char** argv){
 			//LLama al parser creado por cada instruccion y a dicha funcion
 			parseador(primeras4,tcb);
 
-
+			sleep(retardo/1000);
 
 			}
 

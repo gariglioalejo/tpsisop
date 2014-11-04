@@ -61,6 +61,8 @@ int gotoo(t_tcb*);
 int jmpz(t_tcb*);
 int jpnz(t_tcb*);
 int comp(t_tcb*);
+int cgeq(t_tcb*);
+int cleq(t_tcb*);
 int divr(t_tcb*);
 int modr(t_tcb*);
 int xxxx(t_tcb*);
