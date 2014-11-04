@@ -294,7 +294,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutexListaBloq);
 								list_remove_by_condition(listaExec,
 										compararTcb);
-								printf("Tamanio Lista Exec: %d\n",
+								printf("Tamanio Lista Exec4: %d\n",
 										list_size(listaExec));
 								if (tcbCpu->km == 1) {
 									queue_push(colaKM, tcbCpu);
@@ -341,7 +341,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutexListaCpu);
 								list_remove_by_condition(listaExec,
 										compararTcb);
-								printf("Tamanio Lista Exec: %d\n",
+								printf("Tamanio Lista Exec1: %d\n",
 										list_size(listaExec));
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
@@ -365,7 +365,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutexListaCpu);
 								list_remove_by_condition(listaExec,
 										compararTcb);
-								printf("Tamanio Lista Exec: %d\n",
+								printf("Tamanio Lista Exec2: %d\n",
 										list_size(listaExec));
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
@@ -393,7 +393,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutexListaBloq);
 								list_remove_by_condition(listaExec,
 										compararTcb);
-								printf("Tamanio Lista Exec: %d\n",
+								printf("Tamanio Lista Exec3: %d\n",
 										list_size(listaExec));
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
@@ -457,20 +457,49 @@ int main(int argc, char ** argv) {
 										tcbCpu->socketConsola);
 								break;
 							}
+							case CREAR_HILO: {
+								puts("Entro en CREAR_HILO");
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+
+								t_reservarSegmentos * resultado = malloc(
+										sizeof(t_reservarSegmentos));
+								resultado->tcb = malloc(sizeof(t_tcb));
+								puts("preResultado");
+								resultado = reservarStackCrea(tcbCpu->pid,
+										tcbCpu, size_stack, socketMsp, i);
+								puts("postResultado");
+								if (resultado->exito) {
+									tcbCpu = resultado->tcb;
+									pthread_mutex_lock(&mutexReady);
+									queue_push(colaReady, tcbCpu);
+									sem_post(&hayEnReady);
+									//int * iAux = malloc(sizeof(int));		//SOLO PARA PROBAR CREA, SACAR DESPUES
+									//*iAux = i;	//SOLO PARA PROBAR CREA, SACAR DESPUES
+									//list_add(listaCpuLibres, iAux); //SOLO PARA PROBAR CREA, SACAR DESPUES
+									//sem_post(&hayCpu);//SOLO PARA PROBAR CREA, SACAR DESPUES
+									pthread_mutex_unlock(&mutexReady);
+								} else {
+									//falta implementar como se aborta, idem para cuando se desconecta abruptamente una cpu
+									puts("bubu");
+								}
+								puts("hiho");
+								break;
+							}
 
 							}
 
 						}
-
 					}
 				}
+
 			}
 
 		}
 
+		//pthread_join(cpuLibres, NULL );
+		//return 0;
 	}
-
-
-pthread_join(cpuLibres, NULL );
-return 0;
+	pthread_join(cpuLibres, NULL );
+	return 0;
 }
