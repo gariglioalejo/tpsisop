@@ -44,6 +44,8 @@ t_list * listaExec;
 t_list * listaExit;
 t_list * listaBloq;
 t_list * listaSocketsConsola;
+t_list * listaBloqJoin;
+t_list * listaHilos;
 int unaOperacion;
 int recibido;
 int tidTcb;
@@ -53,6 +55,7 @@ t_tcb * tcbBloq;
 int pidEE;
 int tipoEE;
 int socketEE;
+int pidHilo;
 
 enum {
 	TERMINO_QUANTUM,
@@ -78,6 +81,14 @@ bool compararTcbSocket(void * tcb) {
 bool compararTcb(void * tcb) {
 	t_tcb * tcbaux = tcb;
 	return tcbaux->tid == tidTcb;
+}
+bool compararJoin(void * join) {
+	t_join * joinAux = join;
+	return *(joinAux->tidAEsperar) == tidTcb;
+}
+bool compararHilos(void * nodoHilos) {
+	t_listaHilos * nodoHilosAux = nodoHilos;
+	return nodoHilosAux->pid == pidHilo;
 }
 
 void * manejoCpuLibres(void * arg) {
@@ -167,6 +178,8 @@ int main(int argc, char ** argv) {
 	listaExit = list_create();
 	listaBloq = list_create();
 	listaSocketsConsola = list_create();
+	listaBloqJoin = list_create();
+	listaHilos = list_create();
 
 	sem_init(&hayEnReady, 0, 0);
 	sem_init(&hayCpu, 0, 0);
@@ -227,7 +240,12 @@ int main(int argc, char ** argv) {
 								tid++;
 								tcb->km = 0;
 								tcb->pid = pid;
-								tcb->tid;
+								tcb->tid = tid;
+								t_listaHilos * nodoListaHilos = malloc(
+										sizeof(t_listaHilos));
+								nodoListaHilos->pid = pid;
+								nodoListaHilos->hilos = 1;
+								list_add(listaHilos, nodoListaHilos);
 								printf("valor socketCliente:%d\n",
 										socketCliente);
 								tcb->socketConsola = socketCliente;
@@ -337,6 +355,20 @@ int main(int argc, char ** argv) {
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
 								tidTcb = tcbCpu->tid;
+								pidHilo = tcbCpu->pid;
+								if (list_any_satisfy(listaBloqJoin,
+										compararJoin)) {
+									t_join * nodo = list_remove_by_condition(
+											listaBloqJoin, compararJoin);
+									t_tcb * tcbAux = nodo->tcb;
+									pthread_mutex_lock(&mutexReady);
+									queue_push(colaReady, tcbAux);
+									sem_post(&hayEnReady);
+									pthread_mutex_unlock(&mutexReady);
+								}
+
+								t_listaHilos * nodo = list_remove_by_condition(
+										listaHilos, compararHilos);
 								pthread_mutex_lock(&mutexListaExec);
 								pthread_mutex_lock(&mutexListaCpu);
 								list_remove_by_condition(listaExec,
@@ -351,10 +383,15 @@ int main(int argc, char ** argv) {
 								pthread_mutex_unlock(&mutexListaExec);
 								list_add(listaExit, tcbCpu);
 								printf("%d\n", tcbCpu->socketConsola);
-								enviar_serializado(1,
-										"Concluyo ejecucion normalmente",
-										tcbCpu->socketConsola);
-								enviarInt(0, tcbCpu->socketConsola);
+								if (nodo->hilos == 1) {
+									enviar_serializado(1,
+											"Concluyo ejecucion normalmente",
+											tcbCpu->socketConsola);
+									enviarInt(0, tcbCpu->socketConsola);
+								} else {
+									nodo->hilos = nodo->hilos - 1;
+									list_add(listaHilos, nodo);
+								}
 								break;
 							}
 							case EJECUCION_ERRONEA: {
@@ -458,19 +495,24 @@ int main(int argc, char ** argv) {
 								break;
 							}
 							case CREAR_HILO: {
-								puts("Entro en CREAR_HILO");
+								//puts("Entro en CREAR_HILO");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
-
 								t_reservarSegmentos * resultado = malloc(
 										sizeof(t_reservarSegmentos));
 								resultado->tcb = malloc(sizeof(t_tcb));
-								puts("preResultado");
 								resultado = reservarStackCrea(tcbCpu->pid,
 										tcbCpu, size_stack, socketMsp, i);
-								puts("postResultado");
 								if (resultado->exito) {
 									tcbCpu = resultado->tcb;
+									t_listaHilos * nodo = malloc(
+											sizeof(t_listaHilos));
+									pidHilo = tcbCpu->pid;
+									nodo = list_remove_by_condition(listaHilos,
+											compararHilos);
+									printf("valorNodo %d\n", nodo->pid);
+									nodo->hilos = nodo->hilos + 1;//aca hay bardo;
+									list_add(listaHilos, nodo);
 									pthread_mutex_lock(&mutexReady);
 									queue_push(colaReady, tcbCpu);
 									sem_post(&hayEnReady);
@@ -483,10 +525,20 @@ int main(int argc, char ** argv) {
 									//falta implementar como se aborta, idem para cuando se desconecta abruptamente una cpu
 									puts("bubu");
 								}
-								puts("hiho");
+
 								break;
 							}
-
+							case JOIN: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								int * tidAEsperar = malloc(sizeof(int));
+								*tidAEsperar = recibirInt(i);
+								t_join * join = malloc(sizeof(t_join));
+								join->tcb = tcbCpu;
+								join->tidAEsperar = tidAEsperar;
+								list_add(listaBloqJoin, join);
+								break;
+							}
 							}
 
 						}

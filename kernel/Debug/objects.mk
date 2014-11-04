@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -ltpsisoplib -lansisop-panel -lcommons -lpthread
+LIBS := -ltpsisoplib -lcommons -lpthread
 

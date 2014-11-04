@@ -31,7 +31,7 @@ dependents:
 kernelDefinitivo: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug/libtpsisoplib.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/ansisop-panel/Release" -L"/home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug" -o "kernelDefinitivo" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug" -o "kernelDefinitivo" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
