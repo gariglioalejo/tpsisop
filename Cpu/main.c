@@ -70,11 +70,34 @@ int main (int argc, char** argv){
 	//ciclo infinito
 	while(1){
 
+		char* primeras4;
+
 		//se recibe el tcb del kernel
 		tcb=recibirTcb(socketK);
 
 		i=0;
 
+		if(tcb->km==1){
+
+		while(!ultimainstruccion){
+
+			ultimainstruccion=0;
+			log_info(log_de_cpu,"EJECUTANDO KERNEL MODE");
+
+			primeras4=pedirPrimeraPalabra(socketM,tcb);
+			parseador(primeras4,tcb);
+
+			sleep(retardo/1000);
+
+		}
+
+		int devuelvoKernelMode=10;
+		send(socketK,&devuelvoKernelMode,sizeof(int),0);
+		send(socketK,&tcb,sizeof(t_tcb),0);
+
+		}
+
+		else {
 		//mientras el quantum deje y no haya una llamada al sistema
 		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)){
 
@@ -85,7 +108,7 @@ int main (int argc, char** argv){
 
 			//Solicitar instruccion a la MSP
 
-			char* primeras4;
+
 			primeras4=pedirPrimeraPalabra(socketM,tcb);
 
 			//LLama al parser creado por cada instruccion y a dicha funcion
@@ -94,6 +117,7 @@ int main (int argc, char** argv){
 			sleep(retardo/1000);
 
 			}
+
 
 
 
@@ -120,6 +144,7 @@ int main (int argc, char** argv){
 
 		}
 
+	}
 	log_info(log_de_cpu,"-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x-");
 	return 0;
 }
