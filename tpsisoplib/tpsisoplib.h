@@ -42,7 +42,7 @@ typedef struct {
 
 typedef struct {
 	char nombre;
-	long long valores;
+	int32_t valores;
 }t_registro;
 
 typedef struct {
@@ -51,6 +51,7 @@ typedef struct {
 	int km;
 	uint32_t M;					//Base del segmento de codigo
 	int tam_seg_cod;
+	int tam_seg_stack;
 	uint32_t P;	//Ok el tipo?	//Puntero de instruccion
 	uint32_t X;	//Ok el tipo?	//Base del stack
 	uint32_t S;	//Ok el tipo?	//Cursor de stack
@@ -105,6 +106,7 @@ char* pedirString(int socketMSP,t_tcb* tcb);
 int pedirDireccion(int socketMSP,t_tcb* tcb);
 char *inputString(FILE* fp, size_t size);
 int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo);
+int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMsp);
 
 
 
