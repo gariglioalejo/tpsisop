@@ -378,7 +378,7 @@ int aceptarConexion(int listenningSocket) {
 }
 
 t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
-	int crear_segmento = 1;
+	int crear_segmento = 0;
 	int hayLugar;
 	enviarInt(crear_segmento, socket);
 	enviarInt(pid, socket);
@@ -396,7 +396,7 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 }
 
 bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
-	int destruir_segmento = 2;
+	int destruir_segmento = 1;
 	bool exito;
 	int resultado;
 

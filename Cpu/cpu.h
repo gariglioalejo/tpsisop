@@ -25,7 +25,8 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "../ensalada de funciones/funciones.h"
+//#include "../ensalada de funciones/funciones.h"
+#include <tpsisoplib.h>
 
 int systemcall;
 int ultimainstruccion;
@@ -35,14 +36,14 @@ int socketM;
 //Funciones Privilegiadas
 int fnMALC (t_tcb * tcb);
 int fnFREE (t_tcb * tcb);
-int fnINNN (void);
-int fnINNC (void);
-int fnOUTN (void);
-int fnOUTC (void);
-int fnCREA (void);
-int fnJOIN (void);
-int fnBLOK (void);
-int fnWAKE (void);
+int fnINNN (t_tcb * tcb);
+int fnINNC (t_tcb * tcb);
+int fnOUTN (t_tcb * tcb);
+int fnOUTC (t_tcb * tcb);
+int fnCREA (t_tcb * tcb);
+int fnJOIN (t_tcb * tcb);
+int fnBLOK (t_tcb * tcb);
+int fnWAKE (t_tcb * tcb);
 
 //Parser
 int parseador(char*,t_tcb*);
@@ -68,5 +69,8 @@ int modr(t_tcb*);
 int xxxx(t_tcb*);
 
 int inte(t_tcb * tcb);
+int push(t_tcb * tcb);
+int take(t_tcb * tcb);
+int shif(t_tcb * tcb);
 
 #endif /* CPU_H_ */

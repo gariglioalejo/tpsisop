@@ -6,6 +6,7 @@
  */
 
 
+/*
 #include "../ensalada de funciones/funciones.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,8 +19,9 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <math.h>
+*/
 
-
+#include "cpu.h"
 
 int load(t_tcb * tcb){
 
@@ -685,7 +687,7 @@ int gotoo(t_tcb * tcb){
 
 	switch(reg){
 
-	case tcb->registroA.nombre:
+	case (tcb->registroA.nombre):
 	tcb->P=(uint32_t)tcb->registroA.valores+tcb->M;
 	break;
 
@@ -1144,7 +1146,7 @@ int divr(t_tcb* tcb){
 
 int modr(t_tcb* tcb){
 
-	char reg1;
+		char reg1;
 		char reg2;
 		int32_t aux1;
 		int32_t aux2;
@@ -1226,6 +1228,158 @@ int modr(t_tcb* tcb){
 
 	return 0;
 }
+
+int push(t_tcb * tcb){
+
+		char registro;
+		int numero;
+		void * bytesApush;
+		int codigoSolicitarMemoria=2;
+		t_solicitarMemoria solicitador;
+
+
+		//Numero
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+5;
+		solicitador.tamanio=4;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&numero,sizeof(int),0);
+
+		//Registro
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=1;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&registro,sizeof(char),0);
+
+
+		bytesApush = malloc(numero);
+		memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
+
+		switch(registro){
+
+		case tcb->registroA.nombre:
+			memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
+			break;
+
+		case tcb->registroB.nombre:
+			memcpy(bytesApush,(void*)tcb->registroB.valores,numero);
+			break;
+
+		case tcb->registroC.nombre:
+			memcpy(bytesApush,(void*)tcb->registroC.valores,numero);
+			break;
+
+		case tcb->registroD.nombre:
+			memcpy(bytesApush,(void*)tcb->registroD.valores,numero);
+			break;
+
+
+		}
+
+		int nuevoCursor = tcb->S + numero;
+		int direccionAgrabar = tcb->S;
+
+		if(escribirMemoria(tcb->pid,direccionAgrabar,numero,(char *)bytesApush,socketM)){
+
+			tcb->S = nuevoCursor;
+		} else {
+			printf("no se pudo pushear en Stack\n");
+		}
+
+
+		free(bytesApush);
+		tcb->P=tcb->P+9;
+		printf("Termino PUSH");
+
+	return 0;
+}
+
+
+int take(t_tcb * tcb){
+
+		char registro;
+		int numero;
+		void * bytesApop;
+		int codigoSolicitarMemoria=2;
+		t_solicitarMemoria solicitador;
+
+
+		//Numero
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+5;
+		solicitador.tamanio=4;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&numero,sizeof(int),0);
+
+		//Registro
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=1;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&registro,sizeof(char),0);
+
+
+		//SolicitarNBytes
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->S-numero;
+		solicitador.tamanio=numero;
+
+		bytesApop = malloc(numero);
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&bytesApop,numero,0);
+
+
+		switch(registro){
+
+		case tcb->registroA.nombre:
+			memcpy((void*)tcb->registroA.valores,bytesApop,numero);
+			break;
+
+		case tcb->registroB.nombre:
+			memcpy((void*)tcb->registroB.valores,bytesApop,numero);
+			break;
+
+		case tcb->registroC.nombre:
+			memcpy((void*)tcb->registroC.valores,bytesApop,numero);
+			break;
+
+		case tcb->registroD.nombre:
+			memcpy((void*)tcb->registroD.valores,bytesApop,numero);
+			break;
+
+
+		}
+
+
+		uint32_t nuevocursor = tcb->S-numero;
+		tcb->S = nuevocursor;
+
+
+	free(bytesApop);
+	tcb->P=tcb->P+9;
+	printf("Termino TAKE");
+	return 0;
+}
+
+
+int shif(t_tcb * tcb){
+
+
+	return 0;
+}
+
+
 
 int xxxx(t_tcb* tcb){
 

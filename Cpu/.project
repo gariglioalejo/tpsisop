@@ -3,6 +3,7 @@
 	<name>work</name>
 	<comment></comment>
 	<projects>
+		<project>tpsisoplib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
