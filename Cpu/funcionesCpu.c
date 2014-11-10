@@ -12,7 +12,7 @@ int fnMALC (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -37,7 +37,7 @@ int fnMALC (t_tcb * tcb){
 	free(segmentoCreado);
 	printf("MALC Ejecutada \n");
 
-	systemcall++;
+
 	tcb->P=tcb->P+4;
 	return result;
 }
@@ -52,7 +52,7 @@ int fnFREE (t_tcb * tcb){
 	if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 			//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 			return -1;
 		}
@@ -76,7 +76,7 @@ int fnFREE (t_tcb * tcb){
 		return result;
 
 
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 	return 0;
 }
@@ -92,7 +92,7 @@ int fnINNN (t_tcb * tcb){
 	if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 			//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 			return -1;
 		}
@@ -115,7 +115,7 @@ int fnINNN (t_tcb * tcb){
 
 		printf("INNN Ejecutada \n");
 
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 
 
@@ -133,7 +133,7 @@ int fnINNC (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -150,9 +150,6 @@ int fnINNC (t_tcb * tcb){
 
 		char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
 		char buff[tamanioCadena];
-
-			//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
-			//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
 
 		enviarInt(codigo,socketK);
 		enviarInt(tipo,socketK);
@@ -174,7 +171,7 @@ int fnINNC (t_tcb * tcb){
 
 		printf("INNC Ejecutada \n");
 
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 	return 0;
 }
@@ -189,7 +186,7 @@ int fnOUTN (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -212,7 +209,7 @@ int fnOUTN (t_tcb * tcb){
 
 		printf("OUTN Ejecutada \n");
 
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 
 
@@ -231,7 +228,7 @@ int fnOUTC (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -263,7 +260,7 @@ int fnOUTC (t_tcb * tcb){
 		printf("OUTC Ejecutada \n");
 
 		tcb->P=tcb->P+4;
-		systemcall++;
+
 
 	return 0;
 }
@@ -286,7 +283,7 @@ int fnCREA (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -303,15 +300,22 @@ int fnCREA (t_tcb * tcb){
 	nuevotcb->tid = tcb->tid + 1;
 	nuevotcb->km = 0;
 
+
+	//Duplicar Stack
+
+	int resultadoDuplicar = duplicarStack(tcb, nuevotcb, socketM);
+
+
+
+
+
 	enviarint(codigo,socketK);
 	enviarTcb(nuevotcb, socketK);
-
-	//Duplicar Segmento Stack
 
 	printf("CREA Ejecutada \n");
 
 	tcb->P=tcb->P+4;
-	systemcall++;
+
 
 	return 0;
 }
@@ -327,7 +331,7 @@ int fnJOIN (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -343,7 +347,7 @@ int fnJOIN (t_tcb * tcb){
 	printf("JOIN Ejecutada \n");
 
 	tcb->P=tcb->P+4;
-	systemcall++;
+
 
 	return 0;
 }
@@ -359,7 +363,7 @@ int fnBLOK (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -376,7 +380,7 @@ int fnBLOK (t_tcb * tcb){
 
 	printf("BLOK Ejecutada \n");
 
-	systemcall++;
+
 	tcb->P=tcb->P+4;
 	return 0;
 }
@@ -390,7 +394,7 @@ int fnWAKE (t_tcb * tcb){
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
 		//TODO Logear!
-		systemcall++;
+
 		tcb->P=tcb->P+4;
 		return -1;
 	}
@@ -406,7 +410,7 @@ int fnWAKE (t_tcb * tcb){
 
 	printf("WAIT Ejecutada \n");
 
-	systemcall++;
+
 	tcb->P=tcb->P+4;
 	return 0;
 }

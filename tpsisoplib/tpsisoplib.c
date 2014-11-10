@@ -378,7 +378,7 @@ int aceptarConexion(int listenningSocket) {
 }
 
 t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
-	int crear_segmento = 1;
+	int crear_segmento = 0;
 	int hayLugar;
 	enviarInt(crear_segmento, socket);
 	enviarInt(pid, socket);
@@ -396,7 +396,7 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 }
 
 bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
-	int destruir_segmento = 2;
+	int destruir_segmento = 1;
 	bool exito;
 	int resultado;
 
@@ -593,4 +593,53 @@ int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo){
 	return 0;
 }
 
+int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP){
+	t_crearSegmento * resultado;
+	int nuevaBase;
+	int nuevoCursor;
+	int diferenciaStack;
+	int pid = tcb->pid;
+	int tamanio = tcb->tam_seg_stack;
+	t_solicitarMemoria solicitarMemoria;
+	int codigoSolicitarMemoria=2;
+
+	resultado = crearSegmento(pid, tamanio, socketMSP);
+		if (resultado->exito) {
+
+			void * contenidoStack = malloc(tamanio);
+
+			solicitarMemoria.PID=tcb->pid;
+			solicitarMemoria.direccion=tcb->X;
+			solicitarMemoria.tamanio= tamanio;
+
+
+			send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+			send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+			recv(socketMSP,contenidoStack,sizeof(contenidoStack),0);
+
+			diferenciaStack = (tcb->S - tcb->X);
+			nuevotcb->X = resultado->base;
+			nuevotcb->S = nuevotcb->X + diferenciaStack;
+
+			escribirMemoria(nuevotcb->pid,nuevotcb->X,nuevotcb->tam_seg_stack,(char*) contenidoStack,socketMSP);
+
+		} else {
+			printf("No pudo duplicar el segmento de Stack\n");
+
+		}
+
+
+
+	return 0;
+}
+
+
+uint32_t logicalRightShift(uint32_t x, int n) {
+    return (uint32_t)x >> n;
+}
+
+uint32_t logicalLeftShift(uint32_t x, int n) {
+    return (uint32_t)x << n;
+}
 

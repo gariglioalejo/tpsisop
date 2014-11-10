@@ -90,7 +90,7 @@ int main (int argc, char** argv){
 			sleep(retardo/1000);
 
 		}
-
+		//Devuelvo el TCB KM1
 		int devuelvoKernelMode=10;
 		send(socketK,&devuelvoKernelMode,sizeof(int),0);
 		send(socketK,&tcb,sizeof(t_tcb),0);
