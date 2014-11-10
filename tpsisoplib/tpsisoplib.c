@@ -634,3 +634,12 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP){
 	return 0;
 }
 
+
+uint32_t logicalRightShift(uint32_t x, int n) {
+    return (uint32_t)x >> n;
+}
+
+uint32_t logicalLeftShift(uint32_t x, int n) {
+    return (uint32_t)x << n;
+}
+

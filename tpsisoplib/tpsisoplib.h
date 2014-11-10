@@ -107,6 +107,8 @@ int pedirDireccion(int socketMSP,t_tcb* tcb);
 char *inputString(FILE* fp, size_t size);
 int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo);
 int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMsp);
+uint32_t logicalRightShift(uint32_t x, int n);
+uint32_t logicalLeftShift(uint32_t x, int n);
 
 
 

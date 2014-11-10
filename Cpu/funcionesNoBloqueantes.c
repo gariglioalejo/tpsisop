@@ -1262,19 +1262,19 @@ int push(t_tcb * tcb){
 
 		switch(registro){
 
-		case tcb->registroA.nombre:
+		case 'A':
 			memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
 			break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 			memcpy(bytesApush,(void*)tcb->registroB.valores,numero);
 			break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 			memcpy(bytesApush,(void*)tcb->registroC.valores,numero);
 			break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 			memcpy(bytesApush,(void*)tcb->registroD.valores,numero);
 			break;
 
@@ -1342,19 +1342,19 @@ int take(t_tcb * tcb){
 
 		switch(registro){
 
-		case tcb->registroA.nombre:
+		case 'A':
 			memcpy((void*)tcb->registroA.valores,bytesApop,numero);
 			break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 			memcpy((void*)tcb->registroB.valores,bytesApop,numero);
 			break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 			memcpy((void*)tcb->registroC.valores,bytesApop,numero);
 			break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 			memcpy((void*)tcb->registroD.valores,bytesApop,numero);
 			break;
 
@@ -1375,6 +1375,83 @@ int take(t_tcb * tcb){
 
 int shif(t_tcb * tcb){
 
+		char registro;
+		int numero;
+		int codigoSolicitarMemoria=2;
+		t_solicitarMemoria solicitador;
+
+
+		//Numero
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+5;
+		solicitador.tamanio=4;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketK,&numero,sizeof(int),0);
+
+		//Registro
+		solicitador.PID=tcb->pid;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=1;
+
+
+		switch(registro){
+
+		case 'A':
+
+			if(numero > 0){
+				int32_t aux = logicalRightShift(tcb->registroA.valores,numero);
+				tcb->registroA.valores = aux;
+			} else if(numero < 0){
+				int32_t aux = logicalLeftShift(tcb->registroA.valores,numero);
+				tcb->registroA.valores = aux;
+			}
+
+			break;
+
+
+		case 'B':
+
+			if(numero > 0){
+				int32_t aux = logicalRightShift(tcb->registroB.valores,numero);
+				tcb->registroB.valores = aux;
+			} else if(numero < 0){
+				int32_t aux = logicalLeftShift(tcb->registroB.valores,numero);
+				tcb->registroB.valores = aux;
+			}
+
+
+			break;
+
+
+		case 'C':
+
+			if(numero > 0){
+				int32_t aux = logicalRightShift(tcb->registroC.valores,numero);
+				tcb->registroC.valores = aux;
+			} else if(numero < 0){
+				int32_t aux = logicalLeftShift(tcb->registroC.valores,numero);
+				tcb->registroC.valores = aux;
+			}
+
+			break;
+
+
+		case 'D':
+
+			if(numero > 0){
+				int32_t aux = logicalRightShift(tcb->registroD.valores,numero);
+				tcb->registroD.valores = aux;
+			} else if(numero < 0){
+				int32_t aux = logicalLeftShift(tcb->registroD.valores,numero);
+				tcb->registroD.valores = aux;
+			}
+
+
+			break;
+
+		}
 
 	return 0;
 }
