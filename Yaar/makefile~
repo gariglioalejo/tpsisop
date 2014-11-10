@@ -1,0 +1,4 @@
+all: Yaar
+
+Yaar: 
+	gcc test.c parcialYaar.c -lcommons -lcunit
