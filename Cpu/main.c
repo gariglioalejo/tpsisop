@@ -99,7 +99,7 @@ int main (int argc, char** argv){
 
 		else {
 		//mientras el quantum deje y no haya una llamada al sistema
-		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)){
+		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)&&(!segmentatioFault)){
 
 			systemcall=0;
 			ultimainstruccion=0;
@@ -142,6 +142,12 @@ int main (int argc, char** argv){
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
 
+		//SegmentationFault
+		if(segmentatioFault>0){
+			int encolarSegFault=4;
+			send(socketK,&encolarSegFault,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
 		}
 
 	}
