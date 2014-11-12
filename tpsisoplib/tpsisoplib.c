@@ -492,6 +492,7 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	int codigoSolicitarMemoria=2;
 
 	t_solicitarMemoria solicitarMemoria;
+	t_devolucion devolucion;
 
 	solicitarMemoria.PID=tcb->pid;
 	solicitarMemoria.direccion=tcb->P;
@@ -500,7 +501,9 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
 	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-	recv(socketMSP,palabra,4,0);
+	recv(socketMSP,&devolucion,sizeof(t_devolucion),0);
+
+	palabra=(char*)devolucion.respuesta;
 
 	return palabra;
 }
