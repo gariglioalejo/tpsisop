@@ -869,6 +869,7 @@ int jmpz(t_tcb * tcb){
 	int solicitarMemoria=2;
 	uint32_t nuevadir;
 
+	t_devolucion devolucion;
 	t_solicitarMemoria solicitador;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
@@ -879,7 +880,14 @@ int jmpz(t_tcb * tcb){
 
 	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&nuevadir,sizeof(uint32_t),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	nuevadir=devolucion.respuesta;
 
 	tcb->P=nuevadir+tcb->M;
 
@@ -909,6 +917,8 @@ int jpnz(t_tcb * tcb){
 		int solicitarMemoria=2;
 		uint32_t nuevadir;
 
+		t_devolucion devolucion;
+
 		t_solicitarMemoria solicitador;
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
@@ -919,7 +929,14 @@ int jpnz(t_tcb * tcb){
 
 		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&nuevadir,sizeof(uint32_t),0);
+		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+		if(devolucion.exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+
+		nuevadir=devolucion.respuesta;
 
 		tcb->P=nuevadir+tcb->M;
 
@@ -939,6 +956,8 @@ int comp(t_tcb * tcb){
 	int32_t aux1;
 	int32_t aux2;
 
+	t_devolucion devolucion;
+
 	int solicitarMemoria=2;
 
 	t_solicitarMemoria solicitador;
@@ -951,7 +970,14 @@ int comp(t_tcb * tcb){
 
 	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&reg1,sizeof(char),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	reg1=(char)devolucion.respuesta;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -960,50 +986,57 @@ int comp(t_tcb * tcb){
 
 	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&reg2,sizeof(char),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	reg2=(char)devolucion.respuesta;
 
 	switch(reg1){
 
-	case tcb->registroA.nombre:
+	case 'A':
 	aux1=tcb->registroA.valores;
 	break;
 
-	case tcb->registroB.nombre:
+	case 'B':
 	aux1=tcb->registroB.valores;
 	break;
 
-	case tcb->registroC.nombre:
+	case 'C':
 	aux1=tcb->registroC.valores;
 	break;
 
-	case tcb->registroD.nombre:
+	case 'D':
 	aux1=tcb->registroD.valores;
 	break;
 
-	case tcb->registroE.nombre:
+	case 'E':
 	aux1=tcb->registroE.valores;
 	break;
 	}
 
 	switch(reg2){
 
-	case tcb->registroA.nombre:
+	case 'A':
 	aux2=tcb->registroA.valores;
 	break;
 
-	case tcb->registroB.nombre:
+	case 'B':
 	aux2=tcb->registroB.valores;
 	break;
 
-	case tcb->registroC.nombre:
+	case 'C':
 	aux2=tcb->registroC.valores;
 	break;
 
-	case tcb->registroD.nombre:
+	case 'D':
 	aux2=tcb->registroD.valores;
 	break;
 
-	case tcb->registroE.nombre:
+	case 'E':
 	aux2=tcb->registroE.valores;
 	break;
 	}
@@ -1025,75 +1058,90 @@ int comp(t_tcb * tcb){
 int cgeq(t_tcb * tcb){
 
 	char reg1;
-		char reg2;
-		int32_t aux1;
-		int32_t aux2;
+	char reg2;
+	int32_t aux1;
+	int32_t aux2;
+	t_devolucion devolucion;
 
-		int solicitarMemoria=2;
+	int solicitarMemoria=2;
 
-		t_solicitarMemoria solicitador;
+	t_solicitarMemoria solicitador;
 
-		send(socketM,&solicitarMemoria,sizeof(int),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+4;
-		solicitador.tamanio=1;
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&reg1,sizeof(char),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
-		send(socketM,&solicitarMemoria,sizeof(int),0);
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
 
-		solicitador.direccion=tcb->P+5;
-		solicitador.tamanio=1;
+	reg1=(char)devolucion.respuesta;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		recv(socketM,&reg2,sizeof(char),0);
+	solicitador.direccion=tcb->P+5;
+	solicitador.tamanio=1;
 
-		switch(reg1){
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		case tcb->registroA.nombre:
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	reg2=(char)devolucion.respuesta;
+
+	switch(reg1){
+
+		case 'A':
 		aux1=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux1=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux1=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux1=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux1=tcb->registroE.valores;
 		break;
 		}
 
-		switch(reg2){
+	switch(reg2){
 
-		case tcb->registroA.nombre:
+		case 'A':
 		aux2=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux2=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux2=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux2=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux2=tcb->registroE.valores;
 		break;
 		}
@@ -1115,75 +1163,90 @@ int cgeq(t_tcb * tcb){
 int cleq(t_tcb * tcb){
 
 	char reg1;
-			char reg2;
-			int32_t aux1;
-			int32_t aux2;
+	char reg2;
+	int32_t aux1;
+	int32_t aux2;
+	t_devolucion devolucion;
 
-			int solicitarMemoria=2;
+	int solicitarMemoria=2;
 
-			t_solicitarMemoria solicitador;
+	t_solicitarMemoria solicitador;
 
-			send(socketM,&solicitarMemoria,sizeof(int),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-			solicitador.PID=tcb->pid;
-			solicitador.direccion=tcb->P+4;
-			solicitador.tamanio=1;
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
 
-			send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-			recv(socketM,&reg1,sizeof(char),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
-			send(socketM,&solicitarMemoria,sizeof(int),0);
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
 
-			solicitador.direccion=tcb->P+5;
-			solicitador.tamanio=1;
+	reg1=(char)devolucion.respuesta;
 
-			send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-			recv(socketM,&reg2,sizeof(char),0);
+	solicitador.direccion=tcb->P+5;
+	solicitador.tamanio=1;
 
-			switch(reg1){
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-			case tcb->registroA.nombre:
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	reg2=(char)devolucion.respuesta;
+
+	switch(reg1){
+
+			case 'A':
 			aux1=tcb->registroA.valores;
 			break;
 
-			case tcb->registroB.nombre:
+			case 'B':
 			aux1=tcb->registroB.valores;
 			break;
 
-			case tcb->registroC.nombre:
+			case 'C':
 			aux1=tcb->registroC.valores;
 			break;
 
-			case tcb->registroD.nombre:
+			case 'D':
 			aux1=tcb->registroD.valores;
 			break;
 
-			case tcb->registroE.nombre:
+			case 'E':
 			aux1=tcb->registroE.valores;
 			break;
 			}
 
-			switch(reg2){
+		switch(reg2){
 
-			case tcb->registroA.nombre:
+			case 'A':
 			aux2=tcb->registroA.valores;
 			break;
 
-			case tcb->registroB.nombre:
+			case 'B':
 			aux2=tcb->registroB.valores;
 			break;
 
-			case tcb->registroC.nombre:
+			case 'C':
 			aux2=tcb->registroC.valores;
 			break;
 
-			case tcb->registroD.nombre:
+			case 'D':
 			aux2=tcb->registroD.valores;
 			break;
 
-			case tcb->registroE.nombre:
+			case 'E':
 			aux2=tcb->registroE.valores;
 			break;
 			}
@@ -1205,75 +1268,90 @@ int cleq(t_tcb * tcb){
 int divr(t_tcb* tcb){
 
 	char reg1;
-		char reg2;
-		int32_t aux1;
-		int32_t aux2;
+	char reg2;
+	int32_t aux1;
+	int32_t aux2;
 
-		int solicitarMemoria=2;
+	int solicitarMemoria=2;
 
-		t_solicitarMemoria solicitador;
+	t_solicitarMemoria solicitador;
+	t_devolucion devolucion;
 
-		send(socketM,&solicitarMemoria,sizeof(int),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+4;
-		solicitador.tamanio=1;
+	solicitador.PID=tcb->pid;
+	solicitador.direccion=tcb->P+4;
+	solicitador.tamanio=1;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&reg1,sizeof(char),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
-		send(socketM,&solicitarMemoria,sizeof(int),0);
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
 
-		solicitador.direccion=tcb->P+5;
-		solicitador.tamanio=1;
+	reg1=(char)devolucion.respuesta;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		recv(socketM,&reg2,sizeof(char),0);
+	solicitador.direccion=tcb->P+5;
+	solicitador.tamanio=1;
 
-		switch(reg1){
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		case tcb->registroA.nombre:
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	if(devolucion.exito<0){
+		segmentatioFault++;
+		return 0;
+	}
+
+	reg2=(char)devolucion.respuesta;
+
+	switch(reg1){
+
+		case 'A':
 		aux1=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux1=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux1=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux1=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux1=tcb->registroE.valores;
 		break;
 		}
 
-		switch(reg2){
+	switch(reg2){
 
-		case tcb->registroA.nombre:
+		case 'A':
 		aux2=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux2=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux2=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux2=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux2=tcb->registroE.valores;
 		break;
 		}
@@ -1301,6 +1379,7 @@ int modr(t_tcb* tcb){
 
 		int solicitarMemoria=2;
 
+		t_devolucion devolucion;
 		t_solicitarMemoria solicitador;
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
@@ -1311,7 +1390,14 @@ int modr(t_tcb* tcb){
 
 		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&reg1,sizeof(char),0);
+		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+		if(devolucion.exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+
+		reg1=(char)devolucion.respuesta;
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -1320,50 +1406,57 @@ int modr(t_tcb* tcb){
 
 		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&reg2,sizeof(char),0);
+		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+		if(devolucion.exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+
+		reg2=(char)devolucion.respuesta;
 
 		switch(reg1){
 
-		case tcb->registroA.nombre:
+		case 'A':
 		aux1=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux1=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux1=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux1=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux1=tcb->registroE.valores;
 		break;
 		}
 
 		switch(reg2){
 
-		case tcb->registroA.nombre:
+		case 'A':
 		aux2=tcb->registroA.valores;
 		break;
 
-		case tcb->registroB.nombre:
+		case 'B':
 		aux2=tcb->registroB.valores;
 		break;
 
-		case tcb->registroC.nombre:
+		case 'C':
 		aux2=tcb->registroC.valores;
 		break;
 
-		case tcb->registroD.nombre:
+		case 'D':
 		aux2=tcb->registroD.valores;
 		break;
 
-		case tcb->registroE.nombre:
+		case 'E':
 		aux2=tcb->registroE.valores;
 		break;
 		}
