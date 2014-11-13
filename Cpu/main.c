@@ -71,6 +71,7 @@ int main (int argc, char** argv){
 	while(1){
 
 		char* primeras4;
+		primeras4=malloc(sizeof(int));
 
 		//se recibe el tcb del kernel
 		tcb=recibirTcb(socketK);
@@ -148,6 +149,8 @@ int main (int argc, char** argv){
 			send(socketK,&encolarSegFault,sizeof(int),0);
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
+		
+		free(primeras4);
 		}
 
 	}
