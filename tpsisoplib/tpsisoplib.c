@@ -488,7 +488,8 @@ struct stat hacerStat(char * direccion) {
 char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 
 	char* palabra;
-
+	palabra=malloc(sizeof(int));
+	
 	int codigoSolicitarMemoria=2;
 
 	t_solicitarMemoria solicitarMemoria;
