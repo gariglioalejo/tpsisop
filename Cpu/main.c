@@ -77,12 +77,14 @@ int main (int argc, char** argv){
 		tcb=recibirTcb(socketK);
 
 		i=0;
+		ultimainstruccion=0;
+		systemcall=0;
+		segmentatioFault=0;
 
 		if(tcb->km==1){
 
 		while(!ultimainstruccion){
 
-			ultimainstruccion=0;
 			log_info(log_de_cpu,"EJECUTANDO KERNEL MODE");
 
 			primeras4=pedirPrimeraPalabra(socketM,tcb);
@@ -102,8 +104,6 @@ int main (int argc, char** argv){
 		//mientras el quantum deje y no haya una llamada al sistema
 		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)&&(!segmentatioFault)){
 
-			systemcall=0;
-			ultimainstruccion=0;
 			log_info(log_de_cpu,"XXXXXXXXXXXXXX QUANTUM %d XXXXXXXXXXXXX",quantum-i);
 			i++;
 
