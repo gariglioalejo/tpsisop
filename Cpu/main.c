@@ -71,17 +71,20 @@ int main (int argc, char** argv){
 	while(1){
 
 		char* primeras4;
+		primeras4=malloc(sizeof(int));
 
 		//se recibe el tcb del kernel
 		tcb=recibirTcb(socketK);
 
 		i=0;
+		ultimainstruccion=0;
+		systemcall=0;
+		segmentatioFault=0;
 
 		if(tcb->km==1){
 
 		while(!ultimainstruccion){
 
-			ultimainstruccion=0;
 			log_info(log_de_cpu,"EJECUTANDO KERNEL MODE");
 
 			primeras4=pedirPrimeraPalabra(socketM,tcb);
@@ -91,7 +94,7 @@ int main (int argc, char** argv){
 
 		}
 		//Devuelvo el TCB KM1
-		int devuelvoKernelMode=10;
+		int devuelvoKernelMode=0;
 		send(socketK,&devuelvoKernelMode,sizeof(int),0);
 		send(socketK,&tcb,sizeof(t_tcb),0);
 
@@ -99,10 +102,8 @@ int main (int argc, char** argv){
 
 		else {
 		//mientras el quantum deje y no haya una llamada al sistema
-		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)){
+		while((i<quantum)&&(!systemcall)&&(!ultimainstruccion)&&(!segmentatioFault)){
 
-			systemcall=0;
-			ultimainstruccion=0;
 			log_info(log_de_cpu,"XXXXXXXXXXXXXX QUANTUM %d XXXXXXXXXXXXX",quantum-i);
 			i++;
 
@@ -123,25 +124,33 @@ int main (int argc, char** argv){
 
 		//Ready
 		if (quantum==i){
-			int encolarEnReady=1;
+			int encolarEnReady=0;
 			send(socketK,&encolarEnReady,sizeof(int),0);
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
 
 		//Block
 		if(systemcall>0){
-			int encolarEnBloqueado=2;
+			int encolarEnBloqueado=3;
 			send(socketK,&encolarEnBloqueado,sizeof(int),0);
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
 
 		//Exit
 		if(ultimainstruccion>0){
-			int encolarEnExit=3;
+			int encolarEnExit=1;
 			send(socketK,&encolarEnExit,sizeof(int),0);
 			send(socketK,&tcb,sizeof(t_tcb),0);
 		}
 
+		//SegmentationFault
+		if(segmentatioFault>0){
+			int encolarSegFault=2;
+			send(socketK,&encolarSegFault,sizeof(int),0);
+			send(socketK,&tcb,sizeof(t_tcb),0);
+		}
+		
+		free(primeras4);
 		}
 
 	}

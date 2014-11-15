@@ -26,12 +26,13 @@
 #include <math.h>
 
 //#include "../ensalada de funciones/funciones.h"
-#include <tpsisoplib.h>
+#include "../tpsisoplib/tpsisoplib.h"
 
 int systemcall;
 int ultimainstruccion;
 int socketK;
 int socketM;
+int segmentatioFault;
 
 //Funciones Privilegiadas
 int fnMALC (t_tcb * tcb);

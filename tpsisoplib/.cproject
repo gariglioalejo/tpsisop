@@ -36,8 +36,8 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1987040306" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.debug.1785863657" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.so.debug">
-								<option defaultValue="true" id="gnu.c.link.so.debug.option.shared.701636102" name="Shared (-shared)" superClass="gnu.c.link.so.debug.option.shared" valueType="boolean"/>
-								<option id="gnu.c.link.option.libs.986234556" superClass="gnu.c.link.option.libs" valueType="libs">
+								<option defaultValue="true" id="gnu.c.link.so.debug.option.shared.701636102" name="Shared (-shared)" superClass="gnu.c.link.so.debug.option.shared" value="true" valueType="boolean"/>
+								<option id="gnu.c.link.option.libs.986234556" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="commons"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.57283065" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
@@ -93,7 +93,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.release.220001792" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.so.release">
 								<option defaultValue="true" id="gnu.c.link.so.release.option.shared.1716476165" name="Shared (-shared)" superClass="gnu.c.link.so.release.option.shared" valueType="boolean"/>
-								<option id="gnu.c.link.option.libs.289228063" superClass="gnu.c.link.option.libs" valueType="libs">
+								<option id="gnu.c.link.option.libs.289228063" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="commons"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1227545627" superClass="cdt.managedbuild.tool.gnu.c.linker.input">

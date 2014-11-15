@@ -26,6 +26,12 @@
 #include <sys/select.h>
 #include <semaphore.h>
 
+
+typedef struct {
+	int exito;
+	uint32_t respuesta;
+}t_devolucion;
+
 typedef struct {
 
 	uint32_t segmento;
