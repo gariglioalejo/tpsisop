@@ -1,3 +1,3 @@
-kernel.d: ../kernel.c ../../consola/funciones.h
+kernel.d: ../kernel.c ../funciones.h
 
-../../consola/funciones.h:
+../funciones.h:

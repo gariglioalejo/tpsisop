@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../consola.c \
+../prueba2.c \
 ../pruebaServer.c 
 
 OBJS += \
 ./consola.o \
+./prueba2.o \
 ./pruebaServer.o 
 
 C_DEPS += \
 ./consola.d \
+./prueba2.d \
 ./pruebaServer.d 
 
 

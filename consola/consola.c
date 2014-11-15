@@ -101,6 +101,7 @@ int main(int argc, char ** argv) {
 				if (strlen(stringIngresado) <= inputMax) {
 					printf("String ingresado correctamente\n");
 					printf("%s\n", stringIngresado);
+											///agregado para probar el list sattisfy consola
 					 enviar_serializado(-1, stringIngresado, socketKernel);
 					free(stringIngresado);
 					j = 0;

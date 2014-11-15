@@ -22,26 +22,23 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: kernelDefinitivo
+all: kernel
 
-dependents:
-	-cd /home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug && $(MAKE) all
 
 # Tool invocations
-kernelDefinitivo: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug/libtpsisoplib.so
+kernel: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug" -o "kernelDefinitivo" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/ansisop-panel/Release" -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) kernelDefinitivo
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) kernel
 	-@echo ' '
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/tp-2014-2c-nmi/tpsisoplib/Debug/libtpsisoplib.so:
 
 -include ../makefile.targets

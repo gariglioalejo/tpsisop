@@ -3,7 +3,7 @@
 	<name>kernel</name>
 	<comment></comment>
 	<projects>
-		<project>tpsisoplib</project>
+		<project>ansisop-panel</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
