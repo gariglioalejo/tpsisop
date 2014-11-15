@@ -3,7 +3,6 @@
 	<name>kernel</name>
 	<comment></comment>
 	<projects>
-		<project>ansisop-panel</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -439,6 +439,18 @@ bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,
 	return false;
 }
 
+
+bool destruirSegmento(int pid,uint32_t base,int socket) {
+	enviarInt(2,socket);
+	enviarInt(pid,socket);
+	enviarInt32(base,socket);
+	int exito=recibirInt(socket);
+	if(exito==1) {
+		return true;
+	}
+	return false;
+}
+
 t_reservarSegmentos * reservarStackCrea(int pid, t_tcb * tcbHijo, int stack,
 		int socketMsp, int socketCpu) {
 

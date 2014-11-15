@@ -171,6 +171,8 @@ int main(int argc, char ** argv) {
 							char * sizeConBeso;
 							sizeConBeso = recibir_serializado_beso(	//DEVUELVE SERIALIZADO EL TAMANIO Y EL SCRIPT MANDADO POR LA CONSOLA
 									socketCliente);
+							pid++;
+							tid++;
 							t_reservarSegmentos tcb_resultado;//NO RECUERDO PORQUE HICE QUE recibir_serializado_beso DEVUELVA SERIALIZADO, POR ESO LOS CASTEOS EN LA LLAMADA A ESTA FUNCION.
 							tcb_resultado = reservarSegmentos(pid,
 									*(int *) sizeConBeso,
@@ -178,8 +180,7 @@ int main(int argc, char ** argv) {
 									socketMsp, socketCliente);
 							if (tcb_resultado.exito) {
 								t_tcb * tcb = tcb_resultado.tcb;
-								pid++;
-								tid++;
+								//ACA IBA ANTES EL PID ++ y TID++
 								tcb->km = 0;
 								tcb->pid = pid;
 								tcb->tid = tid;
@@ -196,14 +197,17 @@ int main(int argc, char ** argv) {
 										sizeof(t_listaSocketsConsola));
 								nodoConsola->pid = pid;
 								nodoConsola->socketConsola = socketCliente;
-								list_add(listaSocketsConsola, &nodoConsola);
+								list_add(listaSocketsConsola, nodoConsola);
+								int * socketClienteAux = malloc(sizeof(int));
+								*socketClienteAux = socketCliente;
+								FD_SET(*socketClienteAux, &master);
 								pthread_mutex_lock(&mutex);
 								list_add(listaReady, tcb);//AGREGA A LA LISTA DE READY Y SUBE EL SEMAFORO PARA QUE EL HILO CORRA
 								sem_post(&hayEnReady);
 								pthread_mutex_unlock(&mutex);
 
 							}	//FIN tcb_resultado.exito
-
+							//NO CONSIDERE LA POSIBILIDAD DE QUE NO HUBIERA LUGAR AL CREAR SEGMENTO,RESOLVER.
 						}	//FIN codigo==1.
 						if (codigo == 123) {
 							FD_SET(socketCliente, &master);
@@ -224,7 +228,7 @@ int main(int argc, char ** argv) {
 						int recibido;
 						int intInutil;
 						if ((recibido = recv(i, &intInutil, sizeof(int), 0))
-								== -1) {
+								&& recibido == -1) {
 							printf("Fallo el recv de una Cpu\n");
 							exit(1);
 						}	//FIN DEL recibido= recv(i,...).
@@ -234,16 +238,22 @@ int main(int argc, char ** argv) {
 									removerDeLaListaSocketsConsola(
 											listaSocketsConsola, i);
 							int * pidBaneado = malloc(sizeof(int));
+							uint32_t baseCodigoBaneado;
+							uint32_t baseStackBaneado;
 							*pidBaneado = nodoRemovido->pid;//SE SACA DE LA LISTA A EL NODO CORRESPONDIENTE A LA CONSOLA DESCONECTADA. SE GUARDA EL PID Y SE LO AGREGA A LA LISTA DE PID BANEADOS (ESTO SE VA A USAR PARA CORTAR LA EJECUCION CUANDO ALGUNA CPU DEVUELVA HILOS ASOCIADOS A ESTE PID).
 							list_add(listaPidBaneados, pidBaneado);	//SE REMUEVEN DE TODAS LAS LISTAS MENOS LA DE EXEC LOS NODOS ASOCIADOS AL PID DE LA CONSOLA DESCONECTADA.
 							while (hayTcbConElPid(listaReady, *pidBaneado)) {//ACA SE SACAN TODOS LOS NODOS ASOCIADOS AL PID,EXCEPTO EL KM EN CASO DE QUE ESTE ASOCIADO.
 								t_tcb * tcbRemovido = removerTcbConElPid(
 										listaReady, *pidBaneado);
+								baseCodigoBaneado = tcbRemovido->M;
+								baseStackBaneado = tcbRemovido->X;
 								list_add(listaExit, tcbRemovido);
 							}	//FIN DEL while(hayTcbConElPid(listaReady,...).
 							while (hayTcbConElPid(listaBloq, *pidBaneado)) {
 								t_tcb * tcbRemovido = removerTcbConElPid(
 										listaBloq, *pidBaneado);
+								baseCodigoBaneado = tcbRemovido->M;
+								baseStackBaneado = tcbRemovido->X;
 								list_add(listaExit, tcbRemovido);
 							}	//FIN DEL while(hayTcbConElPid(listaBloq,...).
 							while (hayNodoJoinConElPid(listaBloqJoin,
@@ -251,6 +261,8 @@ int main(int argc, char ** argv) {
 								t_join * nodoRemovido = removerNodoJoinDelPid(
 										listaBloqJoin, *pidBaneado);
 								t_tcb * tcbRemovido = nodoRemovido->tcb;
+								baseCodigoBaneado = tcbRemovido->M;
+								baseStackBaneado = tcbRemovido->X;
 								list_add(listaExit, tcbRemovido);
 							}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
 							while (hayNodoHilosConElPid(listaHilos, *pidBaneado)) {
@@ -262,8 +274,20 @@ int main(int argc, char ** argv) {
 										removerNodoRecursoDelPid(
 												listaBloqRecurso, *pidBaneado);
 								t_tcb * tcbRemovido = nodoRemovido->tcb;
+								baseCodigoBaneado = tcbRemovido->M;
+								baseStackBaneado = tcbRemovido->X;
 								list_add(listaExit, tcbRemovido);
 							}	//FIN DEL while(hayNodoRecursoConEl...)
+							if (hayTcbConElPid(listaExec, *pidBaneado)) {
+								t_tcb * tcbDelPid = obtenerTcbConElPid(
+										listaExec, *pidBaneado);
+								baseCodigoBaneado = tcbDelPid->M;
+								baseStackBaneado = tcbDelPid->X;
+							}
+							destruirSegmento(*pidBaneado, baseCodigoBaneado,
+									socketMsp);
+							destruirSegmento(*pidBaneado, baseStackBaneado,
+									socketMsp);
 							pthread_mutex_unlock(&mutex);
 						}
 						//FIN DEL recibido==0.
@@ -605,9 +629,9 @@ int main(int argc, char ** argv) {
 										tcbBloqueado->socketConsola);
 								break;
 							}	//FIN DEL case SALIDA_ESTANDAR
-							case CREAR_HILO:{
+							case CREAR_HILO: {
 
-							}//FIN DEL case CREA
+							}	//FIN DEL case CREA
 							}			//FIN del switch.
 						}			//FIN DEL else.
 					}	//FIN DEL if(estaEnLaListaElInt(listaSocketsCpu,i).
