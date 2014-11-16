@@ -1069,7 +1069,7 @@ void listarMarcos(){int contador;int cantidadMarcos;int i;
 			elementoDeCola->numMarco=cantidadMarcos+1;
 			flag=1;
 	}
-	for(contador=0;contador<=cantidadMarcos;contador++){
+	for(contador=0;contador<cantidadMarcos;contador++){
 		if (contador<elementoDeCola->numMarco) printf("Num marco %u LIBRE \n",contador);
 		else {
 			printf("PID: %u Num Marco: %u ",elementoDeCola->PID,elementoDeCola->numMarco);
@@ -1093,7 +1093,7 @@ void ingresar_en_queue_ord(t_queue* queueSalida,t_queue* queueEntrada){
 
 
 	void agregar_en_queueSalida(elem_tipoColaAuxiliar* nodo){t_list_ord* nuevoNodo;
-	nuevoNodo=malloc(sizeof(t_list_ord*));
+	nuevoNodo=malloc(sizeof(t_list_ord));
 	nuevoNodo->PID=nodo->PID;
 	nuevoNodo->numMarco=nodo->numMarco;
 	nuevoNodo->referencia=nodo->referencia;
@@ -1104,7 +1104,7 @@ void ingresar_en_queue_ord(t_queue* queueSalida,t_queue* queueEntrada){
 	pthread_mutex_lock(&mutexComparador);
 	enteroParaComparaciones=0;
 	list_iterate(queueEntrada->elements,agregar_en_queueSalida);
-	pthread_mutex_lock(&mutexComparador);}
+	pthread_mutex_unlock(&mutexComparador);}
 
 int crearServer(char * puerto) {
 
