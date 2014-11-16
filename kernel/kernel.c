@@ -25,7 +25,28 @@ sem_t hayCpu;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+t_list * listaReady;
+t_list * listaCpuLibres;
+t_list * listaExec;
+
 void * manejoCpuLibres(void * arg) {
+
+	while(1){
+	sem_wait(&hayCpu);
+	sem_wait(&hayEnReady);
+	pthread_mutex_lock(&mutex);
+	t_tcb * tcb = malloc(sizeof(t_tcb));
+	tcb = list_remove(listaReady,0);
+	int * socketCpu = list_remove(listaCpuLibres, 0);
+	printf("Pid a Enviar:%d\n",tcb->pid);
+	printf("%c\n",tcb->registroB.nombre);
+	printf("%d\n",tcb->registroA.valores);
+	printf("%d\n",tcb->registroB.valores);
+	enviarTcb(tcb, *socketCpu);
+	tcb->socketCpu = *socketCpu;
+	list_add(listaExec, tcb);
+	pthread_mutex_unlock(&mutex);
+	}
 	return NULL ;
 }
 
@@ -46,7 +67,7 @@ void * esperarEntradaEstandar(void * arg) {
 }
 
 int main(int argc, char ** argv) {
-	checkArgument(3, argc);
+	checkArgument(2, argc);
 
 	t_config * kernel_config;
 	kernel_config = config_create(argv[1]);
@@ -72,10 +93,10 @@ int main(int argc, char ** argv) {
 	t_queue * colaKM;
 	colaKM = queue_create();
 
-	t_list * listaReady;
+
 	listaReady = list_create();
 
-	t_list * listaCpuLibres;
+
 	listaCpuLibres = list_create();
 
 	t_list * listaSocketsCpu;
@@ -84,7 +105,7 @@ int main(int argc, char ** argv) {
 	t_list * listaSocketsConsola;
 	listaSocketsConsola = list_create();
 
-	t_list * listaExec;
+
 	listaExec = list_create();
 
 	t_list * listaExit;
@@ -201,6 +222,16 @@ int main(int argc, char ** argv) {
 								int * socketClienteAux = malloc(sizeof(int));
 								*socketClienteAux = socketCliente;
 								FD_SET(*socketClienteAux, &master);
+								tcb->registroA.nombre='A';
+								tcb->registroB.nombre='B';
+								tcb->registroC.nombre='C';
+								tcb->registroD.nombre='D';
+								tcb->registroE.nombre='E';
+								tcb->registroA.valores=0;
+								tcb->registroB.valores=0;
+								tcb->registroC.valores=0;
+								tcb->registroD.valores=0;
+								tcb->registroE.valores=0;
 								pthread_mutex_lock(&mutex);
 								list_add(listaReady, tcb);//AGREGA A LA LISTA DE READY Y SUBE EL SEMAFORO PARA QUE EL HILO CORRA
 								sem_post(&hayEnReady);
@@ -217,6 +248,8 @@ int main(int argc, char ** argv) {
 							int * socketClienteAux = malloc(sizeof(int));//AGREGO A LA COLA DE SOCKETS DE CPUS AL SOCKET CLIENTE
 							*socketClienteAux = socketCliente;
 							list_add(listaSocketsCpu, socketClienteAux);
+							int quantum=3;
+							enviarInt(quantum, socketCliente);
 							pthread_mutex_lock(&mutex);
 							list_add(listaCpuLibres, socketClienteAux);	//AGREGO A LA COLA DE CPUS LIBRES AL SOCKET CLIENTE Y SUBO EL SEMAFORO PARA EL HILO
 							sem_post(&hayCpu);
@@ -355,8 +388,10 @@ int main(int argc, char ** argv) {
 						else {
 							switch (unaOperacion) {
 							case TERMINO_QUANTUM: {
+								puts("Entro en Termino Quantum");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
+								printf("Pid Recibido:%d\n",tcbCpu->pid);
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
@@ -379,14 +414,16 @@ int main(int argc, char ** argv) {
 									t_tcb * tcbBloqueado;
 									tcbBloqueado = removerTcbConElTid(listaBloq,
 											tcbCpu->tid);
-									tcbBloqueado->A = tcbCpu->A;
-									tcbBloqueado->B = tcbCpu->B;
-									tcbBloqueado->C = tcbCpu->C;
-									tcbBloqueado->D = tcbCpu->D;
-									tcbBloqueado->E = tcbCpu->E;
+									tcbBloqueado->registroA.valores = tcbCpu->registroA.valores;
+									tcbBloqueado->registroB.valores = tcbCpu->registroB.valores;
+									tcbBloqueado->registroC.valores = tcbCpu->registroC.valores;
+									tcbBloqueado->registroD.valores = tcbCpu->registroD.valores;
+									tcbBloqueado->registroA.valores = tcbCpu->registroA.valores;
 									list_add(listaReady, tcbBloqueado);
 								} else {
-									list_add(listaReady, tcbCpu);//***chequear que no queden queue_push no asociados a la colaKM
+									list_add(listaReady, tcbCpu);
+									puts("Agregue a Ready el recibido");
+									printf("%c\n",tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
 								}			//FIN DEL if(tcbCpu->km==1).
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
