@@ -24,12 +24,11 @@ endif
 # All Target
 all: kernel
 
-
 # Tool invocations
 kernel: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/ansisop-panel/Release" -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
