@@ -72,15 +72,42 @@ typedef struct {
 } t_tcb;
 
 typedef struct {
+	int PID;
+	uint32_t direccion;
+	int tamanio;
+} t_solicitarMemoria;
+
+
+typedef struct {
+	t_tcb * tcb;
+	int idRecurso;
+} t_nodoRecurso;
+
+typedef struct {
 	t_tcb * tcb;
 	bool exito;
 } t_reservarSegmentos;
 
 typedef struct {
-	int PID;
-	uint32_t direccion;
-	int tamanio;
-} t_solicitarMemoria;
+	t_tcb * tcb;
+	int tidAEsperar;
+} t_join;
+
+typedef struct {
+	int socketConsola;
+	int socketCpu;
+	int tipoEE;
+}t_paraEntradaEstandar;
+
+typedef struct {
+	int pid;
+	int hilos;
+} t_listaHilos;
+
+typedef struct {
+	int pid;
+	int socketConsola;
+} t_listaSocketsConsola;
 
 
 
@@ -112,10 +139,30 @@ char* pedirString(int socketMSP,t_tcb* tcb);
 int pedirDireccion(int socketMSP,t_tcb* tcb);
 char *inputString(FILE* fp, size_t size);
 int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo);
-int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMsp);
+int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMsp, int * segf);
 uint32_t logicalRightShift(uint32_t x, int n);
 uint32_t logicalLeftShift(uint32_t x, int n);
+t_nodoRecurso * removerNodoRecursoDelPid(t_list * lista, int pid);
+bool hayNodoRecursoConElPid(t_list * lista, int pid);
+t_listaHilos* removerNodoHilosDelPid(t_list * lista, int pid);
+bool hayNodoHilosConElPid(t_list * lista, int pid);
+t_join* removerNodoJoinDelTid(t_list * lista, int pid, int tid);
+t_join* removerNodoJoinDelPid(t_list * lista, int pid);
+bool hayNodoJoinConElTid(t_list * lista, int pid, int tid);
+bool hayNodoJoinConElPid(t_list * lista, int pid);
+t_tcb * sacarElKM(t_list * lista);
+bool hayTcbConElSocketCpu(t_list * lista, int socket);
+t_tcb * removerTcbConElSocketCpu(t_list * lista, int socket);
 
+t_tcb * removerTcbConElTid(t_list * lista, int tid);
+bool hayTcbConElPid(t_list * lista, int pid);
+t_tcb * obtenerTcbConElPid(t_list * lista, int pid);
+t_tcb * removerTcbConElPid(t_list * lista, int pid);
+t_listaSocketsConsola * removerDeLaListaSocketsConsola(t_list * lista, int socketConsola);
+bool estaEnlaListaSocketsConsola(t_list * lista, int socketConsola);
+int * removerDeLaListaElInt(t_list * lista, int elInt);
+bool estaEnLaListaElInt(t_list * lista, int elInt);
+void checkArgument(int argumentsDesired, int argc);
 
 
 

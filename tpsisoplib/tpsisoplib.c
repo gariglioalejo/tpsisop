@@ -38,20 +38,6 @@ t_msp_dir * convertirIntADir(uint32_t dir){
 
 //CONVERTIR UNA ESTRUCTURA DE DIRECCIONES A UN INT
 //USO uint32_t intdir = convertirDirAInt(direccion);
-uint32_t convertirDirAInt(t_msp_dir * direccion){
-
-	uint32_t segmento = direccion->segmento ;
-	uint32_t pagina = direccion->pagina;
-	uint32_t offset = direccion->offset;
-	uint32_t elevando1 = pow(2,8);
-	uint32_t elevando2 = pow(2,20);
-
-	uint32_t aux = offset + (pagina * elevando1) + (segmento * elevando2);
-
-	return aux;
-
-}
-
 
 int recibirInt(int socket) {
 	int unInt;
@@ -60,6 +46,7 @@ int recibirInt(int socket) {
 		printf("Fallo el recv de recibirInt\n");
 		exit(1);
 	}
+	//printf("valorRecibido: %d\n",recibido);
 	/*
 	 if (recibido == 0) {
 	 printf("Fallo el recv de recibirInt por desconexion\n");
@@ -186,7 +173,7 @@ char * recibir_serializado(int socketCliente) {
 		printf("Fallo el recv2");
 		exit(1);
 	}
-	//printf("%d\n",recibido);
+	//printf("%s\n",mensaje);
 	return mensaje;
 
 }
@@ -284,7 +271,7 @@ char * enviar_serializado(int codigo, char * mensaje, int socket) { //Debe tener
 		//printf("%d\n%s\n",*mensaje_serializado,mensaje_serializado+sizeof(size));
 		if ((enviados = send(socket, mensaje_serializado,
 				sizeof(codigo) + sizeof(size) + size, 0)) == -1) {
-			printf("Fallo el send");
+			printf("Fallo el send\n");
 			exit(1);
 		}
 	}
@@ -378,7 +365,7 @@ int aceptarConexion(int listenningSocket) {
 }
 
 t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
-	int crear_segmento = 0;
+	int crear_segmento = 1;
 	int hayLugar;
 	enviarInt(crear_segmento, socket);
 	enviarInt(pid, socket);
@@ -393,6 +380,19 @@ t_crearSegmento * crearSegmento(int pid, int tam, int socket) {
 		resultado->exito = false;
 		return resultado;
 	}
+}
+
+
+
+bool destruirSegmento(int pid,uint32_t base,int socket) {
+	enviarInt(2,socket);
+	enviarInt(pid,socket);
+	enviarInt32(base,socket);
+	int exito=recibirInt(socket);
+	if(exito==1) {
+		return true;
+	}
+	return false;
 }
 
 bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
@@ -421,9 +421,9 @@ bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,
 	enviarInt(pid, socket);
 	enviarInt32(direccion, socket);
 	enviarInt(size, socket);
+	enviarBeso(size, mensaje, socket);
 	int hayLugar = recibirInt(socket);
 	if (hayLugar) {
-		enviarBeso(size, mensaje, socket);
 		return true;
 	}
 	return false;
@@ -476,6 +476,33 @@ t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso,
 	return tcb_resultado;
 }
 
+
+t_reservarSegmentos * reservarStackCrea(int pid, t_tcb * tcbHijo, int stack,
+		int socketMsp, int socketCpu) {
+
+	t_reservarSegmentos * tcb_resultado = malloc(sizeof(t_reservarSegmentos));
+	tcb_resultado->tcb = malloc(sizeof(t_tcb));
+	t_crearSegmento * resultado = malloc(sizeof(t_crearSegmento));
+	int diferenciaBaseCursor;
+
+	resultado = crearSegmento(pid, stack, socketMsp);
+	if (resultado->exito) {
+		diferenciaBaseCursor = tcbHijo->S - tcbHijo->X;
+		tcbHijo->X = resultado->base;
+		tcbHijo->S = resultado->base + diferenciaBaseCursor;
+	} else {
+		printf("No pudo crear segmento para el stack en reservarStackCrea\n");
+		//Indica que fallo la creacion del Stack, debe abortarse el padre y todos los hijos.
+		tcb_resultado->exito = false;
+		return tcb_resultado;
+	}
+	tcb_resultado->tcb = tcbHijo;
+	tcb_resultado->exito = true;
+
+	return tcb_resultado;
+}
+
+
 struct stat hacerStat(char * direccion) {
 	struct stat stat_beso;
 	if (stat(direccion, &stat_beso)) {
@@ -524,14 +551,14 @@ int pedirDireccion(int socketMSP,t_tcb* tcb){
 	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
 	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-	recv(socketMSP,direccion,4,0);
+	recv(socketMSP,&direccion,4,0);
 
 	return direccion;
 }
 
 char* pedirString(int socketMSP,t_tcb* tcb){
 
-
+	char buff[tcb->registroB.valores];
 	int codigoSolicitarMemoria=2;
 
 	t_solicitarMemoria solicitarMemoria;
@@ -540,12 +567,12 @@ char* pedirString(int socketMSP,t_tcb* tcb){
 	solicitarMemoria.direccion=tcb->registroA.valores;
 	solicitarMemoria.tamanio=tcb->registroB.valores;
 
-	char buff[tcb->registroB.valores];
+
 
 	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
 	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-	recv(socketMSP,buff,sizeof(buff),0);
+	recv(socketMSP,&buff,sizeof(buff),0);
 
 	return buff;
 }
@@ -597,7 +624,7 @@ int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo){
 	return 0;
 }
 
-int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP){
+int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 	t_crearSegmento * resultado;
 	int nuevaBase;
 	int nuevoCursor;
@@ -608,6 +635,8 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP){
 	int codigoSolicitarMemoria=2;
 
 	resultado = crearSegmento(pid, tamanio, socketMSP);
+
+
 		if (resultado->exito) {
 
 			void * contenidoStack = malloc(tamanio);
@@ -629,7 +658,10 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP){
 			escribirMemoria(nuevotcb->pid,nuevotcb->X,nuevotcb->tam_seg_stack,(char*) contenidoStack,socketMSP);
 
 		} else {
+
+			segf++;
 			printf("No pudo duplicar el segmento de Stack\n");
+			return -1;
 
 		}
 
@@ -645,5 +677,198 @@ uint32_t logicalRightShift(uint32_t x, int n) {
 
 uint32_t logicalLeftShift(uint32_t x, int n) {
     return (uint32_t)x << n;
+}
+
+
+void checkArgument(int argumentsDesired, int argc) {
+	if (argc != argumentsDesired) {
+		printf("No hay suficients argumentos\n");
+		exit(1);
+	}
+}
+
+bool estaEnLaListaElInt(t_list * lista, int elInt) {
+	bool esElInt(void * interger) {
+		int * intergerAux = interger;
+		return *intergerAux == elInt;
+	}
+	return list_any_satisfy(lista, esElInt);
+}
+int * removerDeLaListaElInt(t_list * lista, int elInt) {
+	bool esElInt(void * interger) {
+		int * intergerAux = interger;
+		return *intergerAux == elInt;
+	}
+	return list_remove_by_condition(lista, esElInt);
+}
+bool estaEnlaListaSocketsConsola(t_list * lista, int socketConsola) {
+	bool esElDelSocket(void * nodoConsola) {
+		t_listaSocketsConsola* nodoConsolaAux = nodoConsola;
+		return nodoConsolaAux->socketConsola == socketConsola;
+	}
+	return list_any_satisfy(lista, esElDelSocket);
+}
+
+t_listaSocketsConsola * removerDeLaListaSocketsConsola(t_list * lista,
+		int socketConsola) {
+	bool esElDelSocket(void * nodoConsola) {
+		t_listaSocketsConsola * nodoConsolaAux = nodoConsola;
+		return nodoConsolaAux->socketConsola == socketConsola;
+	}
+	return list_remove_by_condition(lista, esElDelSocket);
+}
+
+t_tcb * removerTcbConElPid(t_list * lista, int pid) {
+	bool esElTcbDelPid(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->pid == pid;
+		} else {
+			return false;
+		}
+	}
+	return list_remove_by_condition(lista, esElTcbDelPid);
+}
+
+t_tcb * obtenerTcbConElPid(t_list * lista, int pid) {
+	bool esElTcbDelPid(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->pid == pid;
+		} else {
+			return false;
+		}
+	}
+	return list_find(lista, esElTcbDelPid);
+}
+
+bool hayTcbConElPid(t_list * lista, int pid) {
+	bool esElTcbDelPid(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->pid == pid;
+		} else {
+			return false;
+		}
+	}
+	return list_any_satisfy(lista, esElTcbDelPid);
+}
+
+t_tcb * removerTcbConElTid(t_list * lista, int tid) {
+	bool esElTcbDelTid(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->tid == tid;
+		} else {
+			return false;
+		}
+	}
+	return list_remove_by_condition(lista, esElTcbDelTid);
+}
+
+
+
+t_tcb * removerTcbConElSocketCpu(t_list * lista, int socket) {
+	bool esElTcbDelSocketCpu(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->socketCpu == socket;
+		} else {
+			return false;
+		}
+	}
+	return list_remove_by_condition(lista, esElTcbDelSocketCpu);
+}
+
+bool hayTcbConElSocketCpu(t_list * lista, int socket) {
+	bool esElTcbDelSocketCpu(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		if (tcbAux->km != 1) {
+			return tcbAux->socketCpu == socket;
+		} else {
+			return false;
+		}
+	}
+	return list_any_satisfy(lista, esElTcbDelSocketCpu);
+}
+
+t_tcb * sacarElKM(t_list * lista) {
+	bool esElKM(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		return tcbAux->km == 1;
+	}
+	return list_remove_by_condition(lista, esElKM);
+}
+
+bool hayNodoJoinConElPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoJoin) {
+		t_join* nodoJoinAux = nodoJoin;
+		return nodoJoinAux->tcb->pid == pid;
+	}
+	return list_any_satisfy(lista, esElDelPid);
+}
+
+bool hayNodoJoinConElTid(t_list * lista, int pid, int tid) {
+	bool esElDelTid(void * nodoJoin) {
+		t_join* nodoJoinAux = nodoJoin;
+		if (nodoJoinAux->tcb->pid == pid) {
+			return nodoJoinAux->tidAEsperar == tid;
+		} else {
+			return false;
+		}
+	}
+	return list_any_satisfy(lista, esElDelTid);
+}
+
+t_join* removerNodoJoinDelPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoJoin) {
+		t_join* nodoJoinAux = nodoJoin;
+		return nodoJoinAux->tcb->pid == pid;
+	}
+	return list_remove_by_condition(lista, esElDelPid);
+}
+
+t_join* removerNodoJoinDelTid(t_list * lista, int pid, int tid) {
+	bool esElDelTid(void * nodoJoin) {
+		t_join* nodoJoinAux = nodoJoin;
+		if (nodoJoinAux->tcb->pid == pid) {
+			return nodoJoinAux->tidAEsperar == tid;
+		} else {
+			return false;
+		}
+	}
+	return list_remove_by_condition(lista, esElDelTid);
+}
+
+bool hayNodoHilosConElPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoHilos) {
+		t_listaHilos* nodoHilosAux = nodoHilos;
+		return nodoHilosAux->pid == pid;
+	}
+	return list_any_satisfy(lista, esElDelPid);
+}
+
+t_listaHilos* removerNodoHilosDelPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoHilos) {
+		t_listaHilos* nodoHilosAux = nodoHilos;
+		return nodoHilosAux->pid == pid;
+	}
+	return list_remove_by_condition(lista, esElDelPid);
+}
+
+bool hayNodoRecursoConElPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoRecurso) {
+		t_nodoRecurso* nodoRecursoAux = nodoRecurso;
+		return nodoRecursoAux->tcb->pid == pid;
+	}
+	return list_any_satisfy(lista, esElDelPid);
+}
+
+t_nodoRecurso * removerNodoRecursoDelPid(t_list * lista, int pid) {
+	bool esElDelPid(void * nodoRecurso) {
+		t_nodoRecurso* nodoRecursoAux = nodoRecurso;
+		return nodoRecursoAux->tcb->pid == pid;
+	}
+	return list_remove_by_condition(lista, esElDelPid);
 }
 
