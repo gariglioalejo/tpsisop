@@ -515,9 +515,13 @@ struct stat hacerStat(char * direccion) {
 char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 
 	char* palabra;
+	int exito;
 	palabra=malloc(sizeof(int));
 	
-	int codigoSolicitarMemoria=2;
+	int codigoSolicitarMemoria=4;
+	int pid;
+	int dir;
+	int tam;
 
 	t_solicitarMemoria solicitarMemoria;
 	t_devolucion devolucion;
@@ -526,12 +530,24 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	solicitarMemoria.direccion=tcb->P;
 	solicitarMemoria.tamanio=4;
 
-	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
-	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+	pid = tcb->pid;
+	dir = tcb->P;
+	tam = 4;
 
-	recv(socketMSP,&devolucion,sizeof(t_devolucion),0);
+	send(socketMSP,&codigoSolicitarMemoria,4,0);
+	send(socketMSP,&pid,sizeof(int),0);
+	send(socketMSP,&dir,sizeof(int),0);
+	send(socketMSP,&tam,sizeof(int),0);
+//	send(socketMSP,&codigoSolicitarMemoria,4,0);
+//	send(socketMSP,&codigoSolicitarMemoria,4,0);
 
-	palabra=(char*)devolucion.respuesta;
+//	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+//	recv(socketMSP,&devolucion,sizeof(t_devolucion),0);
+	exito = recibirInt(socketMSP);
+	palabra = recibirBeso(4,socketMSP);
+
+//	palabra = &(devolucion.respuesta);
 
 	return palabra;
 }
