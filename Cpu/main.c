@@ -59,8 +59,6 @@ int main (int argc, char** argv){
 			exit(1);
 		}
 
-	//Envio handshake AVISAAAAARRR
-	send(socketM,&handshake,sizeof(int),0);
 
 	//Recibo el quantum del kernel AVISAAAAAAAR
 	int quantum;
@@ -71,7 +69,7 @@ int main (int argc, char** argv){
 	while(1){
 
 		char* primeras4;
-		primeras4=malloc(sizeof(int));
+		primeras4=malloc(5);
 
 		//se recibe el tcb del kernel
 		tcb=recibirTcb(socketK);
@@ -111,8 +109,10 @@ int main (int argc, char** argv){
 
 
 			primeras4=pedirPrimeraPalabra(socketM,tcb);
+			primeras4[4]='\0';
 
 			//LLama al parser creado por cada instruccion y a dicha funcion
+
 			parseador(primeras4,tcb);
 
 			sleep(retardo/1000);
@@ -126,28 +126,29 @@ int main (int argc, char** argv){
 		if (quantum==i){
 			int encolarEnReady=0;
 			send(socketK,&encolarEnReady,sizeof(int),0);
-			send(socketK,&tcb,sizeof(t_tcb),0);
+			//send(socketK,&tcb,sizeof(t_tcb),0);
+			enviarTcb(tcb,socketK);
 		}
 
 		//Block
 		if(systemcall>0){
 			int encolarEnBloqueado=3;
 			send(socketK,&encolarEnBloqueado,sizeof(int),0);
-			send(socketK,&tcb,sizeof(t_tcb),0);
+			enviarTcb(tcb,socketK);
 		}
 
 		//Exit
 		if(ultimainstruccion>0){
 			int encolarEnExit=1;
 			send(socketK,&encolarEnExit,sizeof(int),0);
-			send(socketK,&tcb,sizeof(t_tcb),0);
+			enviarTcb(tcb,socketK);
 		}
 
 		//SegmentationFault
 		if(segmentatioFault>0){
 			int encolarSegFault=2;
 			send(socketK,&encolarSegFault,sizeof(int),0);
-			send(socketK,&tcb,sizeof(t_tcb),0);
+			enviarTcb(tcb,socketK);
 		}
 		
 		free(primeras4);

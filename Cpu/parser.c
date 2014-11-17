@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../ensalada de funciones/funciones.h"
+//#include "../ensalada de funciones/funciones.h"
 #include "cpu.h"
 
 

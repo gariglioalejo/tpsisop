@@ -29,7 +29,10 @@ int load(t_tcb * tcb){
 	char registro;
 	int valor;
 
-	int codigoSolicitarMemoria=2;
+	int valorrec;
+	int exitorec;
+
+	int codigoSolicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -40,9 +43,14 @@ int load(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketK,&devolucion,sizeof(t_devolucion),0);
+	//recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	exitorec = recibirInt(socketM);
+	valorrec = recibirInt(socketM);
+	devolucion.exito = exitorec;
+	devolucion.respuesta = valorrec;
 
 	//Evalua Seg Fault
 	if(devolucion.exito<0){
@@ -58,9 +66,13 @@ int load(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketK,&devolucion,sizeof(t_devolucion),0);
+	//recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	exitorec = recibirInt(socketM);
+	valorrec = recibirInt(socketM);
+	devolucion.exito = exitorec;
+	devolucion.respuesta = valorrec;
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -70,27 +82,27 @@ int load(t_tcb * tcb){
 	valor=(int32_t)devolucion.respuesta;
 
 	if(registro==tcb->registroA.nombre){
-		tcb->registroA.valores=tcb->registroA.valores+valor;
+		tcb->registroA.valores=valor;
 		printf("El registro: %c, se aumento: %d",tcb->registroA.nombre,valor);
 	}
 
 	if(registro==tcb->registroB.nombre){
-			tcb->registroB.valores=tcb->registroB.valores+valor;
+			tcb->registroB.valores=valor;
 			printf("El registro: %c, se aumento: %d",tcb->registroB.nombre,valor);
 	}
 
 	if(registro==tcb->registroC.nombre){
-			tcb->registroC.valores=tcb->registroC.valores+valor;
+			tcb->registroC.valores=valor;
 			printf("El registro: %c, se aumento: %d",tcb->registroC.nombre,valor);
 	}
 
 	if(registro==tcb->registroD.nombre){
-			tcb->registroD.valores=tcb->registroD.valores+valor;
+			tcb->registroD.valores=valor;
 			printf("El registro: %c, se aumento: %d",tcb->registroD.nombre,valor);
 	}
 
 	if(registro==tcb->registroE.nombre){
-			tcb->registroE.valores=tcb->registroE.valores+valor;
+			tcb->registroE.valores=valor;
 			printf("El registro: %c, se aumento: %d",tcb->registroE.nombre,valor);
 	}
 
@@ -108,7 +120,7 @@ int movr(t_tcb * tcb){
 
 	int32_t aux;
 
-	int codigoSolicitarMemoria=2;
+	int codigoSolicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -119,9 +131,9 @@ int movr(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketK,&devolucion,sizeof(t_devolucion),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -136,9 +148,9 @@ int movr(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
+	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketK,&devolucion,sizeof(t_devolucion),0);
+	recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -208,7 +220,7 @@ int getm(t_tcb * tcb){
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -385,7 +397,7 @@ int decr(t_tcb * tcb){
 
 	char registro;
 
-	int solicitar=2;
+	int solicitar=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -436,7 +448,7 @@ int incr(t_tcb * tcb){
 
 	char registro;
 
-	int solicitar=2;
+	int solicitar=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -521,7 +533,7 @@ int addr(t_tcb * tcb){
 	int32_t aux1;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -618,7 +630,7 @@ int subr(t_tcb * tcb){
 	int32_t aux1;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -716,7 +728,7 @@ int mulr(t_tcb * tcb){
 	int32_t aux1;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
@@ -811,7 +823,7 @@ int gotoo(t_tcb * tcb){
 
 	char reg;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -866,7 +878,7 @@ int jmpz(t_tcb * tcb){
 
 	if(tcb->registroA.valores==0){
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 	uint32_t nuevadir;
 
 	t_devolucion devolucion;
@@ -914,7 +926,7 @@ int jpnz(t_tcb * tcb){
 	}
 	else{
 
-		int solicitarMemoria=2;
+		int solicitarMemoria=4;
 		uint32_t nuevadir;
 
 		t_devolucion devolucion;
@@ -958,7 +970,7 @@ int comp(t_tcb * tcb){
 
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 
@@ -1063,7 +1075,7 @@ int cgeq(t_tcb * tcb){
 	int32_t aux2;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 
@@ -1168,7 +1180,7 @@ int cleq(t_tcb * tcb){
 	int32_t aux2;
 	t_devolucion devolucion;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 
@@ -1272,7 +1284,7 @@ int divr(t_tcb* tcb){
 	int32_t aux1;
 	int32_t aux2;
 
-	int solicitarMemoria=2;
+	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -1377,7 +1389,7 @@ int modr(t_tcb* tcb){
 		int32_t aux1;
 		int32_t aux2;
 
-		int solicitarMemoria=2;
+		int solicitarMemoria=4;
 
 		t_devolucion devolucion;
 		t_solicitarMemoria solicitador;
@@ -1475,7 +1487,7 @@ int push(t_tcb * tcb){
 		char registro;
 		int numero;
 		void * bytesApush;
-		int codigoSolicitarMemoria=2;
+		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
 
 
@@ -1519,6 +1531,9 @@ int push(t_tcb * tcb){
 			memcpy(bytesApush,(void*)tcb->registroD.valores,numero);
 			break;
 
+		case 'E':
+			memcpy(bytesApush,(void*)tcb->registroE.valores,numero);
+			break;
 
 		}
 
@@ -1546,7 +1561,7 @@ int take(t_tcb * tcb){
 		char registro;
 		int numero;
 		void * bytesApop;
-		int codigoSolicitarMemoria=2;
+		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
 
 
@@ -1599,6 +1614,9 @@ int take(t_tcb * tcb){
 			memcpy((void*)tcb->registroD.valores,bytesApop,numero);
 			break;
 
+		case 'E':
+			memcpy((void*)tcb->registroE.valores,bytesApop,numero);
+			break;
 
 		}
 
@@ -1618,9 +1636,9 @@ int shif(t_tcb * tcb){
 
 		char registro;
 		int numero;
-		int codigoSolicitarMemoria=2;
+		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
-
+		t_devolucion devolucion;
 
 		//Numero
 		solicitador.PID=tcb->pid;
@@ -1628,8 +1646,10 @@ int shif(t_tcb * tcb){
 		solicitador.tamanio=4;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&numero,sizeof(int),0);
+		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+
 
 		//Registro
 		solicitador.PID=tcb->pid;
@@ -1691,6 +1711,19 @@ int shif(t_tcb * tcb){
 
 
 			break;
+
+		case 'E':
+
+					if(numero > 0){
+						int32_t aux = logicalRightShift(tcb->registroE.valores,numero);
+						tcb->registroE.valores = aux;
+					} else if(numero < 0){
+						int32_t aux = logicalLeftShift(tcb->registroE.valores,numero);
+						tcb->registroE.valores = aux;
+					}
+
+
+					break;
 
 		}
 

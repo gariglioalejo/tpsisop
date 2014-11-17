@@ -11,13 +11,12 @@ int fnMALC (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
 
 		tcb->P=tcb->P+4;
 		return -1;
 	}
 
-
+	t_devolucion devolucion;
 	t_crearSegmento * segmentoCreado = malloc(sizeof(t_crearSegmento));
 	int result = 0;
 	int size = tcb->registroA.valores;
@@ -26,12 +25,15 @@ int fnMALC (t_tcb * tcb){
 	segmentoCreado = crearSegmento(pid, size, socketM);
 
 
+
 	if (segmentoCreado->exito){
 
 		 tcb->registroA.valores = segmentoCreado->base;
 
 	} else {
-		result = -1; //TODO Logear?
+		segmentatioFault++;
+		free(segmentoCreado);
+		return -1;
 	}
 
 	free(segmentoCreado);
@@ -49,9 +51,8 @@ Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alo
 instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.*/
 int fnFREE (t_tcb * tcb){
 
-	if (tcb->km != 1){
+		if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-			//TODO Logear!
 
 		tcb->P=tcb->P+4;
 			return -1;
@@ -68,7 +69,8 @@ int fnFREE (t_tcb * tcb){
 
 
 		} else {
-			result = -1; //TODO Logear?
+			segmentatioFault++;
+			result = -1;
 		}
 
 
@@ -87,11 +89,11 @@ int fnFREE (t_tcb * tcb){
 Pide por consola del programa que se ingrese un número, con signo entre –2.147.483.648 y
 2.147.483.647. El mismo será almacenado en el registro A. Invoca al servicio correspondiente en
 el proceso Kernel.*/
-int fnINNN (t_tcb * tcb){
+int fnINNN (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-			//TODO Logear!
+
 
 		tcb->P=tcb->P+4;
 			return -1;
@@ -104,9 +106,7 @@ int fnINNN (t_tcb * tcb){
 
 		int32_t valorIngresado = 0;
 
-		//send(socketK,&codigo,sizeof(int),0); //Aviso de un pedido de entrada estandar
 		enviarInt(codigo,socketK);
-		//send(socketK,&tipo,sizeof(int),0); //Aviso tipo de dato a pedir
 		enviarInt(tipo,socketK);
 
 		valorIngresado = recibirInt32(socketK);
@@ -128,11 +128,11 @@ int fnINNN (t_tcb * tcb){
 Pide por consola del programa que se ingrese una cadena no más larga de lo indicado por el
 registro B. La misma será almacenada en la posición de memoria apuntada por el registro A.
 Invoca al servicio correspondiente en el proceso Kernel.*/
-int fnINNC (t_tcb * tcb){
+int fnINNC (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -162,7 +162,7 @@ int fnINNC (t_tcb * tcb){
 
 			if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
 
-				//TODO Ejecucion Erronea?
+				//
 			}
 
 		}
@@ -181,11 +181,11 @@ int fnINNC (t_tcb * tcb){
 /*29. OUTN
 Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
 servicio correspondiente en el proceso Kernel.*/
-int fnOUTN (t_tcb * tcb){
+int fnOUTN (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -205,7 +205,6 @@ int fnOUTN (t_tcb * tcb){
 
 		result = recibirInt(socketK); //Esperar resultado
 
-		//TODO Evaluar resultado
 
 		printf("OUTN Ejecutada \n");
 
@@ -223,11 +222,11 @@ int fnOUTN (t_tcb * tcb){
 Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
 encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 proceso Kernel.*/
-int fnOUTC (t_tcb * tcb){
+int fnOUTC (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -253,7 +252,7 @@ int fnOUTC (t_tcb * tcb){
 
 		result = recibirInt(socketK); //Esperar resultado
 
-		//TODO Evaluar resultado
+		//Revisar Evaluar resultado
 
 		free(cadena);
 
@@ -278,11 +277,11 @@ duplicar el segmento de stack
 desde la base del stack, hasta el cursor del stack. Asignar la base y cursor de forma acorde (tal
 que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al servicio
 correspondiente en el proceso Kernel con el TCB recién generado.*/
-int fnCREA (t_tcb * tcb){
+int fnCREA (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//Revisar Logear!
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -302,14 +301,16 @@ int fnCREA (t_tcb * tcb){
 
 
 	//Duplicar Stack
+	int segfant = segmentatioFault;
+	int resultadoDuplicar = duplicarStack(tcb, nuevotcb, socketM,&segmentatioFault);
 
-	int resultadoDuplicar = duplicarStack(tcb, nuevotcb, socketM);
+	if (segfant < segmentatioFault){
+
+		return -1;
+	}
 
 
-
-
-
-	enviarint(codigo,socketK);
+	enviarInt(codigo,socketK);
 	enviarTcb(nuevotcb, socketK);
 
 	printf("CREA Ejecutada \n");
@@ -326,11 +327,11 @@ int fnCREA (t_tcb * tcb){
 Bloquea el programa que ejecutó la llamada al sistema hasta que el hilo con el identificador
 almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso
 Kernel.*/
-int fnJOIN (t_tcb * tcb){
+int fnJOIN (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//Revisar Logear!
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -340,9 +341,12 @@ int fnJOIN (t_tcb * tcb){
 	int codigo = 7;
 	int recurso = tcb->registroA.valores;
 
+	enviarInt(codigo,socketK);
+	enviarInt(recurso,socketK);
 
-	enviarint(codigo,socketK);
-	enviarint(recurso,socketK);
+
+
+
 
 	printf("JOIN Ejecutada \n");
 
@@ -358,11 +362,11 @@ Bloquea el programa que ejecutó la llamada al sistema hasta que el recurso apun
 libere.
 La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema WAIT
 pre-compilada.*/
-int fnBLOK (t_tcb * tcb){
+int fnBLOK (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//Revisar Logear!
 
 		tcb->P=tcb->P+4;
 		return -1;
@@ -389,11 +393,11 @@ int fnBLOK (t_tcb * tcb){
 Desbloquea al primer programa bloqueado por el recurso apuntado por B.
 La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema
 SIGNAL pre-compilada.*/
-int fnWAKE (t_tcb * tcb){
+int fnWAKE (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-		//TODO Logear!
+		//Revisar Logear!
 
 		tcb->P=tcb->P+4;
 		return -1;
