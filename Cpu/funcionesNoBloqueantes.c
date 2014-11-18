@@ -43,7 +43,11 @@ int load(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 	//recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
@@ -66,7 +70,11 @@ int load(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 	//recv(socketM,&devolucion,sizeof(t_devolucion),0);
 	exitorec = recibirInt(socketM);
@@ -131,9 +139,16 @@ int movr(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	//recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -148,9 +163,14 @@ int movr(t_tcb * tcb){
 
 	send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -228,9 +248,14 @@ int getm(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -245,9 +270,14 @@ int getm(t_tcb * tcb){
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -264,9 +294,14 @@ int getm(t_tcb * tcb){
 		solicitador.direccion=(uint32_t)tcb->registroA.valores;
 		solicitador.tamanio=4;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -285,9 +320,14 @@ int getm(t_tcb * tcb){
 		solicitador.direccion=(uint32_t)tcb->registroB.valores;
 		solicitador.tamanio=4;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 			if(devolucion.exito<0){
 				segmentatioFault++;
@@ -305,9 +345,14 @@ int getm(t_tcb * tcb){
 		solicitador.direccion=(uint32_t)tcb->registroC.valores;
 		solicitador.tamanio=4;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 				segmentatioFault++;
@@ -326,9 +371,14 @@ int getm(t_tcb * tcb){
 			solicitador.direccion=(uint32_t)tcb->registroD.valores;
 			solicitador.tamanio=4;
 
-			send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+			//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-			recv(socketM,&devolucion,sizeof(t_devolucion),0);
+			send(socketM,&solicitador.PID,sizeof(int),0);
+			send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+			send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+			devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 				if(devolucion.exito<0){
 					segmentatioFault++;
@@ -346,9 +396,14 @@ int getm(t_tcb * tcb){
 				solicitador.direccion=(uint32_t)tcb->registroE.valores;
 				solicitador.tamanio=4;
 
-				send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+				//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-				recv(socketM,&devolucion,sizeof(t_devolucion),0);
+				send(socketM,&solicitador.PID,sizeof(int),0);
+				send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+				send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+				devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 						if(devolucion.exito<0){
 							segmentatioFault++;
@@ -408,9 +463,14 @@ int decr(t_tcb * tcb){
 
 	send(socketM,&solicitar,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -459,7 +519,11 @@ int incr(t_tcb * tcb){
 
 	send(socketM,&solicitar,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 	recv(socketM,&devolucion,sizeof(char),0);
 
@@ -541,9 +605,14 @@ int addr(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -558,9 +627,14 @@ int addr(t_tcb * tcb){
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -638,9 +712,14 @@ int subr(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -655,9 +734,14 @@ int subr(t_tcb * tcb){
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -736,9 +820,14 @@ int mulr(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -753,9 +842,14 @@ int mulr(t_tcb * tcb){
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -834,9 +928,14 @@ int gotoo(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -890,9 +989,14 @@ int jmpz(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=4;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -939,9 +1043,14 @@ int jpnz(t_tcb * tcb){
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -980,9 +1089,14 @@ int comp(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -996,9 +1110,14 @@ int comp(t_tcb * tcb){
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1085,9 +1204,14 @@ int cgeq(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1101,9 +1225,14 @@ int cgeq(t_tcb * tcb){
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1190,9 +1319,14 @@ int cleq(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1206,9 +1340,14 @@ int cleq(t_tcb * tcb){
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1295,9 +1434,14 @@ int divr(t_tcb* tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1311,9 +1455,14 @@ int divr(t_tcb* tcb){
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
-	send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	recv(socketM,&devolucion,sizeof(t_devolucion),0);
+	send(socketM,&solicitador.PID,sizeof(int),0);
+	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+	send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 	if(devolucion.exito<0){
 		segmentatioFault++;
@@ -1400,9 +1549,14 @@ int modr(t_tcb* tcb){
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=1;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -1416,9 +1570,14 @@ int modr(t_tcb* tcb){
 		solicitador.direccion=tcb->P+5;
 		solicitador.tamanio=1;
 
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+		send(socketM,&solicitador.PID,sizeof(int),0);
+		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+		send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+		devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
