@@ -226,7 +226,7 @@ void  atenderConection(int socketCliente){
 	int i;
 	int recibido;
 	flag=1;
-	recibido=recv(socket, &i, sizeof(int), 0);
+	recibido=recv(socketCliente, &i, sizeof(int), 0);
 	if((recibido==-1)){
 		printf("Fallo el recv de recibirInt\n");
 	flag=0;}
@@ -266,7 +266,7 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		else enviarInt(1,socketCliente);algo=respuesta.direccion;
 		enviarBeso(tamanio,algo,socketCliente);}
 
-recibido = recv(socket, &i, sizeof(int), 0);
+recibido = recv(socketCliente, &i, sizeof(int), 0);
 	if (( recibido== -1)){
 		printf("Fallo el recv de recibirInt\n");
 	flag=0;}
