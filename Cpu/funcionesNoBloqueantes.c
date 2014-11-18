@@ -525,9 +525,10 @@ int incr(t_tcb * tcb){
 	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
 	send(socketM,&solicitador.tamanio,sizeof(int),0);
 
-	recv(socketM,&devolucion,sizeof(char),0);
+	devolucion.exito=recibirInt(socketM);
+	devolucion.respuesta=recibirInt32(socketM);
 
-	if(devolucion.exito>0){
+	if(devolucion.exito<0){
 		segmentatioFault++;
 		return 0;
 	}
