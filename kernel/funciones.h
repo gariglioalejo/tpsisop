@@ -32,11 +32,10 @@ typedef struct {
 	bool exito;
 } t_crearSegmento;
 
-
 typedef struct {
 	char nombre;
 	int32_t valores;
-}t_registro;
+} t_registro;
 
 typedef struct {
 	int pid;
@@ -58,7 +57,6 @@ typedef struct {
 	uint32_t direccionSyscallPendiente;
 } t_tcb;
 
-
 typedef struct {
 	t_tcb * tcb;
 	int idRecurso;
@@ -78,7 +76,7 @@ typedef struct {
 	int socketConsola;
 	int socketCpu;
 	int tipoEE;
-}t_paraEntradaEstandar;
+} t_paraEntradaEstandar;
 
 typedef struct {
 	int pid;
@@ -447,13 +445,12 @@ bool escribirMemoria(int pid, uint32_t direccion, int size, char * mensaje,
 	return false;
 }
 
-
-bool destruirSegmento(int pid,uint32_t base,int socket) {
-	enviarInt(2,socket);
-	enviarInt(pid,socket);
-	enviarInt32(base,socket);
-	int exito=recibirInt(socket);
-	if(exito==1) {
+bool destruirSegmento(int pid, uint32_t base, int socket) {
+	enviarInt(2, socket);
+	enviarInt(pid, socket);
+	enviarInt32(base, socket);
+	int exito = recibirInt(socket);
+	if (exito == 1) {
 		return true;
 	}
 	return false;
@@ -652,8 +649,6 @@ t_tcb * removerTcbConElTid(t_list * lista, int tid) {
 	return list_remove_by_condition(lista, esElTcbDelTid);
 }
 
-
-
 t_tcb * removerTcbConElSocketCpu(t_list * lista, int socket) {
 	bool esElTcbDelSocketCpu(void * tcb) {
 		t_tcb * tcbAux = tcb;
@@ -678,6 +673,14 @@ bool hayTcbConElSocketCpu(t_list * lista, int socket) {
 	return list_any_satisfy(lista, esElTcbDelSocketCpu);
 }
 
+t_tcb * obtenerTcbConElSocketCpu(t_list * lista, int socket) {
+	bool esElTcbDelSocketCpu(void * tcb) {
+		t_tcb * tcbAux = tcb;
+		return tcbAux->socketCpu == socket;
+	}
+	return list_find(lista, esElTcbDelSocketCpu);
+}
+
 t_tcb * sacarElKM(t_list * lista) {
 	bool esElKM(void * tcb) {
 		t_tcb * tcbAux = tcb;
@@ -694,16 +697,24 @@ bool hayNodoJoinConElPid(t_list * lista, int pid) {
 	return list_any_satisfy(lista, esElDelPid);
 }
 
-bool hayNodoJoinConElTid(t_list * lista, int pid, int tid) {
+bool hayNodoJoinConElTid(t_list * lista, int pid, int tid) {//ESTA ES PARA BUSCAR NODO CON EL TIDAESPERAR QUE CONCUERDE CON EL TID DEL PARAMETRO
 	bool esElDelTid(void * nodoJoin) {
 		t_join* nodoJoinAux = nodoJoin;
-		if (nodoJoinAux->tcb->pid == pid) {
+		if (nodoJoinAux->tcb->pid == pid) {	//EN REALIDAD,NO ES NECESARIO MANDARLE EL PID COMO PARAMETRO, PERO WE.
 			return nodoJoinAux->tidAEsperar == tid;
 		} else {
 			return false;
 		}
 	}
 	return list_any_satisfy(lista, esElDelTid);
+}
+
+bool hayNodoJoinConElTidPropio(t_list * lista, int tid) {//ESTA ES PARA BUSCAR UN NODO QUE DENTRO DEL TCB->TID SEA IGUAL AL TID DEL PARAMETRO
+	bool esElDelTidPropio(void * nodoJoin) {
+		t_join* nodoJoinAux = nodoJoin;
+		return nodoJoinAux->tcb->tid == tid;
+	}
+	return list_any_satisfy(lista, esElDelTidPropio);
 }
 
 t_join* removerNodoJoinDelPid(t_list * lista, int pid) {
@@ -714,7 +725,7 @@ t_join* removerNodoJoinDelPid(t_list * lista, int pid) {
 	return list_remove_by_condition(lista, esElDelPid);
 }
 
-t_join* removerNodoJoinDelTid(t_list * lista, int pid, int tid) {
+t_join* removerNodoJoinDelTid(t_list * lista, int pid, int tid) {//ESTA ES PARA REMOVER NODO CON EL TIDAESPERAR QUE CONCUERDE CON EL TID DEL PARAMETRO
 	bool esElDelTid(void * nodoJoin) {
 		t_join* nodoJoinAux = nodoJoin;
 		if (nodoJoinAux->tcb->pid == pid) {
@@ -750,12 +761,28 @@ bool hayNodoRecursoConElPid(t_list * lista, int pid) {
 	return list_any_satisfy(lista, esElDelPid);
 }
 
+bool hayNodoRecursoConElTid(t_list * lista, int tid) {
+	bool esElDelTid(void * nodoRecurso) {
+		t_nodoRecurso* nodoRecursoAux = nodoRecurso;
+		return nodoRecursoAux->tcb->tid == tid;
+	}
+	return list_any_satisfy(lista, esElDelTid);
+}
+
 t_nodoRecurso * removerNodoRecursoDelPid(t_list * lista, int pid) {
 	bool esElDelPid(void * nodoRecurso) {
 		t_nodoRecurso* nodoRecursoAux = nodoRecurso;
 		return nodoRecursoAux->tcb->pid == pid;
 	}
 	return list_remove_by_condition(lista, esElDelPid);
+}
+
+t_nodoRecurso * removerNodoRecursoPorRecurso(t_list * lista, int recurso) {
+	bool esElDelRecurso(void * nodoRecurso) {
+		t_nodoRecurso* nodoRecursoAux = nodoRecurso;
+		return nodoRecursoAux->idRecurso==recurso;
+	}
+	return list_remove_by_condition(lista, esElDelRecurso);
 }
 
 #endif /* CONSOLA_H_ */
