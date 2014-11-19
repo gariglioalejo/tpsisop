@@ -1,14 +1,5 @@
 /*
  ============================================================================
- Name        : testConnectividad.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-/*
- ============================================================================
  Name        : msp.c
  Author      : 
  Version     :
@@ -306,13 +297,10 @@ void consola(){
 	printf("  TERMINAR.MSP \n");
 	scanf("%s",opcion);
 	if (!(strcmp(opcion,"TERMINAR.MSP"))) {
-		free(opcion);
-		free(aux);
-		free(texto);
-		pthread_mutex_lock(&mutexTablaProceso);
-		list_iterate(direccionListaProcesos,eliminarProceso);
+		/*pthread_mutex_lock(&mutexTablaProceso);
+		if (!list_is_empty(direccionListaProcesos)) {list_iterate(direccionListaProcesos,eliminarProceso);}
 		list_destroy(direccionListaProcesos);
-		pthread_mutex_unlock(&mutexTablaProceso);
+		pthread_mutex_unlock(&mutexTablaProceso);*/
 		sigueCorriendo=0;
 	}
 	if (!(strcmp(opcion,"LISTAR.MARCOS"))) {
@@ -320,16 +308,14 @@ void consola(){
 
 		}
 	if (!(strcmp(opcion,"TABLA.SEGMENTOS"))) {
-				printf("Tabla segentos!\n");
 				imprimirTablaSegmentos(direccionListaProcesos);
 			}
 	if(!(strcmp(opcion,"MEMORIA.LIBRE"))){
-	puts("memroria libre \n");
 	pthread_mutex_lock(&mutexCantidadMemoriaDisponible);
 	printf("Cantidad memoria: %u \n", cantidadMemoriaDisponible);
 	pthread_mutex_unlock(&mutexCantidadMemoriaDisponible);
 	}
-	if (strcmp(opcion,"TABLA.SEGMENTOS")&&strcmp(opcion,"LISTAR.MARCOS")){
+	if (strcmp(opcion,"TABLA.SEGMENTOS")&&strcmp(opcion,"LISTAR.MARCOS")&&strcmp(opcion,"TERMINAR.MSP")&&strcmp(opcion,"MEMORIA.LIBRE")){
 	while(!(opcion[pos]=='[')&&!(opcion[pos]=='\0')){
 			aux[pos]=opcion[pos];
 			pos++;
@@ -490,15 +476,24 @@ void consola(){
 	}
 	}
 
-
+	if (!sigueCorriendo) {free(opcion);free(aux);free(texto);}
 	} //del while 1
 }
 
+void eliminarSegmento(elem_tipoSegmento* segmento);
+
 void eliminarProceso(elem_tipoProceso* proceso){
-	list_iterate(proceso->direccion_tablaSegmentos,destruirSegmento);
+	pthread_mutex_lock(&mutexComparador);
+	enteroParaComparaciones=proceso->PID;
+	list_iterate(proceso->direccion_tablaSegmentos,eliminarSegmento);
+	pthread_mutex_unlock(&mutexComparador);
 	free(proceso);
 }
 
+
+void eliminarSegmento(elem_tipoSegmento* segmento){
+		destruirSegmento(enteroParaComparaciones,segmento->numSegmento*1048576); //como obtener dirreccion base
+}
 
 
 
