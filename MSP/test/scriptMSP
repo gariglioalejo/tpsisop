@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -R archivos
+mkdir archivos
+gcc MSP.c -o MSP.out -lcommons -lpthread
+clear
+./MSP.out
