@@ -62,6 +62,7 @@ pthread_mutex_t mutexColaMarcosLibres;
 pthread_mutex_t mutexComparador;
 pthread_rwlock_t semaforoCola_memoria;
 
+void eliminarProceso(elem_tipoProceso* proceso);
 void consola();void inicializarMemoria();
 uint32_t pot(uint32_t,uint32_t);int escribirMemoria(uint32_t,uint32_t,char*,uint32_t);
 void modificar(char*,char*,int,int);
@@ -111,7 +112,7 @@ bool marcoMenor(t_list_ord*,t_list_ord*);
 
 
 int main(void) {t_config * archivoConfiguracion;
- 	archivoConfiguracion=config_create("archiconf/MSP.txt");
+ 	archivoConfiguracion=config_create("archiconf/MSP.cfg");
 	puerto=config_get_string_value(archivoConfiguracion,"PUERTO");
 	cantidadMemoria=config_get_int_value(archivoConfiguracion,"CANTIDAD_MEMORIA");
 	cantidadSwap=config_get_int_value(archivoConfiguracion,"CANTIDAD_SWAP");
@@ -294,15 +295,27 @@ void consola(){
 	opcion=malloc(100);
 	aux=malloc(40);
 	texto=malloc(40);
-	while(1){
+	int sigueCorriendo=1;
+	while(sigueCorriendo){
+	inicio:
 	pos=0;
 	pos2=0;
 	printf("CONSOLA MSP: \n  CREAR.SEGMENTO[PID][Tamaño]\n  DESTRUIR.SEGMENTO[PID][Dirección Base]\n");
 	printf("  ESCRIBIR.MEMORIA[PID][Dirección Virtual][Tamaño][Texto]\n  LEER.MEMORIA[PID][Dirección Virtual][Tamaño]\n");
 	printf("  TABLA.SEGMENTOS\n  TABLA.PAGINAS[PID]\n  LISTAR.MARCOS\n  MEMORIA.LIBRE \n");
+	printf("  TERMINAR.MSP \n");
 	scanf("%s",opcion);
+	if (!(strcmp(opcion,"TERMINAR.MSP"))) {
+		free(opcion);
+		free(aux);
+		free(texto);
+		pthread_mutex_lock(&mutexTablaProceso);
+		list_iterate(direccionListaProcesos,eliminarProceso);
+		list_destroy(direccionListaProcesos);
+		pthread_mutex_unlock(&mutexTablaProceso);
+		sigueCorriendo=0;
+	}
 	if (!(strcmp(opcion,"LISTAR.MARCOS"))) {
-			printf("Listar Marcos!\n");
 			listarMarcos();
 
 		}
@@ -311,51 +324,57 @@ void consola(){
 				imprimirTablaSegmentos(direccionListaProcesos);
 			}
 	if(!(strcmp(opcion,"MEMORIA.LIBRE"))){
+	puts("memroria libre \n");
 	pthread_mutex_lock(&mutexCantidadMemoriaDisponible);
 	printf("Cantidad memoria: %u \n", cantidadMemoriaDisponible);
 	pthread_mutex_unlock(&mutexCantidadMemoriaDisponible);
 	}
 	if (strcmp(opcion,"TABLA.SEGMENTOS")&&strcmp(opcion,"LISTAR.MARCOS")){
-	while(!(opcion[pos]=='[')&&(pos<20)){
+	while(!(opcion[pos]=='[')&&!(opcion[pos]=='\0')){
 			aux[pos]=opcion[pos];
 			pos++;
 	}
+	if (opcion[pos]=='\0') { puts("COMANDO INVALIDO \n"); goto inicio; }
 	aux[pos]='\0';
 	pos++;
 	if (!(strcmp(aux,"TABLA.PAGINAS"))) {
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts ("NO CERRO EL CORCHETE\n"); goto inicio;}
 			PID=convertirANumero(aux,pos2);
 			printf("PID %u\n",PID);
 			imprimirTablaPaginas(PID);
 	}
 	if (!(strcmp(aux,"LEER.MEMORIA"))) {
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			PID=convertirANumero(aux,pos2);
 			pos2=0;
 			pos++;
 			pos++;
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			direccionVirtual=convertirANumero(aux,pos2);
 			pos2=0;
 			pos++;
 			pos++;
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			tamanio=convertirANumero(aux,pos2);
 			printf("PID %u Dir Vir %u tamanio %u\n",PID,direccionVirtual,tamanio);
 			respuesta=solicitarMemoria(PID,direccionVirtual,tamanio);
@@ -369,22 +388,24 @@ void consola(){
 			} else {
 				//if (respuesta.exito==) // que otros casos de respuesta hay?
 			}
-	}
+	} //fin if leer memoria
 	if (!(strcmp(aux,"CREAR.SEGMENTO"))) {
-		while(!(opcion[pos]==']')){
+		while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 			aux[pos2]=opcion[pos];
 			pos2++;
 			pos++;
 		}
+		if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 		PID=convertirANumero(aux,pos2);
 		pos2=0;
 		pos++;
 		pos++;
-		while(!(opcion[pos]==']')){
+		while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 			aux[pos2]=opcion[pos];
 			pos2++;
 			pos++;
 		}
+		if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 		tamanio=convertirANumero(aux,pos2);
 		printf("PID %u TAM %u\n",PID,tamanio);
 		respuesta=crearSegmento(PID,tamanio);
@@ -393,20 +414,22 @@ void consola(){
 		if (respuesta.exito==-1){printf("Tamaño supera el maximo permitido por segmento\n");}
 	}
 	if (!(strcmp(aux,"DESTRUIR.SEGMENTO"))) {
-		while(!(opcion[pos]==']')){
+		while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 			aux[pos2]=opcion[pos];
 			pos2++;
 			pos++;
 		}
+		if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 		PID=convertirANumero(aux,pos2);
 		pos2=0;
 		pos++;
 		pos++;
-		while(!(opcion[pos]==']')){
+		while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 			aux[pos2]=opcion[pos];
 			pos2++;
 			pos++;
 		}
+		if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 		direccionBase=convertirANumero(aux,pos2);
 		printf("PID %u Dir %u\n",PID,direccionBase);
 		respuestaEntera=destruirSegmento(PID,direccionBase);
@@ -420,38 +443,42 @@ void consola(){
 		}
 	}
 	if (!(strcmp(aux,"ESCRIBIR.MEMORIA"))) {
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			PID=convertirANumero(aux,pos2);
 			pos2=0;
 			pos++;
 			pos++;
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			direccionVirtual=convertirANumero(aux,pos2);
 			pos2=0;
 			pos++;
 			pos++;
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			tamanio=convertirANumero(aux,pos2);
 			pos2=0;
 			pos++;
 			pos++;
-			while(!(opcion[pos]==']')){
+			while(!(opcion[pos]==']')&&!(opcion[pos]=='\0')){
 				aux[pos2]=opcion[pos];
 				pos2++;
 				pos++;
 			}
+			if (opcion[pos]=='\0') {puts("NO CERRO EL CORCHETE\n"); goto inicio;}
 			strncpy(texto,aux,pos2);
 			printf("PID %u Dir %u Tamanio %u texto %s\n",PID,direccionVirtual,tamanio,texto);
 			respuestaEntera=escribirMemoria(PID,direccionVirtual,texto,tamanio);
@@ -466,6 +493,12 @@ void consola(){
 
 	} //del while 1
 }
+
+void eliminarProceso(elem_tipoProceso* proceso){
+	list_iterate(proceso->direccion_tablaSegmentos,destruirSegmento);
+	free(proceso);
+}
+
 
 
 
@@ -1063,7 +1096,7 @@ uint32_t imprimirTablaPaginas(uint32_t PID){ //ver semaforos para acceder a las 
 	pthread_mutex_unlock(&mutexComparador);
 	if(proceso==NULL) {puts("no existe proceso\n");return 0;}
 	list_iterate(proceso->direccion_tablaSegmentos,imprimirInformacionPaginas);
-	printf(" --- Fin de la tabla de paginas --- /n");
+	printf(" --- Fin de la tabla de paginas --- \n");
 	return 1;
 }
 
