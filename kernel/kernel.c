@@ -202,6 +202,7 @@ int main(int argc, char ** argv) {
 								tcb->km = 0;
 								tcb->pid = pid;
 								tcb->tid = tid;
+								tcb->socketConsola = socketCliente;
 								t_listaHilos * nodoListaHilos = malloc(	//CREA UN NUEVO NODO EN LA LISTA HILOS PARA EL PROCESO NUEVO Y LE ASIGNA UN VALOR DE 1 A SU CANTIDAD DE HILOS (VA A IR AUMENTANDO ESTE VALOR A MEDIDA QUE SE USE CREA).
 										sizeof(t_listaHilos));
 								nodoListaHilos->pid = pid;
@@ -254,6 +255,7 @@ int main(int argc, char ** argv) {
 						}	//FIN codigo==2.
 
 					}	//FIN DEL i==listenningSocket.
+					printf("%d\n",estaEnlaListaSocketsConsola(listaSocketsConsola, i));
 					if (estaEnlaListaSocketsConsola(listaSocketsConsola, i)) {
 						int recibido;
 						int intInutil;
