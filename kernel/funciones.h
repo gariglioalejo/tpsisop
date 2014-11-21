@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <sys/select.h>
 #include <semaphore.h>
+#include "/home/utnso/ansisop-panel/panel/kernel.h"
+#include "/home/utnso/ansisop-panel/panel/panel.h"
 
 typedef struct {
 	uint32_t base;
@@ -784,5 +786,8 @@ t_nodoRecurso * removerNodoRecursoPorRecurso(t_list * lista, int recurso) {
 	}
 	return list_remove_by_condition(lista, esElDelRecurso);
 }
+
+
+
 
 #endif /* CONSOLA_H_ */

@@ -28,24 +28,52 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 t_list * listaReady;
 t_list * listaCpuLibres;
 t_list * listaExec;
+t_list * listaBloq;
+t_queue * colaKM;
 
 void * manejoCpuLibres(void * arg) {
 
 	while (1) {
 		sem_wait(&hayCpu);
-		sem_wait(&hayEnReady);
 		pthread_mutex_lock(&mutex);
-		t_tcb * tcb = malloc(sizeof(t_tcb));
-		tcb = list_remove(listaReady, 0);
-		int * socketCpu = list_remove(listaCpuLibres, 0);
-		printf("Pid a Enviar:%d\n", tcb->pid);
-		printf("%c\n", tcb->registroB.nombre);
-		printf("%d\n", tcb->registroA.valores);
-		printf("%d\n", tcb->registroB.valores);
-		enviarTcb(tcb, *socketCpu);
-		tcb->socketCpu = *socketCpu;
-		list_add(listaExec, tcb);
-		pthread_mutex_unlock(&mutex);
+		if (list_size(listaBloq) && queue_size(colaKM)) {
+			t_tcb * tcb;
+			t_tcb *tcbKernelMode;
+			tcbKernelMode = queue_pop(colaKM);
+			tcb = list_get(listaBloq, 0);
+			tcbKernelMode->pid = tcb->pid;
+			tcbKernelMode->tid = tcb->tid; //es super importante esto, para poder saber cual
+			tcbKernelMode->socketConsola = tcb->socketConsola;
+			tcbKernelMode->registroA.valores = tcb->registroA.valores;
+			tcbKernelMode->registroB.valores = tcb->registroB.valores;
+			tcbKernelMode->registroC.valores = tcb->registroC.valores;
+			tcbKernelMode->registroD.valores = tcb->registroD.valores;
+			tcbKernelMode->registroE.valores = tcb->registroE.valores;
+			tcbKernelMode->P = tcb->direccionSyscallPendiente;
+			int * socketCpuAux = list_remove(listaCpuLibres, 0);
+			int socketCpu = *socketCpuAux;
+			//No hay que mandarle nada para indicarle que es el KM,no? Se da cuenta mirando el campo KM del tcb.
+			enviarTcb(tcbKernelMode, socketCpu);
+			tcbKernelMode->socketCpu = socketCpu;
+			list_add(listaExec, tcbKernelMode);
+			pthread_mutex_unlock(&mutex);
+		} else {								//Me cuesta imaginar un caso en donde se quede trabado en el sem_wait de hayEnReady, pensarlo bien. Podria ser si concluye la ejecucion de un proceso, en un lapso no pasa nada (en el cual se salta el if de listaBloq y colaKM), pero lo unico que llega despues es un KM, lo cual hace que no haya nada en ready pero si en el KM y en la lista bloq que ya considere. Ver que opinan.
+			pthread_mutex_unlock(&mutex);
+			sem_wait(&hayEnReady);
+			pthread_mutex_lock(&mutex);
+			t_tcb * tcb = malloc(sizeof(t_tcb));
+			tcb = list_remove(listaReady, 0);
+			int * socketCpu = list_remove(listaCpuLibres, 0);
+			printf("Pid a Enviar:%d\n", tcb->pid);
+			printf("%c\n", tcb->registroB.nombre);
+			printf("%d\n", tcb->registroA.valores);
+			printf("%d\n", tcb->registroB.valores);
+			enviarTcb(tcb, *socketCpu);
+			tcb->socketCpu = *socketCpu;
+			list_add(listaExec, tcb);
+			pthread_mutex_unlock(&mutex);
+		}
+
 	}
 	return NULL ;
 }
@@ -69,6 +97,8 @@ void * esperarEntradaEstandar(void * arg) {
 int main(int argc, char ** argv) {
 	checkArgument(2, argc);
 
+	inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
+
 	t_config * kernel_config;
 	kernel_config = config_create(argv[1]);
 
@@ -90,7 +120,6 @@ int main(int argc, char ** argv) {
 	int size_stack;
 	size_stack = config_get_int_value(kernel_config, "STACK");
 
-	t_queue * colaKM;
 	colaKM = queue_create();
 
 	listaReady = list_create();
@@ -108,7 +137,6 @@ int main(int argc, char ** argv) {
 	t_list * listaExit;
 	listaExit = list_create();
 
-	t_list * listaBloq;
 	listaBloq = list_create();
 
 	t_list * listaBloqJoin;
@@ -144,6 +172,11 @@ int main(int argc, char ** argv) {
 	tcbKM->km = 1;
 	tcbKM->pid = pid;
 	tcbKM->tid = tid;
+	tcbKM->registroA.nombre = 'A';
+	tcbKM->registroB.nombre = 'B';
+	tcbKM->registroC.nombre = 'C';
+	tcbKM->registroD.nombre = 'D';
+	tcbKM->registroE.nombre = 'E';
 	queue_push(colaKM, tcbKM);
 
 	int listenningSocket;
@@ -186,6 +219,7 @@ int main(int argc, char ** argv) {
 						int codigo;
 						codigo = recibirInt(socketCliente);	//PARA SABER SI ES CONSOLA O CPU (1=CONSOLA NUEVA,2=CPU NUEVA)
 						if (codigo == 1) {
+							conexion_consola(socketCliente);
 							char * sizeConBeso;
 							sizeConBeso = recibir_serializado_beso(	//DEVUELVE SERIALIZADO EL TAMANIO Y EL SCRIPT MANDADO POR LA CONSOLA
 									socketCliente);
@@ -239,6 +273,7 @@ int main(int argc, char ** argv) {
 							//NO CONSIDERE LA POSIBILIDAD DE QUE NO HUBIERA LUGAR AL CREAR SEGMENTO,RESOLVER.
 						}	//FIN codigo==1.
 						if (codigo == 123) {
+							conexion_cpu(socketCliente);
 							FD_SET(socketCliente, &master);
 							if (socketCliente > setmax) {
 								setmax = socketCliente;
@@ -255,7 +290,9 @@ int main(int argc, char ** argv) {
 						}	//FIN codigo==2.
 
 					}	//FIN DEL i==listenningSocket.
-					printf("%d\n",estaEnlaListaSocketsConsola(listaSocketsConsola, i));
+					printf("%d\n",
+							estaEnlaListaSocketsConsola(listaSocketsConsola,
+									i));
 					if (estaEnlaListaSocketsConsola(listaSocketsConsola, i)) {
 						int recibido;
 						int intInutil;
@@ -265,6 +302,7 @@ int main(int argc, char ** argv) {
 							exit(1);
 						}	//FIN DEL recibido= recv(i,...).
 						if (recibido == 0) {
+							desconexion_consola(i);
 							pthread_mutex_lock(&mutex);
 							t_listaSocketsConsola * nodoRemovido =
 									removerDeLaListaSocketsConsola(
@@ -334,6 +372,7 @@ int main(int argc, char ** argv) {
 							exit(1);
 						}	//FIN DEL if((recibido=recv(i,...)).
 						if (recibido == 0) {
+							desconexion_cpu(i);
 							pthread_mutex_lock(&mutex);
 							removerDeLaListaElInt(listaSocketsCpu, i);
 							removerDeLaListaElInt(listaCpuLibres, i);
@@ -767,7 +806,7 @@ int main(int argc, char ** argv) {
 								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
 								t_join * join = malloc(sizeof(t_join));
 								join->tcb = removerTcbConElTid(listaBloq,
-										tidLlamador);//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P
+										tidLlamador);//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
 								join->tidAEsperar = tidAEsperar;
 								list_add(listaBloqJoin, join);
 								break;
@@ -786,7 +825,7 @@ int main(int argc, char ** argv) {
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
 								nodoAux->tcb = removerTcbConElTid(listaBloq,
-										tcbEjecutandose->tid);//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P
+										tcbEjecutandose->tid);//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
 								nodoAux->idRecurso = idRecursoAux;
 								list_add(listaBloqRecurso, nodoAux);
 								pthread_mutex_unlock(&mutex);
@@ -824,3 +863,4 @@ int main(int argc, char ** argv) {
 	return 0;
 
 }
+
