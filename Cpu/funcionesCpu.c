@@ -46,8 +46,7 @@ int fnFREE (t_tcb * tcb){
 
 		if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-
-		tcb->P=tcb->P+4;
+			tcb->P=tcb->P+4;
 			return -1;
 		}
 
@@ -55,7 +54,7 @@ int fnFREE (t_tcb * tcb){
 	int dir = tcb->registroA.valores;
 	int pid = tcb->pid;
 
-	bool exito = destruirSegmentoAllocado(pid, dir, socketM);
+	bool exito = destruirSegmento(pid, dir, socketM);
 
 	if (exito){
 
@@ -68,8 +67,6 @@ int fnFREE (t_tcb * tcb){
 
 		printf("FREE Ejecutada \n");
 		return result;
-
-
 
 		tcb->P=tcb->P+4;
 	return 0;

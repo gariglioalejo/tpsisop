@@ -34,7 +34,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"SETM");
 	if(i==0){
 	printf("ENTRO EN SETM \n");
-	//poner funcion
+	setm(tcb);
 	}
 
 	else if (i!=0){
@@ -139,14 +139,14 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"INTE");
 	if(i==0){
 	printf("ENTRO EN INTE \n");
-	//poner funcion
+	inte(tcb);
 	}
 
 	else if (i!=0){
 	i=strcmp(palabra,"SHIF");
 	if(i==0){
 	printf("ENTRO EN SHIF \n");
-	//poner funcion
+	shif(tcb);
 	}
 
 	else if (i!=0){
@@ -167,7 +167,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"TAKE");
 	if(i==0){
 	printf("ENTRO EN TAKE \n");
-	//poner funcion
+	take(tcb);
 	}
 
 	else if (i!=0){

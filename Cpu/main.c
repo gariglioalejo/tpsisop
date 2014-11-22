@@ -8,6 +8,7 @@ int main (int argc, char** argv){
 	char* ip_kernel;
 	char* ip_memoria;
 	int retardo;
+	int dirsyscall;
 	t_tcb * tcb;
 	int instruccion = 0;
 	int i;
@@ -134,9 +135,9 @@ int main (int argc, char** argv){
 
 					//Block
 					if(systemcall>0){
-						int encolarEnBloqueado=3;
-						send(socketK,&encolarEnBloqueado,sizeof(int),0);
-						enviarTcb(tcb,socketK);
+						//int encolarEnBloqueado=3;
+						//send(socketK,&encolarEnBloqueado,sizeof(int),0);
+						//enviarTcb(tcb,socketK);
 					} else {
 
 						if (quantum==i){

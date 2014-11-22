@@ -1736,6 +1736,7 @@ int take(t_tcb * tcb){
 
 		char registro;
 		int numero;
+		int exito;
 		void * bytesApop;
 		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
@@ -1743,21 +1744,29 @@ int take(t_tcb * tcb){
 
 		//Numero
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+5;
+		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&numero,sizeof(int),0);
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		exito = recibirInt(socketM);
+		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+4;
+		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&registro,sizeof(char),0);
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		exito = recibirInt(socketM);
+		recv(socketM,&registro,sizeof(char),0);
 
 
 		//SolicitarNBytes
@@ -1768,26 +1777,29 @@ int take(t_tcb * tcb){
 		bytesApop = malloc(numero);
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&bytesApop,numero,0);
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		recv(socketM,&bytesApop,numero,0);
 
 
 		switch(registro){
 
 		case 'A':
-			memcpy((void*)tcb->registroA.valores,bytesApop,numero);
+			memcpy(&(tcb->registroA.valores),bytesApop,numero);
 			break;
 
 		case 'B':
-			memcpy((void*)tcb->registroB.valores,bytesApop,numero);
+			memcpy(&(tcb->registroB.valores),bytesApop,numero);
 			break;
 
 		case 'C':
-			memcpy((void*)tcb->registroC.valores,bytesApop,numero);
+			memcpy(&(tcb->registroC.valores),bytesApop,numero);
 			break;
 
 		case 'D':
-			memcpy((void*)tcb->registroD.valores,bytesApop,numero);
+			memcpy(&(tcb->registroD.valores),bytesApop,numero);
 			break;
 
 		case 'E':
@@ -1813,24 +1825,53 @@ int shif(t_tcb * tcb){
 		char registro;
 		int numero;
 		int codigoSolicitarMemoria=4;
+		int exito;
 		t_solicitarMemoria solicitador;
 		t_devolucion devolucion;
 
 		//Numero
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+5;
+		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
 
 
+
+
+		devolucion.exito = recibirInt(socketM);
+		numero = recibirInt(socketM);
+
+		if(devolucion.exito<0){
+			segmentatioFault++;
+			return 0;
+		}
 
 		//Registro
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+4;
+		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
+
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+
+		//recv(socketM,&devolucion,sizeof(t_devolucion),0);
+
+		devolucion.exito = recibirInt(socketM);
+		recv(socketM,&registro,sizeof(char),0);
+
+		if(devolucion.exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+
 
 
 		switch(registro){
