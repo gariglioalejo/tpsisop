@@ -1716,7 +1716,7 @@ int push(t_tcb * tcb){
 
 		free(bytesApush);
 		tcb->P=tcb->P+9;
-		printf("Termino PUSH");
+		printf("Termino PUSH\n");
 
 	return 0;
 }
