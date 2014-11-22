@@ -1661,8 +1661,14 @@ int push(t_tcb * tcb){
 		solicitador.tamanio=4;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&numero,sizeof(int),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+
+		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
 		solicitador.PID=tcb->pid;
@@ -1670,8 +1676,13 @@ int push(t_tcb * tcb){
 		solicitador.tamanio=1;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
-		send(socketK,&solicitador,sizeof(t_solicitarMemoria),0);
-		recv(socketK,&registro,sizeof(char),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		recv(socketM,&registro,sizeof(char),0);
 
 
 		bytesApush = malloc(numero);
@@ -1714,7 +1725,7 @@ int push(t_tcb * tcb){
 
 		free(bytesApush);
 		tcb->P=tcb->P+9;
-		printf("Termino PUSH");
+		printf("Termino PUSH\n");
 
 	return 0;
 }
