@@ -571,21 +571,16 @@ int nopp(t_tcb * tcb){
 
 int inte(t_tcb * tcb){
 
-	systemcall = 1;
+
 	int dirSyscall = pedirDireccion(socketM, tcb);
 
-	int codigo = 3; //enum SYSCALL
+	int codigo = 3;
 
-	//send(socketK,&codigo,sizeof(int),0);
 	enviarInt(codigo,socketK);
-	//send(socketK,&dirSyscall,sizeof(int),0);
 	enviarInt(dirSyscall,socketK);
-
-	//send(socketK,&tcb,sizeof(t_tcb),0);
 	enviarTcb(tcb,socketK);
 
-
-
+	systemcall++;
 
 	return 0;
 }

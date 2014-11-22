@@ -4,9 +4,6 @@
 
 //Funciones Privilegiadas
 
-/*MALC: Reserva una cantidad de memoria especificada por el registro A. La direccion de esta se
-almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
-al programa en ejecución.*/
 int fnMALC (t_tcb * tcb){
 
 	if (tcb->km != 1){
@@ -16,7 +13,7 @@ int fnMALC (t_tcb * tcb){
 		return -1;
 	}
 
-	t_devolucion devolucion;
+	//t_devolucion devolucion;
 	t_crearSegmento * segmentoCreado = malloc(sizeof(t_crearSegmento));
 	int result = 0;
 	int size = tcb->registroA.valores;
@@ -45,10 +42,6 @@ int fnMALC (t_tcb * tcb){
 }
 
 
-
-/*26. FREE
-Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alocada por la
-instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.*/
 int fnFREE (t_tcb * tcb){
 
 		if (tcb->km != 1){
@@ -67,7 +60,6 @@ int fnFREE (t_tcb * tcb){
 	if (exito){
 
 
-
 		} else {
 			segmentatioFault++;
 			result = -1;
@@ -84,12 +76,7 @@ int fnFREE (t_tcb * tcb){
 }
 
 
-
-/*27. INNN
-Pide por consola del programa que se ingrese un número, con signo entre –2.147.483.648 y
-2.147.483.647. El mismo será almacenado en el registro A. Invoca al servicio correspondiente en
-el proceso Kernel.*/
-int fnINNN (t_tcb * tcb){ //TODO SEGF
+int fnINNN (t_tcb * tcb){
 
 	if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -123,12 +110,7 @@ int fnINNN (t_tcb * tcb){ //TODO SEGF
 }
 
 
-
-/*28. INNC
-Pide por consola del programa que se ingrese una cadena no más larga de lo indicado por el
-registro B. La misma será almacenada en la posición de memoria apuntada por el registro A.
-Invoca al servicio correspondiente en el proceso Kernel.*/
-int fnINNC (t_tcb * tcb){ //TODO SEGF
+int fnINNC (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -162,7 +144,9 @@ int fnINNC (t_tcb * tcb){ //TODO SEGF
 
 			if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
 
-				//
+				segmentatioFault++;
+				return 0;
+
 			}
 
 		}
@@ -177,11 +161,7 @@ int fnINNC (t_tcb * tcb){ //TODO SEGF
 }
 
 
-
-/*29. OUTN
-Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
-servicio correspondiente en el proceso Kernel.*/
-int fnOUTN (t_tcb * tcb){ //TODO SEGF
+int fnOUTN (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -203,7 +183,7 @@ int fnOUTN (t_tcb * tcb){ //TODO SEGF
 		enviarInt(valorAimprimir,socketK);
 
 
-		result = recibirInt(socketK); //Esperar resultado
+		result = recibirInt(socketK); //TODO chequear!!! Esperar resultado
 
 
 		printf("OUTN Ejecutada \n");
@@ -216,13 +196,7 @@ int fnOUTN (t_tcb * tcb){ //TODO SEGF
 }
 
 
-
-
-/*30. OUTC
-Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
-encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
-proceso Kernel.*/
-int fnOUTC (t_tcb * tcb){ //TODO SEGF
+int fnOUTC (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -252,7 +226,7 @@ int fnOUTC (t_tcb * tcb){ //TODO SEGF
 
 		result = recibirInt(socketK); //Esperar resultado
 
-		//Revisar Evaluar resultado
+		//TODO Revisar Evaluar resultado
 
 		free(cadena);
 
@@ -264,20 +238,7 @@ int fnOUTC (t_tcb * tcb){ //TODO SEGF
 	return 0;
 }
 
-
-/*31. CREA
-Crea un hilo, hijo del TCB que ejecutó la llamada al sistema correspondiente. El nuevo hilo
-tendrá su Program Counter apuntado al número almacenado en el registro B. El identificador del
-nuevo hilo se almacena en el registro A.
-Para lograrlo debe generar un nuevo TCB como copia del TCB actual, asignarle un nuevo TID
-correlativo al actual, cargar en el Puntero de Instrucción la rutina donde comenzará a ejecutar el
-nuevo hilo (registro B), pasarlo de modo Kernel a modo Usuario,
-
-duplicar el segmento de stack
-desde la base del stack, hasta el cursor del stack. Asignar la base y cursor de forma acorde (tal
-que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al servicio
-correspondiente en el proceso Kernel con el TCB recién generado.*/
-int fnCREA (t_tcb * tcb){ //TODO SEGF
+int fnCREA (t_tcb * tcb){//TODO REVISAR EL PID!!!!
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -322,12 +283,7 @@ int fnCREA (t_tcb * tcb){ //TODO SEGF
 }
 
 
-
-/*32. JOIN
-Bloquea el programa que ejecutó la llamada al sistema hasta que el hilo con el identificador
-almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso
-Kernel.*/
-int fnJOIN (t_tcb * tcb){ //TODO SEGF
+int fnJOIN (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -357,11 +313,6 @@ int fnJOIN (t_tcb * tcb){ //TODO SEGF
 }
 
 
-/*33. BLOK
-Bloquea el programa que ejecutó la llamada al sistema hasta que el recurso apuntado por B se
-libere.
-La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema WAIT
-pre-compilada.*/
 int fnBLOK (t_tcb * tcb){ //TODO SEGF
 
 	if (tcb->km != 1){
@@ -389,11 +340,7 @@ int fnBLOK (t_tcb * tcb){ //TODO SEGF
 	return 0;
 }
 
-/*34. WAKE
-Desbloquea al primer programa bloqueado por el recurso apuntado por B.
-La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema
-SIGNAL pre-compilada.*/
-int fnWAKE (t_tcb * tcb){ //TODO SEGF
+int fnWAKE (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -404,12 +351,12 @@ int fnWAKE (t_tcb * tcb){ //TODO SEGF
 	}
 
 
-	int codigo = 9; //Wake
+	int codigo = 9;
 
 	int32_t recurso = tcb->registroB.valores;
 
 
-	enviarInt(codigo,socketK); //Aviso de un pedido de Bloqueo
+	enviarInt(codigo,socketK);
 	enviarInt(recurso,socketK);
 
 	printf("WAIT Ejecutada \n");

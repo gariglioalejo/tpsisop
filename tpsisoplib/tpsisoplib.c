@@ -556,7 +556,7 @@ int pedirDireccion(int socketMSP,t_tcb* tcb){
 
 	int direccion;
 
-	int codigoSolicitarMemoria=2;
+	int codigoSolicitarMemoria=4;
 
 	t_solicitarMemoria solicitarMemoria;
 
@@ -575,18 +575,21 @@ int pedirDireccion(int socketMSP,t_tcb* tcb){
 char* pedirString(int socketMSP,t_tcb* tcb){
 
 	char buff[tcb->registroB.valores];
-	int codigoSolicitarMemoria=2;
+	int codigoSolicitarMemoria=4;
 
-	t_solicitarMemoria solicitarMemoria;
+	//t_solicitarMemoria solicitarMemoria;
 
-	solicitarMemoria.PID=tcb->pid;
-	solicitarMemoria.direccion=tcb->registroA.valores;
-	solicitarMemoria.tamanio=tcb->registroB.valores;
+	//solicitarMemoria.PID=tcb->pid;
+	//solicitarMemoria.direccion=tcb->registroA.valores;
+	//solicitarMemoria.tamanio=tcb->registroB.valores;
 
+	enviarInt(codigoSolicitarMemoria,socketMSP);
+	enviarInt(tcb->pid,socketMSP);
+	enviarInt(tcb->registroA.valores,socketMSP);
+	enviarInt(tcb->registroB.valores,socketMSP);
 
-
-	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
-	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+	//send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+	//send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
 	recv(socketMSP,&buff,sizeof(buff),0);
 
@@ -648,7 +651,7 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 	int pid = tcb->pid;
 	int tamanio = tcb->tam_seg_stack;
 	t_solicitarMemoria solicitarMemoria;
-	int codigoSolicitarMemoria=2;
+	int codigoSolicitarMemoria=4;
 
 	resultado = crearSegmento(pid, tamanio, socketMSP);
 
