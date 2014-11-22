@@ -1653,11 +1653,11 @@ int push(t_tcb * tcb){
 		void * bytesApush;
 		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
-
+		int exito = 0;
 
 		//Numero
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+5;
+		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
@@ -1667,12 +1667,12 @@ int push(t_tcb * tcb){
 		enviarInt32(solicitador.direccion,socketM);
 		enviarInt(solicitador.tamanio,socketM);
 
-
+		recv(socketM,&exito,sizeof(int),0);
 		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
 		solicitador.PID=tcb->pid;
-		solicitador.direccion=tcb->P+4;
+		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
@@ -1682,6 +1682,7 @@ int push(t_tcb * tcb){
 		enviarInt32(solicitador.direccion,socketM);
 		enviarInt(solicitador.tamanio,socketM);
 
+		recv(socketM,&exito,sizeof(int),0);
 		recv(socketM,&registro,sizeof(char),0);
 
 
