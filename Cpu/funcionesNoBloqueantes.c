@@ -232,7 +232,7 @@ int movr(t_tcb * tcb){
 }
 
 int getm(t_tcb * tcb){
-
+	puts("recompile");
 	char reg1;
 	char reg2;
 	int valor;
@@ -264,6 +264,8 @@ int getm(t_tcb * tcb){
 
 	reg1=(char)devolucion.respuesta;
 
+	printf("%c",reg1);
+
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
 	solicitador.PID=tcb->pid;
@@ -285,6 +287,8 @@ int getm(t_tcb * tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
+
+	printf("%c %c", reg1, reg2);
 
 	if(reg2==tcb->registroA.nombre){
 
@@ -640,6 +644,11 @@ int addr(t_tcb * tcb){
 	reg2=(char)devolucion.respuesta;
 
 	switch(reg2){
+
+	case 'M':
+	aux1=tcb->M;
+	break;
+
 
 	case 'A':
 	aux1=tcb->registroA.valores;

@@ -1,4 +1,6 @@
-funcionesNoBloqueantes.d: ../funcionesNoBloqueantes.c \
- ../../ensalada\ de\ funciones/funciones.h
+funcionesNoBloqueantes.d: ../funcionesNoBloqueantes.c ../cpu.h \
+ ../../tpsisoplib/tpsisoplib.h
 
-../../ensalada\ de\ funciones/funciones.h:
+../cpu.h:
+
+../../tpsisoplib/tpsisoplib.h:
