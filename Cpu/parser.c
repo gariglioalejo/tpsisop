@@ -160,7 +160,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"PUSH");
 	if(i==0){
 	printf("ENTRO EN PUSH \n");
-	//poner funcion
+	push(tcb);
 	}
 
 	else if (i!=0){

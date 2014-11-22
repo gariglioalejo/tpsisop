@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../funcionesCpu.c \
 ../funcionesNoBloqueantes.c \
 ../main.c \
 ../parser.c 
 
 OBJS += \
+./funcionesCpu.o \
 ./funcionesNoBloqueantes.o \
 ./main.o \
 ./parser.o 
 
 C_DEPS += \
+./funcionesCpu.d \
 ./funcionesNoBloqueantes.d \
 ./main.d \
 ./parser.d 

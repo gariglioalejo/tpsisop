@@ -296,7 +296,7 @@ int getm(t_tcb * tcb){
 
 		solicitador.PID=tcb->pid;
 		solicitador.direccion=(uint32_t)tcb->registroA.valores;
-		solicitador.tamanio=4;
+		solicitador.tamanio=1;
 
 		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
@@ -322,7 +322,7 @@ int getm(t_tcb * tcb){
 
 		solicitador.PID=tcb->pid;
 		solicitador.direccion=(uint32_t)tcb->registroB.valores;
-		solicitador.tamanio=4;
+		solicitador.tamanio=1;
 
 		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
@@ -347,7 +347,7 @@ int getm(t_tcb * tcb){
 
 		solicitador.PID=tcb->pid;
 		solicitador.direccion=(uint32_t)tcb->registroC.valores;
-		solicitador.tamanio=4;
+		solicitador.tamanio=1;
 
 		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
@@ -373,7 +373,7 @@ int getm(t_tcb * tcb){
 
 			solicitador.PID=tcb->pid;
 			solicitador.direccion=(uint32_t)tcb->registroD.valores;
-			solicitador.tamanio=4;
+			solicitador.tamanio=1;
 
 			//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
@@ -398,7 +398,7 @@ int getm(t_tcb * tcb){
 
 				solicitador.PID=tcb->pid;
 				solicitador.direccion=(uint32_t)tcb->registroE.valores;
-				solicitador.tamanio=4;
+				solicitador.tamanio=1;
 
 				//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
@@ -1687,28 +1687,28 @@ int push(t_tcb * tcb){
 
 
 		bytesApush = malloc(numero);
-		memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
-
+		//memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
+		printf("HoLa martin bec\n");
 		switch(registro){
 
 		case 'A':
-			memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
+			memcpy(bytesApush,&(tcb->registroA.valores),numero);
 			break;
 
 		case 'B':
-			memcpy(bytesApush,(void*)tcb->registroB.valores,numero);
+			memcpy(bytesApush,&(tcb->registroB.valores),numero);
 			break;
 
 		case 'C':
-			memcpy(bytesApush,(void*)tcb->registroC.valores,numero);
+			memcpy(bytesApush,&(tcb->registroC.valores),numero);
 			break;
 
 		case 'D':
-			memcpy(bytesApush,(void*)tcb->registroD.valores,numero);
+			memcpy(bytesApush,&(tcb->registroD.valores),numero);
 			break;
 
 		case 'E':
-			memcpy(bytesApush,(void*)tcb->registroE.valores,numero);
+			memcpy(bytesApush,&(tcb->registroE.valores),numero);
 			break;
 
 		}

@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -l-lcommons
+LIBS := -ltpsisoplib -lcommons
 

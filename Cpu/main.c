@@ -120,37 +120,52 @@ int main (int argc, char** argv){
 			}
 
 
-
-
-		//Ready
-		if (quantum==i){
-			int encolarEnReady=0;
-			send(socketK,&encolarEnReady,sizeof(int),0);
-			//send(socketK,&tcb,sizeof(t_tcb),0);
-			enviarTcb(tcb,socketK);
-		}
-
-		//Block
-		if(systemcall>0){
-			int encolarEnBloqueado=3;
-			send(socketK,&encolarEnBloqueado,sizeof(int),0);
-			enviarTcb(tcb,socketK);
-		}
-
-		//Exit
 		if(ultimainstruccion>0){
 			int encolarEnExit=1;
 			send(socketK,&encolarEnExit,sizeof(int),0);
 			enviarTcb(tcb,socketK);
+		} else {
+			//SegmentationFault
+			if(segmentatioFault>0){
+				int encolarSegFault=2;
+				send(socketK,&encolarSegFault,sizeof(int),0);
+				enviarTcb(tcb,socketK);
+				} else {
+
+					//Block
+					if(systemcall>0){
+						int encolarEnBloqueado=3;
+						send(socketK,&encolarEnBloqueado,sizeof(int),0);
+						enviarTcb(tcb,socketK);
+					} else {
+
+						if (quantum==i){
+							int encolarEnReady=0;
+							send(socketK,&encolarEnReady,sizeof(int),0);
+							//send(socketK,&tcb,sizeof(t_tcb),0);
+							enviarTcb(tcb,socketK);
+						}
+
+
+
+					}
+
+
+
+				}
+
+
+
 		}
 
-		//SegmentationFault
-		if(segmentatioFault>0){
-			int encolarSegFault=2;
-			send(socketK,&encolarSegFault,sizeof(int),0);
-			enviarTcb(tcb,socketK);
-		}
+		//Ready
+
+
+
+		//Exit
+
 		
+
 		free(primeras4);
 		}
 
