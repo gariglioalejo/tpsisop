@@ -97,7 +97,7 @@ void * esperarEntradaEstandar(void * arg) {
 int main(int argc, char ** argv) {
 	checkArgument(2, argc);
 
-	inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
+	//inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
 
 	t_config * kernel_config;
 	kernel_config = config_create(argv[1]);
@@ -219,7 +219,7 @@ int main(int argc, char ** argv) {
 						int codigo;
 						codigo = recibirInt(socketCliente);	//PARA SABER SI ES CONSOLA O CPU (1=CONSOLA NUEVA,2=CPU NUEVA)
 						if (codigo == 1) {
-							conexion_consola(socketCliente);
+							//conexion_consola(socketCliente);
 							char * sizeConBeso;
 							sizeConBeso = recibir_serializado_beso(	//DEVUELVE SERIALIZADO EL TAMANIO Y EL SCRIPT MANDADO POR LA CONSOLA
 									socketCliente);
@@ -273,7 +273,7 @@ int main(int argc, char ** argv) {
 							//NO CONSIDERE LA POSIBILIDAD DE QUE NO HUBIERA LUGAR AL CREAR SEGMENTO,RESOLVER.
 						}	//FIN codigo==1.
 						if (codigo == 123) {
-							conexion_cpu(socketCliente);
+							//conexion_cpu(socketCliente);
 							FD_SET(socketCliente, &master);
 							if (socketCliente > setmax) {
 								setmax = socketCliente;
@@ -290,9 +290,9 @@ int main(int argc, char ** argv) {
 						}	//FIN codigo==2.
 
 					}	//FIN DEL i==listenningSocket.
-					printf("%d\n",
+					/*printf("%d\n",
 							estaEnlaListaSocketsConsola(listaSocketsConsola,
-									i));
+									i));*/
 					if (estaEnlaListaSocketsConsola(listaSocketsConsola, i)) {
 						int recibido;
 						int intInutil;
@@ -302,7 +302,7 @@ int main(int argc, char ** argv) {
 							exit(1);
 						}	//FIN DEL recibido= recv(i,...).
 						if (recibido == 0) {
-							desconexion_consola(i);
+							//desconexion_consola(i);
 							pthread_mutex_lock(&mutex);
 							t_listaSocketsConsola * nodoRemovido =
 									removerDeLaListaSocketsConsola(
@@ -372,7 +372,7 @@ int main(int argc, char ** argv) {
 							exit(1);
 						}	//FIN DEL if((recibido=recv(i,...)).
 						if (recibido == 0) {
-							desconexion_cpu(i);
+							//desconexion_cpu(i);
 							pthread_mutex_lock(&mutex);
 							removerDeLaListaElInt(listaSocketsCpu, i);
 							removerDeLaListaElInt(listaCpuLibres, i);

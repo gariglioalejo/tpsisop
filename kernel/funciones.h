@@ -26,8 +26,8 @@
 #include <stdbool.h>
 #include <sys/select.h>
 #include <semaphore.h>
-#include "/home/utnso/ansisop-panel/panel/kernel.h"
-#include "/home/utnso/ansisop-panel/panel/panel.h"
+//#include "/home/utnso/ansisop-panel/panel/kernel.h"
+//#include "/home/utnso/ansisop-panel/panel/panel.h"
 
 typedef struct {
 	uint32_t base;
