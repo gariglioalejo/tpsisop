@@ -86,7 +86,8 @@ int main (int argc, char** argv){
 
 			log_info(log_de_cpu,"EJECUTANDO KERNEL MODE");
 
-			primeras4=pedirPrimeraPalabra(socketM,tcb);
+			primeras4=pedirPrimeraPalabraKM(socketM,tcb);
+			primeras4[4]='\0';
 			parseador(primeras4,tcb);
 
 			sleep(retardo/1000);
@@ -95,7 +96,9 @@ int main (int argc, char** argv){
 		//Devuelvo el TCB KM1
 		int devuelvoKernelMode=0;
 		send(socketK,&devuelvoKernelMode,sizeof(int),0);
-		send(socketK,&tcb,sizeof(t_tcb),0);
+		//send(socketK,&tcb,sizeof(t_tcb),0);
+		printf("tcb enviado: %d\n",tcb->pid);
+		enviarTcb(tcb,socketK);
 
 		}
 

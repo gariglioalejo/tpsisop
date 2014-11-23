@@ -54,6 +54,7 @@ void * manejoCpuLibres(void * arg) {
 			int socketCpu = *socketCpuAux;
 			//No hay que mandarle nada para indicarle que es el KM,no? Se da cuenta mirando el campo KM del tcb.
 			enviarTcb(tcbKernelMode, socketCpu);
+			printf("%d\n || %d\n",tcbKernelMode->km,tcbKernelMode->pid);
 			tcbKernelMode->socketCpu = socketCpu;
 			list_add(listaExec, tcbKernelMode);
 			pthread_mutex_unlock(&mutex);
@@ -80,12 +81,15 @@ void * manejoCpuLibres(void * arg) {
 
 void * esperarEntradaEstandar(void * arg) {
 	t_paraEntradaEstandar * datosSocket = arg;
+	puts("juju");
+	printf("%d\n",datosSocket->tipoEE);
 	if (datosSocket->tipoEE == 0) {
 		int intIngresado;
 		intIngresado = recibirInt(datosSocket->socketConsola);
 		enviarInt(intIngresado, datosSocket->socketCpu);
 	}
 	if (datosSocket->tipoEE == 1) {
+		puts("iiii");
 		char * string;
 		string = recibir_serializado(datosSocket->socketConsola);
 		printf("%s\n", string);
@@ -165,7 +169,7 @@ int main(int argc, char ** argv) {
 
 	t_reservarSegmentos tcb_resultado;
 	int pid = 1, tid = 1;
-	tcb_resultado = reservarSegmentos(pid, size_syscalls, syscalls, size_stack,
+	tcb_resultado = reservarSegmentos(pid, size_syscalls, literal_syscalls, size_stack,
 			socketMsp, -1);
 	t_tcb * tcbKM;
 	tcbKM = tcb_resultado.tcb;

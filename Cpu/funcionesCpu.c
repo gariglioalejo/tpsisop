@@ -57,7 +57,9 @@ int fnFREE (t_tcb * tcb){
 	bool exito = destruirSegmento(pid, dir, socketM);
 
 	if (exito){
-
+				printf("FREE Ejecutada \n");
+				tcb->P=tcb->P+4;
+				return result;
 
 		} else {
 			segmentatioFault++;
@@ -65,10 +67,9 @@ int fnFREE (t_tcb * tcb){
 		}
 
 
-		printf("FREE Ejecutada \n");
-		return result;
 
-		tcb->P=tcb->P+4;
+
+
 	return 0;
 }
 
@@ -84,13 +85,14 @@ int fnINNN (t_tcb * tcb){
 		}
 
 		int codigo = 4; //Entrada Standard
-		int tipo = 1; //1 es INNN, 2 es INNC
+		int tipo = 0; //0 es INNN, 1 es INNC
 
 
 
 		int32_t valorIngresado = 0;
 
 		enviarInt(codigo,socketK);
+		enviarInt(tcb->pid,socketK);
 		enviarInt(tipo,socketK);
 
 		valorIngresado = recibirInt32(socketK);
@@ -119,7 +121,7 @@ int fnINNC (t_tcb * tcb){
 
 
 		int codigo = 4; //Entrada Standard
-		int tipo = 2; //1 es INNN, 2 es INNC
+		int tipo = 1; //0 es INNN, 1 es INNC
 		int nbytes;
 
 
@@ -128,18 +130,21 @@ int fnINNC (t_tcb * tcb){
 		int32_t pid = tcb->pid;
 
 		char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
-		char buff[tamanioCadena];
+		//char  buff[tamanioCadena];
 
 		enviarInt(codigo,socketK);
+		enviarInt(tcb->pid,socketK);
 		enviarInt(tipo,socketK);
+		enviarInt(tamanioCadena,socketK);
 
 
-		nbytes = recv(socketK, buff, sizeof(buff), 0);
+		//nbytes = recv(socketK, buff, sizeof(buff), 0);
+		cadenaIngresada = recibir_serializado(socketK);
+		printf("cadena: %s\n",cadenaIngresada);
 
-		if (nbytes > 0){
-			cadenaIngresada = buff;
+		if (strlen(cadenaIngresada) > 0){
 
-			if(escribirMemoria(pid,posMemoria,sizeof(cadenaIngresada),cadenaIngresada,socketM)){
+			if(!(escribirMemoria(pid,posMemoria,strlen(cadenaIngresada)+1,cadenaIngresada,socketM))){
 
 				segmentatioFault++;
 				return 0;
@@ -168,19 +173,24 @@ int fnOUTN (t_tcb * tcb){
 		return -1;
 	}
 
-
+		char * cadena;
+		int i;
 		int codigo = 5; //Salida Standard
-		int tipo = 1; //1 es OUTN, 2 es OUTC
-		int result = 0;
+
+
 
 		int32_t valorAimprimir = tcb->registroA.valores;
+		//cadena = itoa(valorAimprimir,cadena,10);
+		i = sprintf(cadena, "%d", valorAimprimir);
+		printf("valor int: %s\n",cadena);
 
 		enviarInt(codigo,socketK);
-		enviarInt(tipo,socketK);
-		enviarInt(valorAimprimir,socketK);
+		enviarInt(tcb->pid,socketK);
+		enviar_serializado(-1,cadena,socketK);
+		//enviarInt(valorAimprimir,socketK);
 
 
-		result = recibirInt(socketK); //TODO chequear!!! Esperar resultado
+
 
 
 		printf("OUTN Ejecutada \n");
@@ -204,7 +214,7 @@ int fnOUTC (t_tcb * tcb){
 	}
 
 		int codigo = 5; //Salida Standard
-		int tipo = 2; //1 es OUTN, 2 es OUTC
+
 		int result = 0;
 
 		int32_t direccion = tcb->registroA.valores;
@@ -214,16 +224,12 @@ int fnOUTC (t_tcb * tcb){
 
 
 		enviarInt(codigo,socketK); //Aviso de un pedido de entrada estandar
-		enviarInt(tipo,socketK); //Aviso tipo de dato a pedir
+		enviarInt(tcb->pid,socketK);
+
 
 		cadena = pedirString(socketM,tcb);
+		enviar_serializado(-1,cadena,socketK);
 
-		send(socketK,cadena,sizeof(cadena),0);
-
-
-		result = recibirInt(socketK); //Esperar resultado
-
-		//TODO Revisar Evaluar resultado
 
 		free(cadena);
 

@@ -569,6 +569,7 @@ int nopp(t_tcb * tcb){
 	printf("Se consumió un ciclo de quantum");
 
 	tcb->P=tcb->P+4;
+	printf("IP %d\n",tcb->P);
 
 	return 0;
 }
@@ -576,13 +577,15 @@ int nopp(t_tcb * tcb){
 int inte(t_tcb * tcb){
 
 
-	int dirSyscall = pedirDireccion(socketM, tcb);
+	uint32_t dirSyscall = pedirDireccion(socketM, tcb);
 
 	int codigo = 3;
 
+	tcb->P=tcb->P+8;
 	enviarInt(codigo,socketK);
-	enviarInt(dirSyscall,socketK);
 	enviarTcb(tcb,socketK);
+	enviarInt(dirSyscall,socketK);
+
 
 	systemcall++;
 

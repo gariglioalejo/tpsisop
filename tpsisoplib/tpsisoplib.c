@@ -396,7 +396,7 @@ bool destruirSegmento(int pid,uint32_t base,int socket) {
 }
 
 bool destruirSegmentoAllocado(int pid, uint32_t base, int socket) {
-	int destruir_segmento = 1;
+	int destruir_segmento = 2;
 	bool exito;
 	int resultado;
 
@@ -552,30 +552,90 @@ char* pedirPrimeraPalabra(int socketMSP,t_tcb* tcb){
 	return palabra;
 }
 
-int pedirDireccion(int socketMSP,t_tcb* tcb){
 
-	int direccion;
+char* pedirPrimeraPalabraKM(int socketMSP,t_tcb* tcb){
+
+	char* palabra;
+	int exito;
+	palabra=malloc(sizeof(int));
+
+	int codigoSolicitarMemoria=4;
+	int pid;
+	int dir;
+	int tam;
+
+	//t_solicitarMemoria solicitarMemoria;
+	t_devolucion devolucion;
+
+	//solicitarMemoria.PID=1;
+	//solicitarMemoria.direccion=tcb->P;
+	//solicitarMemoria.tamanio=4;
+
+	pid = 1;
+	dir = tcb->P;
+	tam = 4;
+
+	//send(socketMSP,&codigoSolicitarMemoria,4,0);
+	//send(socketMSP,&pid,sizeof(int),0);
+	//send(socketMSP,&dir,sizeof(int),0);
+	//send(socketMSP,&tam,sizeof(int),0);
+
+	enviarInt(codigoSolicitarMemoria,socketMSP);
+	enviarInt(pid,socketMSP);
+	enviarInt(dir,socketMSP);
+	enviarInt(tam,socketMSP);
+
+//	send(socketMSP,&codigoSolicitarMemoria,4,0);
+//	send(socketMSP,&codigoSolicitarMemoria,4,0);
+
+//	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+
+//	recv(socketMSP,&devolucion,sizeof(t_devolucion),0);
+	exito = recibirInt(socketMSP);
+	palabra = recibirBeso(4,socketMSP);
+
+//	palabra = &(devolucion.respuesta);
+
+	return palabra;
+}
+
+uint32_t pedirDireccion(int socketMSP,t_tcb* tcb){
+
+	uint32_t direccion;
+	int exito;
 
 	int codigoSolicitarMemoria=4;
 
-	t_solicitarMemoria solicitarMemoria;
+//	t_solicitarMemoria solicitarMemoria;
 
-	solicitarMemoria.PID=tcb->pid;
-	solicitarMemoria.direccion=tcb->P+4;
-	solicitarMemoria.tamanio=4;
+//	solicitarMemoria.PID=tcb->pid;
+//	solicitarMemoria.direccion=tcb->P+4;
+//	solicitarMemoria.tamanio=4;
 
 	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
-	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+	//send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-	recv(socketMSP,&direccion,4,0);
+	enviarInt(tcb->pid,socketMSP);
+	enviarInt32(tcb->P+4,socketMSP);
+	enviarInt(4,socketMSP);
+
+	exito = recibirInt(socketMSP);
+	direccion = recibirInt32(socketMSP);
+
+
+
+
+	//recv(socketMSP,&direccion,4,0);
 
 	return direccion;
 }
 
 char* pedirString(int socketMSP,t_tcb* tcb){
 
-	char buff[tcb->registroB.valores];
+	//char buff[tcb->registroB.valores];
+	char * cadena;
 	int codigoSolicitarMemoria=4;
+	int exito;
 
 	//t_solicitarMemoria solicitarMemoria;
 
@@ -591,9 +651,15 @@ char* pedirString(int socketMSP,t_tcb* tcb){
 	//send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
 	//send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-	recv(socketMSP,&buff,sizeof(buff),0);
+	//recv(socketMSP,&buff,sizeof(buff),0);
+	exito = recibirInt(socketMSP);
+	cadena = recibirBeso(tcb->registroB.valores,socketMSP);
 
-	return buff;
+
+	printf("String Leida de MSP: %s\n",cadena);
+
+
+	return cadena;
 }
 
 char *inputString(FILE* fp, size_t size){
