@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <sys/select.h>
 #include <semaphore.h>
+#include <panel/kernel.h>
 //#include "/home/utnso/ansisop-panel/panel/kernel.h"
 //#include "/home/utnso/ansisop-panel/panel/panel.h"
 
@@ -458,8 +459,7 @@ bool destruirSegmento(int pid, uint32_t base, int socket) {
 	return false;
 }
 
-t_reservarSegmentos * reservarStackCrea(int pid, t_tcb * tcbHijo, int stack,
-		int socketMsp, int socketCpu) {
+t_reservarSegmentos * reservarStackCrea(int pid, t_tcb * tcbHijo, int stack, int socketMsp, int socketCpu) {
 
 	t_reservarSegmentos * tcb_resultado = malloc(sizeof(t_reservarSegmentos));
 	tcb_resultado->tcb = malloc(sizeof(t_tcb));

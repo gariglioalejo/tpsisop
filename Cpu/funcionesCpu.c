@@ -228,6 +228,7 @@ int fnOUTC (t_tcb * tcb){
 
 
 		cadena = pedirString(socketM,tcb);
+
 		enviar_serializado(-1,cadena,socketK);
 
 
@@ -259,9 +260,13 @@ int fnCREA (t_tcb * tcb){//TODO REVISAR EL PID!!!!
 	copiarTcb(tcb,nuevotcb);
 
 	nuevotcb->P = tcb->registroB.valores;
-	nuevotcb->pid = tcb->registroA.valores;
 	nuevotcb->tid = tcb->tid + 1;
 	nuevotcb->km = 0;
+	tcb->registroA.valores=nuevotcb->tid;
+
+//	nuevotcb->pid = tcb->registroA.valores;
+
+
 
 
 	//Duplicar Stack
@@ -273,9 +278,12 @@ int fnCREA (t_tcb * tcb){//TODO REVISAR EL PID!!!!
 		return -1;
 	}
 
+	printf("Base original: %d\n",tcb->X);
+	printf("Base original: %d\n",nuevotcb->X);
 
 	enviarInt(codigo,socketK);
 	enviarTcb(nuevotcb, socketK);
+
 
 	printf("CREA Ejecutada \n");
 
@@ -301,6 +309,7 @@ int fnJOIN (t_tcb * tcb){
 	int recurso = tcb->registroA.valores;
 
 	enviarInt(codigo,socketK);
+	enviarInt(tcb->tid,socketK);
 	enviarInt(recurso,socketK);
 
 
