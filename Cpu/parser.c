@@ -34,7 +34,7 @@ int parseador(char* palabra, t_tcb* tcb){
 	i=strcmp(palabra,"SETM");
 	if(i==0){
 	printf("ENTRO EN SETM \n");
-	//setm(tcb);
+	setm(tcb);
 	}
 
 	else if (i!=0){

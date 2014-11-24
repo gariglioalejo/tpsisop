@@ -68,7 +68,7 @@ int cleq(t_tcb*);
 int divr(t_tcb*);
 int modr(t_tcb*);
 int xxxx(t_tcb*);
-
+int setm(t_tcb*);
 int inte(t_tcb * tcb);
 int push(t_tcb * tcb);
 int take(t_tcb * tcb);

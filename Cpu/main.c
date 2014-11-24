@@ -83,7 +83,8 @@ int main (int argc, char** argv){
 		if(tcb->km==1){
 
 		while(!ultimainstruccion){
-
+			
+			
 			log_info(log_de_cpu,"EJECUTANDO KERNEL MODE");
 
 			primeras4=pedirPrimeraPalabraKM(socketM,tcb);

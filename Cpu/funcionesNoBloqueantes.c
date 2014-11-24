@@ -23,7 +23,8 @@
 
 #include "cpu.h"
 
-int load(t_tcb * tcb){
+int load(t_tcb * tcb){uint32_t pidAux;
+if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 
 	char registro;
@@ -37,7 +38,7 @@ int load(t_tcb * tcb){
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -64,7 +65,7 @@ int load(t_tcb * tcb){
 
 	registro=(char)devolucion.respuesta;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=4;
 
@@ -127,13 +128,14 @@ int movr(t_tcb * tcb){
 	char registro2;
 
 	int32_t aux;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	int codigoSolicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -157,7 +159,7 @@ int movr(t_tcb * tcb){
 
 	registro1=(char)devolucion.respuesta;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
@@ -236,6 +238,8 @@ int getm(t_tcb * tcb){
 	char reg1;
 	char reg2;
 	int valor;
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
@@ -244,7 +248,7 @@ int getm(t_tcb * tcb){
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -268,7 +272,7 @@ int getm(t_tcb * tcb){
 
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
@@ -294,7 +298,7 @@ int getm(t_tcb * tcb){
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=(uint32_t)tcb->registroA.valores;
 		solicitador.tamanio=1;
 
@@ -320,7 +324,7 @@ int getm(t_tcb * tcb){
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=(uint32_t)tcb->registroB.valores;
 		solicitador.tamanio=1;
 
@@ -345,7 +349,7 @@ int getm(t_tcb * tcb){
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=(uint32_t)tcb->registroC.valores;
 		solicitador.tamanio=1;
 
@@ -371,7 +375,7 @@ int getm(t_tcb * tcb){
 
 			send(socketM,&solicitarMemoria,sizeof(int),0);
 
-			solicitador.PID=tcb->pid;
+			solicitador.PID=pidAux;
 			solicitador.direccion=(uint32_t)tcb->registroD.valores;
 			solicitador.tamanio=1;
 
@@ -396,7 +400,7 @@ int getm(t_tcb * tcb){
 
 				send(socketM,&solicitarMemoria,sizeof(int),0);
 
-				solicitador.PID=tcb->pid;
+				solicitador.PID=pidAux;
 				solicitador.direccion=(uint32_t)tcb->registroE.valores;
 				solicitador.tamanio=1;
 
@@ -460,8 +464,10 @@ int decr(t_tcb * tcb){
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -516,8 +522,10 @@ int incr(t_tcb * tcb){
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -593,23 +601,25 @@ int inte(t_tcb * tcb){
 }
 
 int addr(t_tcb * tcb){
-
+	
 	char reg1;
 	char reg2;
 	t_solicitarMemoria solicitador;
 	int32_t aux1;
 	t_devolucion devolucion;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
+	
 	int solicitarMemoria=4;
-
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
-
 	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
+
+	
 	send(socketM,&solicitador.PID,sizeof(int),0);
 	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
 	send(socketM,&solicitador.tamanio,sizeof(int),0);
@@ -623,8 +633,7 @@ int addr(t_tcb * tcb){
 	}
 
 	reg1=(char)devolucion.respuesta;
-
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
@@ -645,7 +654,7 @@ int addr(t_tcb * tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
-
+	printf("%c %c",reg2,reg1);
 	switch(reg2){
 
 	case 'M':
@@ -672,7 +681,13 @@ int addr(t_tcb * tcb){
 	case 'E':
 	aux1=tcb->registroE.valores;
 	break;
+	
+	case 'S':
+	aux1=tcb->S;
+	break;
+
 	}
+
 
 	switch(reg1){
 	case 'A':
@@ -713,10 +728,11 @@ int subr(t_tcb * tcb){
 	t_devolucion devolucion;
 
 	int solicitarMemoria=4;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -736,7 +752,7 @@ int subr(t_tcb * tcb){
 
 	reg1=(char)devolucion.respuesta;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
@@ -821,10 +837,11 @@ int mulr(t_tcb * tcb){
 	t_devolucion devolucion;
 
 	int solicitarMemoria=4;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -844,7 +861,7 @@ int mulr(t_tcb * tcb){
 
 	reg1=(char)devolucion.respuesta;
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+5;
 	solicitador.tamanio=1;
 
@@ -929,10 +946,11 @@ int gotoo(t_tcb * tcb){
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -990,10 +1008,11 @@ int jmpz(t_tcb * tcb){
 
 	t_devolucion devolucion;
 	t_solicitarMemoria solicitador;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=4;
 
@@ -1029,7 +1048,8 @@ int jmpz(t_tcb * tcb){
 
 int jpnz(t_tcb * tcb){
 
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 	if(tcb->registroA.valores==0){
 
@@ -1047,7 +1067,7 @@ int jpnz(t_tcb * tcb){
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
@@ -1090,10 +1110,11 @@ int comp(t_tcb * tcb){
 	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -1205,10 +1226,11 @@ int cgeq(t_tcb * tcb){
 	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -1320,10 +1342,11 @@ int cleq(t_tcb * tcb){
 	int solicitarMemoria=4;
 
 	t_solicitarMemoria solicitador;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -1435,10 +1458,11 @@ int divr(t_tcb* tcb){
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
-
+	int pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
-	solicitador.PID=tcb->pid;
+	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 
@@ -1550,10 +1574,11 @@ int modr(t_tcb* tcb){
 
 		t_devolucion devolucion;
 		t_solicitarMemoria solicitador;
-
+		int pidAux;
+		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		send(socketM,&solicitarMemoria,sizeof(int),0);
 
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=1;
 
@@ -1657,9 +1682,10 @@ int push(t_tcb * tcb){
 		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
 		int exito = 0;
-
+		int pidAux;
+		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		//Numero
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
@@ -1674,7 +1700,7 @@ int push(t_tcb * tcb){
 		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
@@ -1744,9 +1770,10 @@ int take(t_tcb * tcb){
 		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
 
-
+		int pidAux;
+		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		//Numero
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
@@ -1759,7 +1786,7 @@ int take(t_tcb * tcb){
 		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
@@ -1773,7 +1800,7 @@ int take(t_tcb * tcb){
 
 
 		//SolicitarNBytes
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->S-numero;
 		solicitador.tamanio=numero;
 
@@ -1831,9 +1858,10 @@ int shif(t_tcb * tcb){
 		int exito;
 		t_solicitarMemoria solicitador;
 		t_devolucion devolucion;
-
+		int pidAux;
+		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		//Numero
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+4;
 		solicitador.tamanio=4;
 
@@ -1855,7 +1883,7 @@ int shif(t_tcb * tcb){
 		}
 
 		//Registro
-		solicitador.PID=tcb->pid;
+		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
@@ -1957,6 +1985,117 @@ int xxxx(t_tcb* tcb){
 	tcb->P=tcb->P+4;
 
 	ultimainstruccion++;
+
+	return 0;
+}
+int setm(t_tcb* tcb){
+		int numero; 
+		char registro1;
+		char registro2;
+		t_solicitarMemoria solicitador;
+		int exito=0; 
+		int codigoSolicitarMemoria=4;
+	 	void* bytesApush;
+		uint32_t direccionAgrabar;
+		int pidAux;
+		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
+		//Numero
+		solicitador.PID=pidAux;
+		solicitador.direccion=tcb->P+4;
+		solicitador.tamanio=4;
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+		recv(socketM,&exito,sizeof(int),0);
+		recv(socketM,&numero,sizeof(int),0);
+		
+		//Registro1
+		solicitador.PID=pidAux;
+		solicitador.direccion=tcb->P+8;
+		solicitador.tamanio=1;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		recv(socketM,&exito,sizeof(int),0);
+		recv(socketM,&registro1,sizeof(char),0);
+
+		//Registro2
+		solicitador.PID=pidAux;
+		solicitador.direccion=tcb->P+9;
+		solicitador.tamanio=1;
+
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+		enviarInt(solicitador.PID,socketM);
+		enviarInt32(solicitador.direccion,socketM);
+		enviarInt(solicitador.tamanio,socketM);
+
+		recv(socketM,&exito,sizeof(int),0);
+		recv(socketM,&registro2,sizeof(char),0);
+
+		bytesApush = malloc(numero);
+		//memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
+		printf("HoLa martin bec\n");
+		switch(registro2){
+
+		case 'A':
+			memcpy(bytesApush,&(tcb->registroA.valores),numero);
+			break;
+
+		case 'B':
+			memcpy(bytesApush,&(tcb->registroB.valores),numero);
+			break;
+
+		case 'C':
+			memcpy(bytesApush,&(tcb->registroC.valores),numero);
+			break;
+
+		case 'D':
+			memcpy(bytesApush,&(tcb->registroD.valores),numero);
+			break;
+
+		case 'E':
+			memcpy(bytesApush,&(tcb->registroE.valores),numero);
+			break;
+
+		}
+
+		switch(registro1){
+
+		case 'A':
+			direccionAgrabar=tcb->registroA.valores;
+			break;
+
+		case 'B':
+			direccionAgrabar=tcb->registroB.valores;
+			break;
+
+		case 'C':
+			direccionAgrabar=tcb->registroC.valores;
+			break;
+
+		case 'D':
+			direccionAgrabar=tcb->registroD.valores;
+			break;
+
+		case 'E':
+			direccionAgrabar=tcb->registroE.valores;
+			break;
+
+		}
+
+	if(!escribirMemoria(pidAux,direccionAgrabar,numero,(char *)bytesApush,socketM)) printf("no se pudo escribir en memoria\n");
+		
+		free(bytesApush);
+		tcb->P=tcb->P+10;
+		printf("Termino setm\n");
 
 	return 0;
 }
