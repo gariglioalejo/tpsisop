@@ -34,9 +34,9 @@ t_queue * colaKM;
 void * manejoCpuLibres(void * arg) {
 
 	while (1) {
-		sem_wait(&hayCpu);
+		//sem_wait(&hayCpu);
 		pthread_mutex_lock(&mutex);
-		if (list_size(listaBloq) && queue_size(colaKM)) {
+		if (list_size(listaBloq) && queue_size(colaKM)&&list_size(listaCpuLibres)) {
 			t_tcb * tcb;
 			t_tcb *tcbKernelMode;
 			tcbKernelMode = queue_pop(colaKM);
@@ -57,11 +57,13 @@ void * manejoCpuLibres(void * arg) {
 			printf("%d\n || %d\n", tcbKernelMode->km, tcbKernelMode->pid);
 			tcbKernelMode->socketCpu = socketCpu;
 			list_add(listaExec, tcbKernelMode);
-			pthread_mutex_unlock(&mutex);
-		} else { //Me cuesta imaginar un caso en donde se quede trabado en el sem_wait de hayEnReady, pensarlo bien. Podria ser si concluye la ejecucion de un proceso, en un lapso no pasa nada (en el cual se salta el if de listaBloq y colaKM), pero lo unico que llega despues es un KM, lo cual hace que no haya nada en ready pero si en el KM y en la lista bloq que ya considere. Ver que opinan.
-			pthread_mutex_unlock(&mutex);
-			sem_wait(&hayEnReady);
-			pthread_mutex_lock(&mutex);
+			//pthread_mutex_unlock(&mutex);
+		}
+		//else { //Me cuesta imaginar un caso en donde se quede trabado en el sem_wait de hayEnReady, pensarlo bien. Podria ser si concluye la ejecucion de un proceso, en un lapso no pasa nada (en el cual se salta el if de listaBloq y colaKM), pero lo unico que llega despues es un KM, lo cual hace que no haya nada en ready pero si en el KM y en la lista bloq que ya considere. Ver que opinan.
+		//	pthread_mutex_unlock(&mutex);
+		else if(list_size(listaCpuLibres)&&list_size(listaReady)){
+		//sem_wait(&hayEnReady);
+			//pthread_mutex_lock(&mutex);
 			t_tcb * tcb = malloc(sizeof(t_tcb));
 			tcb = list_remove(listaReady, 0);
 			int * socketCpu = list_remove(listaCpuLibres, 0);
@@ -72,9 +74,9 @@ void * manejoCpuLibres(void * arg) {
 			enviarTcb(tcb, *socketCpu);
 			tcb->socketCpu = *socketCpu;
 			list_add(listaExec, tcb);
-			pthread_mutex_unlock(&mutex);
-		}
 
+		}
+		pthread_mutex_unlock(&mutex);
 	}
 	return NULL ;
 }

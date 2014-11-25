@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <sys/select.h>
 #include <semaphore.h>
-#include <panel/kernel.h>
+//#include <panel/kernel.h>
 //#include "/home/utnso/ansisop-panel/panel/kernel.h"
 //#include "/home/utnso/ansisop-panel/panel/panel.h"
 
