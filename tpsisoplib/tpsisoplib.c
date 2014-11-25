@@ -654,6 +654,9 @@ char* pedirString(int socketMSP,t_tcb* tcb){
 	//recv(socketMSP,&buff,sizeof(buff),0);
 	exito = recibirInt(socketMSP);
 	cadena = recibirBeso(tcb->registroB.valores,socketMSP);
+	printf("registro A: %d\n",tcb->registroA.valores);
+	printf("registro B: %d\n",tcb->registroB.valores);
+	cadena[tcb->registroB.valores] = '\0';
 
 
 	printf("String Leida de MSP: %s\n",cadena);
@@ -704,6 +707,7 @@ int copiarTcb(t_tcb * tcbviejo, t_tcb * tcbnuevo){
 	tcbnuevo->socketConsola = tcbviejo->socketConsola;
 	tcbnuevo->socketCpu = tcbviejo->socketCpu;
 	tcbnuevo->tam_seg_cod = tcbviejo->tam_seg_cod;
+	tcbnuevo->tam_seg_stack = tcbviejo->tam_seg_stack;
 	tcbnuevo->tid = tcbviejo->tid;
 
 	return 0;
@@ -724,23 +728,29 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 
 		if (resultado->exito) {
 
-			void * contenidoStack = malloc(tamanio);
+			char * contenidoStack;
 
 			solicitarMemoria.PID=tcb->pid;
 			solicitarMemoria.direccion=tcb->X;
 			solicitarMemoria.tamanio= tamanio;
 
 
-			send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
-			send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
+		//	send(socketMSP,&codigoSolicitarMemoria,sizeof(int),0);
+			enviarInt(codigoSolicitarMemoria,socketMSP);
+			enviarInt(solicitarMemoria.PID,socketMSP);
+			enviarInt(solicitarMemoria.direccion,socketMSP);
+			enviarInt(solicitarMemoria.tamanio,socketMSP);
+		//	send(socketMSP,&solicitarMemoria,sizeof(t_solicitarMemoria),0);
 
-			recv(socketMSP,contenidoStack,sizeof(contenidoStack),0);
+			int exito = recibirInt(socketMSP);
+			contenidoStack = recibirBeso(tamanio,socketMSP);
+		//	recv(socketMSP,contenidoStack,sizeof(contenidoStack),0);
 
 			diferenciaStack = (tcb->S - tcb->X);
 			nuevotcb->X = resultado->base;
 			nuevotcb->S = nuevotcb->X + diferenciaStack;
 
-			escribirMemoria(nuevotcb->pid,nuevotcb->X,nuevotcb->tam_seg_stack,(char*) contenidoStack,socketMSP);
+			escribirMemoria(nuevotcb->pid,nuevotcb->X,nuevotcb->tam_seg_stack, contenidoStack,socketMSP);
 
 		} else {
 
