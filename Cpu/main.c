@@ -3,6 +3,8 @@
 
 int main (int argc, char** argv){
 
+	printf("Se levanto una CPU\n");
+	
 	char* puerto_kernel;
 	char* puerto_memoria;
 	char* ip_kernel;
