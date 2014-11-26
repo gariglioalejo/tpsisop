@@ -745,10 +745,11 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 			int exito = recibirInt(socketMSP);
 			contenidoStack = recibirBeso(tamanio,socketMSP);
 		//	recv(socketMSP,contenidoStack,sizeof(contenidoStack),0);
+		printf("viejoSegmento %u",tcb->X);printf("viejoSP %u",tcb->S);
 
-			diferenciaStack = (tcb->S - tcb->X);
+			diferenciaStack = (tcb->S - tcb->X);printf("difStack %u",diferenciaStack);
 			nuevotcb->X = resultado->base;
-			nuevotcb->S = nuevotcb->X + diferenciaStack;
+			nuevotcb->S =( nuevotcb->X + diferenciaStack);printf("nuevoStackP %u",nuevotcb->S);
 
 			escribirMemoria(nuevotcb->pid,nuevotcb->X,nuevotcb->tam_seg_stack, contenidoStack,socketMSP);
 
@@ -766,12 +767,12 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 }
 
 
-uint32_t logicalRightShift(uint32_t x, int n) {
-    return (uint32_t)x >> n;
+uint32_t logicalRightShift(uint32_t x, int n) {printf("paso por RSHIFT");
+    return( (uint32_t)(x >> n));
 }
 
-uint32_t logicalLeftShift(uint32_t x, int n) {
-    return (uint32_t)x << n;
+uint32_t logicalLeftShift(uint32_t x, int n) {printf("paso por LSHIFT");
+    return ((uint32_t)(x << n));
 }
 
 
