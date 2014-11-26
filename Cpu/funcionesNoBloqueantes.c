@@ -194,11 +194,11 @@ int movr(t_tcb * tcb){
 		}
 
 		if(registro2==tcb->registroD.nombre){
-			aux=tcb->registroA.valores;
+			aux=tcb->registroD.valores;
 		}
 
 		if(registro2==tcb->registroE.nombre){
-			aux=tcb->registroA.valores;
+			aux=tcb->registroE.valores;
 		}
 
 		if(registro1==tcb->registroA.nombre){
@@ -232,7 +232,6 @@ int movr(t_tcb * tcb){
 
 	return 0;
 }
-
 int getm(t_tcb * tcb){
 
 	char reg1;
@@ -1815,6 +1814,10 @@ int take(t_tcb * tcb){
 		enviarInt(solicitador.tamanio,socketM);
 
 		exito = recibirInt(socketM);
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
 		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
@@ -1828,14 +1831,18 @@ int take(t_tcb * tcb){
 		enviarInt(solicitador.tamanio,socketM);
 
 		exito = recibirInt(socketM);
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
 		recv(socketM,&registro,sizeof(char),0);
 
 
 		//SolicitarNBytes
 		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->S-numero;
-		solicitador.tamanio=numero;
-
+		solicitador.tamanio=numero;printf("%u\n",tcb->S);
+printf("%u\n",solicitador.direccion);
 		bytesApop = malloc(numero);
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
@@ -1843,8 +1850,15 @@ int take(t_tcb * tcb){
 		enviarInt32(solicitador.direccion,socketM);
 		enviarInt(solicitador.tamanio,socketM);
 
-		recv(socketM,&bytesApop,numero,0);
+	
+		exito=recibirInt(socketM);printf("%u\n",exito);
 
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+		recv(socketM,bytesApop,numero,0);
+		
 
 		switch(registro){
 
@@ -1880,6 +1894,7 @@ int take(t_tcb * tcb){
 	printf("Termino TAKE");
 	return 0;
 }
+
 
 
 int shif(t_tcb * tcb){
