@@ -254,8 +254,9 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		direccion=recibirInt32(socketCliente);//fede lo tiene que mandar como int32
 		tamanio=recibirInt(socketCliente);
 		respuesta=solicitarMemoria(PID,direccion,tamanio);
-		if(respuesta.exito<1)enviarInt(-1,socketCliente);
-		else enviarInt(1,socketCliente);algo=respuesta.direccion;
+		if(respuesta.exito<1){enviarInt(-1,socketCliente);}
+		else{ enviarInt(1,socketCliente);}
+		algo=respuesta.direccion;
 		enviarBeso(tamanio,algo,socketCliente);}
 
 recibido = recv(socketCliente, &i, sizeof(int), 0);
