@@ -69,6 +69,7 @@ typedef struct {
 	int socketConsola;
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
+	int tidMaximo;
 } t_tcb;
 
 typedef struct {

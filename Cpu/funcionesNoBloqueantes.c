@@ -92,32 +92,32 @@ if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 	if(registro==tcb->registroA.nombre){
 		tcb->registroA.valores=valor;
-		printf("El registro: %c, se aumento: %d",tcb->registroA.nombre,valor);
+		printf("Al registro: %c, se le asigno: %d \n",tcb->registroA.nombre,valor);
 	}
 
 	if(registro==tcb->registroB.nombre){
 			tcb->registroB.valores=valor;
-			printf("El registro: %c, se aumento: %d",tcb->registroB.nombre,valor);
+			printf("Al registro: %c, se le asigno: %d \n",tcb->registroB.nombre,valor);
 	}
 
 	if(registro==tcb->registroC.nombre){
 			tcb->registroC.valores=valor;
-			printf("El registro: %c, se aumento: %d",tcb->registroC.nombre,valor);
+			printf("Al registro: %c, se le asigno: %d \n",tcb->registroC.nombre,valor);
 	}
 
 	if(registro==tcb->registroD.nombre){
 			tcb->registroD.valores=valor;
-			printf("El registro: %c, se aumento: %d",tcb->registroD.nombre,valor);
+			printf("Al registro: %c, se le asigno: %d \n",tcb->registroD.nombre,valor);
 	}
 
 	if(registro==tcb->registroE.nombre){
 			tcb->registroE.valores=valor;
-			printf("El registro: %c, se aumento: %d",tcb->registroE.nombre,valor);
+			printf("Al registro: %c, se se le asigno: %d \n",tcb->registroE.nombre,valor);
 	}
 
 	tcb->P=tcb->P+9;
 
-	printf("Termino LOAD");
+	printf("Termino LOAD \n");
 
 	return 0;
 }
@@ -194,47 +194,46 @@ int movr(t_tcb * tcb){
 		}
 
 		if(registro2==tcb->registroD.nombre){
-			aux=tcb->registroA.valores;
+			aux=tcb->registroD.valores;
 		}
 
 		if(registro2==tcb->registroE.nombre){
-			aux=tcb->registroA.valores;
+			aux=tcb->registroE.valores;
 		}
 
 		if(registro1==tcb->registroA.nombre){
 			tcb->registroA.valores=aux;
-			printf("El registro: %c, se paso A: %d",tcb->registroA.nombre,aux);
+			printf("El registro: %c, se paso a: %d \n",tcb->registroA.nombre,aux);
 		}
 
 		if(registro1==tcb->registroB.nombre){
 				tcb->registroB.valores=aux;
-				printf("El registro: %c, se paso A: %d",tcb->registroB.nombre,aux);
+				printf("El registro: %c, se paso a: %d \n",tcb->registroB.nombre,aux);
 		}
 
 		if(registro1==tcb->registroC.nombre){
 				tcb->registroC.valores=aux;
-				printf("El registro: %c, se paso A: %d",tcb->registroC.nombre,aux);
+				printf("El registro: %c, se paso a: %d \n",tcb->registroC.nombre,aux);
 		}
 
 		if(registro1==tcb->registroD.nombre){
 				tcb->registroD.valores=aux;
-				printf("El registro: %c, se paso A: %d",tcb->registroD.nombre,aux);
+				printf("El registro: %c, se paso a: %d \n",tcb->registroD.nombre,aux);
 		}
 
 		if(registro1==tcb->registroE.nombre){
 				tcb->registroE.valores=aux;
-				printf("El registro: %c, se paso A: %d",tcb->registroE.nombre,aux);
+				printf("El registro: %c, se paso a: %d \n",tcb->registroE.nombre,aux);
 		}
 
 		tcb->P=tcb->P+6;
 
-		printf("Termino MOVR");
+		printf("Termino MOVR\n");
 
 	return 0;
 }
-
 int getm(t_tcb * tcb){
-	puts("recompile");
+
 	char reg1;
 	char reg2;
 	int valor;
@@ -268,8 +267,6 @@ int getm(t_tcb * tcb){
 
 	reg1=(char)devolucion.respuesta;
 
-	printf("%c",reg1);
-
 	send(socketM,&solicitarMemoria,sizeof(int),0);
 
 	solicitador.PID=pidAux;
@@ -292,8 +289,6 @@ int getm(t_tcb * tcb){
 
 	reg2=(char)devolucion.respuesta;
 
-	printf("%c %c", reg1, reg2);
-
 	if(reg2==tcb->registroA.nombre){
 
 		send(socketM,&solicitarMemoria,sizeof(int),0);
@@ -309,7 +304,7 @@ int getm(t_tcb * tcb){
 		send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 		devolucion.exito=recibirInt(socketM);
-	devolucion.respuesta=recibirInt32(socketM);
+		devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -335,7 +330,7 @@ int getm(t_tcb * tcb){
 		send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 		devolucion.exito=recibirInt(socketM);
-	devolucion.respuesta=recibirInt32(socketM);
+		devolucion.respuesta=recibirInt32(socketM);
 
 			if(devolucion.exito<0){
 				segmentatioFault++;
@@ -360,7 +355,7 @@ int getm(t_tcb * tcb){
 		send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 		devolucion.exito=recibirInt(socketM);
-	devolucion.respuesta=recibirInt32(socketM);
+		devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 				segmentatioFault++;
@@ -424,33 +419,33 @@ int getm(t_tcb * tcb){
 
 			if(reg1==tcb->registroA.nombre){
 					tcb->registroA.valores=valor;
-					printf("El registro: %c, vale: %d",tcb->registroA.nombre,valor);
+					printf("El registro: %c, vale: %d \n",tcb->registroA.nombre,valor);
 				}
 
 				if(reg1==tcb->registroB.nombre){
 						tcb->registroB.valores=valor;
-						printf("El registro: %c, vale: %d",tcb->registroB.nombre,valor);
+						printf("El registro: %c, vale: %d \n",tcb->registroB.nombre,valor);
 				}
 
 				if(reg1==tcb->registroC.nombre){
 						tcb->registroC.valores=valor;
-						printf("El registro: %c, vale: %d",tcb->registroC.nombre,valor);
+						printf("El registro: %c, vale: %d \n",tcb->registroC.nombre,valor);
 				}
 
 				if(reg1==tcb->registroD.nombre){
 						tcb->registroD.valores=valor;
-						printf("El registro: %c, vale: %d",tcb->registroD.nombre,valor);
+						printf("El registro: %c, vale: %d \n",tcb->registroD.nombre,valor);
 				}
 
 				if(reg1==tcb->registroE.nombre){
 						tcb->registroE.valores=valor;
-						printf("El registro: %c, vale: %d",tcb->registroE.nombre,valor);
+						printf("El registro: %c, vale: %d \n",tcb->registroE.nombre,valor);
 				}
 
 
 				tcb->P=tcb->P+6;
 
-				printf("Se salio del GETM");
+				printf("Se salio del GETM \n");
 
 return 0;
 
@@ -507,10 +502,12 @@ int decr(t_tcb * tcb){
 		tcb->registroE.valores=tcb->registroE.valores-1;
 	}
 
-	printf("Se decremento el registro: %c en una unidad",registro);
+	printf("Se decremento el registro: %c en una unidad \n",registro);
 
 	tcb->P=tcb->P+5;
 
+	printf("Salio DECR \n");
+	
 	return 0;
 }
 
@@ -565,20 +562,23 @@ int incr(t_tcb * tcb){
 		tcb->registroE.valores=tcb->registroE.valores+1;
 	}
 
-	printf("Se incremento el registro: %c en una unidad",registro);
+	printf("Se incremento el registro: %c en una unidad \n",registro);
 
 	tcb->P=tcb->P+5;
 
+	printf("Se salio de INCR \n");
+	
 	return 0;
 }
 
 int nopp(t_tcb * tcb){
 
-	printf("Se consumió un ciclo de quantum");
+	printf("Se consumió un ciclo de quantum \n");
 
 	tcb->P=tcb->P+4;
-	printf("IP %d\n",tcb->P);
-
+	
+	printf("Se salio de NOPP\n");
+	
 	return 0;
 }
 
@@ -597,6 +597,8 @@ int inte(t_tcb * tcb){
 
 	systemcall++;
 
+	printf("Se Salio de INTE \n");
+	
 	return 0;
 }
 
@@ -714,8 +716,10 @@ int addr(t_tcb * tcb){
 
 	tcb->P=tcb->P+6;
 
-	printf("Se aumento el registro: %c en: %d unidades",reg1,aux1);
+	printf("Se aumento el registro: %c en: %d unidades \n",reg1,aux1);
 
+	printf("Se salio de ADDR \n");
+	
 	return 0;
 }
 
@@ -823,7 +827,9 @@ int subr(t_tcb * tcb){
 
 	tcb->P=tcb->P+6;
 
-	printf("Se disminuyo el registro: %c en: %d unidades",reg1,aux1);
+	printf("Se disminuyo el registro: %c en: %d unidades \n",reg1,aux1);
+	
+	printf("Se salio de SUBR\n");
 
 	return 0;
 }
@@ -932,7 +938,9 @@ int mulr(t_tcb * tcb){
 
 	tcb->P=tcb->P+6;
 
-	printf("Se multiplico el registro: %c por: %d ",reg1,aux1);
+	printf("Se multiplico el registro: %c por: %d \n",reg1,aux1);
+	
+	printf("Se salio del MULR \n");
 
 	return 0;
 }
@@ -994,8 +1002,10 @@ int gotoo(t_tcb * tcb){
 
 	}
 
-	printf("Se cambio el flujo de ejecución al pc: %u",tcb->P);
+	printf("Se cambio el flujo de ejecución al pc: %u \n",tcb->P);
 
+	printf("Se salio de gotoo \n");
+	
 	return 0;
 }
 
@@ -1034,15 +1044,18 @@ int jmpz(t_tcb * tcb){
 
 	tcb->P=nuevadir+tcb->M;
 
-	printf("Se cambio la ejecución porque A vale 0, al pc: %u",nuevadir);
+	printf("Se cambio la ejecución porque A vale 0, al pc: %u \n",nuevadir);
 
 	}
 	else{
-		printf("No se hace nada porque es jump zero, y el valor del reg A es: %d",tcb->registroA.valores);
+		printf("No se hace nada porque es jump zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
 		tcb->P=tcb->P+8;
+		printf("Se salio del jmpz\n");
+		return 0;
 	}
 
-
+	printf("Se salio del jmpz \n");
+	
 	return 0;
 }
 
@@ -1053,8 +1066,10 @@ int jpnz(t_tcb * tcb){
 
 	if(tcb->registroA.valores==0){
 
-	printf("No se hace nada porque es jump NO zero, y el valor del reg A es: %d",tcb->registroA.valores);
+	printf("No se hace nada porque es jump NO zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
 			tcb->P=tcb->P+8;
+			printf("Se salio del jmpnz \n");
+			return 0;
 	}
 	else{
 
@@ -1089,12 +1104,12 @@ int jpnz(t_tcb * tcb){
 
 		tcb->P=nuevadir+tcb->M;
 
-		printf("Se cambio la ejecución porque A vale:%d, al pc: %u",tcb->registroA.valores,nuevadir);
+		printf("Se cambio la ejecución porque A vale:%d, al pc: %u \n",tcb->registroA.valores,nuevadir);
 
-
+		
 	}
 
-
+	printf("Se salio del jmpnz\n");
 	return 0;
 }
 
@@ -1210,8 +1225,10 @@ int comp(t_tcb * tcb){
 
 	tcb->P=tcb->P+6;
 
-	printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
-
+	printf("Se puso el valor: %d en el registro A \n",tcb->registroA.valores);
+	
+	printf("Se salio de COMP \n");
+	
 	return 0;
 }
 
@@ -1326,8 +1343,10 @@ int cgeq(t_tcb * tcb){
 
 		tcb->P=tcb->P+6;
 
-		printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
-
+		printf("Se puso el valor: %d en el registro A \n",tcb->registroA.valores);
+	
+		printf("Se salio de cgeq \n");
+		
 		return 0;
 }
 
@@ -1442,7 +1461,9 @@ int cleq(t_tcb * tcb){
 
 			tcb->P=tcb->P+6;
 
-			printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
+			printf("Se puso el valor: %d en el registro A \n",tcb->registroA.valores);
+			
+			printf("Se salio de cleq \n");
 
 			return 0;
 }
@@ -1550,7 +1571,10 @@ int divr(t_tcb* tcb){
 		}
 
 		if(aux2==0){
-			printf("DIVR sobre 0, ERROR");
+			printf("DIVR sobre 0, ERROR \n");
+			tcb->P=tcb->P+6;
+			return 0;
+			
 		}
 		else {
 			tcb->registroA.valores=(aux1/aux2);
@@ -1558,7 +1582,9 @@ int divr(t_tcb* tcb){
 
 		tcb->P=tcb->P+6;
 
-		printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
+		printf("Se puso el valor: %d en el registro A \n",tcb->registroA.valores);
+		
+		printf("Se salio del divr\n");
 
 	return 0;
 }
@@ -1669,8 +1695,10 @@ int modr(t_tcb* tcb){
 
 		tcb->P=tcb->P+6;
 
-		printf("Se puso el valor: %d en el registro A",tcb->registroA.valores);
+		printf("Se puso el valor: %d en el registro A \n",tcb->registroA.valores);
 
+		printf("Se salio del modr \n");
+		
 	return 0;
 }
 
@@ -1717,7 +1745,7 @@ int push(t_tcb * tcb){
 
 		bytesApush = malloc(numero);
 		//memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
-		printf("HoLa martin bec\n");
+	
 		switch(registro){
 
 		case 'A':
@@ -1755,6 +1783,9 @@ int push(t_tcb * tcb){
 
 		free(bytesApush);
 		tcb->P=tcb->P+9;
+		
+		printf("HOLA MARTIN BASILE; ES LA VENGANZA MUAJAJAJAJA \n");
+		
 		printf("Termino PUSH\n");
 
 	return 0;
@@ -1783,6 +1814,10 @@ int take(t_tcb * tcb){
 		enviarInt(solicitador.tamanio,socketM);
 
 		exito = recibirInt(socketM);
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
 		recv(socketM,&numero,sizeof(int),0);
 
 		//Registro
@@ -1796,14 +1831,18 @@ int take(t_tcb * tcb){
 		enviarInt(solicitador.tamanio,socketM);
 
 		exito = recibirInt(socketM);
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
 		recv(socketM,&registro,sizeof(char),0);
 
 
 		//SolicitarNBytes
 		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->S-numero;
-		solicitador.tamanio=numero;
-
+		solicitador.tamanio=numero;printf("%u\n",tcb->S);
+printf("%u\n",solicitador.direccion);
 		bytesApop = malloc(numero);
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
@@ -1811,8 +1850,15 @@ int take(t_tcb * tcb){
 		enviarInt32(solicitador.direccion,socketM);
 		enviarInt(solicitador.tamanio,socketM);
 
-		recv(socketM,&bytesApop,numero,0);
+	
+		exito=recibirInt(socketM);printf("%u\n",exito);
 
+		if(exito<0){
+			segmentatioFault++;
+			return 0;
+		}
+		recv(socketM,bytesApop,numero,0);
+		
 
 		switch(registro){
 
@@ -1848,6 +1894,7 @@ int take(t_tcb * tcb){
 	printf("Termino TAKE");
 	return 0;
 }
+
 
 
 int shif(t_tcb * tcb){
@@ -1993,9 +2040,12 @@ int xxxx(t_tcb* tcb){
 	tcb->P=tcb->P+4;
 
 	ultimainstruccion++;
+	
+	printf("Termino XXXX \n");
 
 	return 0;
 }
+
 int setm(t_tcb* tcb){
 		int numero; 
 		char registro1;
@@ -2050,7 +2100,7 @@ int setm(t_tcb* tcb){
 
 		bytesApush = malloc(numero);
 		//memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
-		printf("HoLa martin bec\n");
+	
 		switch(registro2){
 
 		case 'A':

@@ -3,6 +3,8 @@
 
 int main (int argc, char** argv){
 
+	printf("Se levanto una CPU\n");
+	
 	char* puerto_kernel;
 	char* puerto_memoria;
 	char* ip_kernel;
@@ -98,8 +100,9 @@ int main (int argc, char** argv){
 		int devuelvoKernelMode=0;
 		send(socketK,&devuelvoKernelMode,sizeof(int),0);
 		//send(socketK,&tcb,sizeof(t_tcb),0);
-		printf("tcb enviado: %d\n",tcb->pid);
+		printf("tcb KM enviado\n",tcb->pid);
 		enviarTcb(tcb,socketK);
+		printf("---------------\n");
 
 		}
 
@@ -129,12 +132,16 @@ int main (int argc, char** argv){
 			int encolarEnExit=1;
 			send(socketK,&encolarEnExit,sizeof(int),0);
 			enviarTcb(tcb,socketK);
+			printf("TCB ENVIADO A EXIT \n");
+			printf("--------------- \n");
 		} else {
 			//SegmentationFault
 			if(segmentatioFault>0){
 				int encolarSegFault=2;
 				send(socketK,&encolarSegFault,sizeof(int),0);
 				enviarTcb(tcb,socketK);
+				printf("TCB ENVIADO A SEGMENTATION FAULT \n");
+				printf("--------------- \n");
 				} else {
 
 					//Block
@@ -149,6 +156,10 @@ int main (int argc, char** argv){
 							send(socketK,&encolarEnReady,sizeof(int),0);
 							//send(socketK,&tcb,sizeof(t_tcb),0);
 							enviarTcb(tcb,socketK);
+							printf("TCB ENVIADO A READY \n");
+							printf("mensaje oculto: MARTIN BASILE Y SU CHEESCAKE \n");
+							printf("--------------- \n");
+							
 						}
 
 
