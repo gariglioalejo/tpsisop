@@ -606,6 +606,7 @@ int addr(t_tcb * tcb){
 	
 	char reg1;
 	char reg2;
+	int aux2;
 	t_solicitarMemoria solicitador;
 	int32_t aux1;
 	t_devolucion devolucion;
@@ -693,30 +694,33 @@ int addr(t_tcb * tcb){
 
 	switch(reg1){
 	case 'A':
-	tcb->registroA.valores=tcb->registroA.valores+aux1;
+	aux2=tcb->registroA.valores;
 	break;
 
 	case 'B':
-	tcb->registroB.valores=tcb->registroB.valores+aux1;
+	aux2=tcb->registroB.valores;
 	break;
 
 	case 'C':
-	tcb->registroC.valores=tcb->registroC.valores+aux1;
+	aux2=tcb->registroC.valores;
 	break;
 
 	case 'D':
-	tcb->registroD.valores=tcb->registroD.valores+aux1;
+	aux2=tcb->registroD.valores;
 	break;
 
 	case 'E':
-	tcb->registroE.valores=tcb->registroE.valores+aux1;
+	aux2=tcb->registroE.valores;
 	break;
 
 	}
 
+	tcb->registroA.valores=aux1+aux2;
+
+
 	tcb->P=tcb->P+6;
 
-	printf("Se aumento el registro: %c en: %d unidades \n",reg1,aux1);
+	printf("Se aumento el registro: %c en: %d unidades \n",reg1,(aux1+aux2));
 
 	printf("Se salio de ADDR \n");
 	
@@ -1191,6 +1195,19 @@ int comp(t_tcb * tcb){
 	case 'E':
 	aux1=tcb->registroE.valores;
 	break;
+
+	case 'X':
+	aux1=tcb->X;
+	break;
+
+	case 'S':
+	aux1=tcb->S;
+	break;
+
+	case 'M':
+	aux1=tcb->M;
+	break;
+
 	}
 
 	switch(reg2){
@@ -1214,6 +1231,20 @@ int comp(t_tcb * tcb){
 	case 'E':
 	aux2=tcb->registroE.valores;
 	break;
+
+	case 'X':
+	aux2=tcb->X;
+	break;
+
+	case 'S':
+	aux2=tcb->S;
+	break;
+
+	case 'M':
+	aux2=tcb->M;
+	break;
+
+
 	}
 
 	if(aux1==aux2){
@@ -1801,6 +1832,10 @@ int take(t_tcb * tcb){
 		int codigoSolicitarMemoria=4;
 		t_solicitarMemoria solicitador;
 
+		printf("== Base: %d\n",tcb->X);
+		printf("== Cursor: %d\n",tcb->S);
+
+
 		int pidAux;
 		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		//Numero
@@ -1842,7 +1877,7 @@ int take(t_tcb * tcb){
 		solicitador.PID=pidAux;
 		solicitador.direccion=tcb->S-numero;
 		solicitador.tamanio=numero;printf("%u\n",tcb->S);
-printf("%u\n",solicitador.direccion);
+		printf("%u\n",solicitador.direccion);
 		bytesApop = malloc(numero);
 
 		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
