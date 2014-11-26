@@ -58,6 +58,7 @@ typedef struct {
 	int socketConsola;
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
+	int tidMaximo;
 } t_tcb;
 
 typedef struct {
@@ -699,14 +700,10 @@ bool hayNodoJoinConElPid(t_list * lista, int pid) {
 	return list_any_satisfy(lista, esElDelPid);
 }
 
-bool hayNodoJoinConElTid(t_list * lista, int pid, int tid) {//ESTA ES PARA BUSCAR NODO CON EL TIDAESPERAR QUE CONCUERDE CON EL TID DEL PARAMETRO
+bool hayNodoJoinConElTid(t_list * lista,int tid) {//ESTA ES PARA BUSCAR NODO CON EL TIDAESPERAR QUE CONCUERDE CON EL TID DEL PARAMETRO
 	bool esElDelTid(void * nodoJoin) {
 		t_join* nodoJoinAux = nodoJoin;
-		if (nodoJoinAux->tcb->pid == pid) {	//EN REALIDAD,NO ES NECESARIO MANDARLE EL PID COMO PARAMETRO, PERO WE.
-			return nodoJoinAux->tidAEsperar == tid;
-		} else {
-			return false;
-		}
+		return nodoJoinAux->tidAEsperar == tid;
 	}
 	return list_any_satisfy(lista, esElDelTid);
 }

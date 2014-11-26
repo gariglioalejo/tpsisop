@@ -22,7 +22,7 @@ enum {
 
 sem_t hayEnReady;
 sem_t hayCpu;
-
+uint32_t tidMaximo;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 t_list * listaReady;
@@ -36,7 +36,8 @@ void * manejoCpuLibres(void * arg) {
 	while (1) {
 		//sem_wait(&hayCpu);
 		pthread_mutex_lock(&mutex);
-		if (list_size(listaBloq) && queue_size(colaKM)&&list_size(listaCpuLibres)) {
+		if (list_size(listaBloq) && queue_size(colaKM)
+				&& list_size(listaCpuLibres)) {
 			t_tcb * tcb;
 			t_tcb *tcbKernelMode;
 			tcbKernelMode = queue_pop(colaKM);
@@ -45,10 +46,14 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->tid = tcb->tid; //es super importante esto, para poder saber cual
 			tcbKernelMode->socketConsola = tcb->socketConsola;
 			tcbKernelMode->registroA.valores = tcb->registroA.valores;
+			printf("tcbKM a enviar registroA:%d\n",tcbKernelMode->registroA.valores);
 			tcbKernelMode->registroB.valores = tcb->registroB.valores;
 			tcbKernelMode->registroC.valores = tcb->registroC.valores;
 			tcbKernelMode->registroD.valores = tcb->registroD.valores;
 			tcbKernelMode->registroE.valores = tcb->registroE.valores;
+			tcbKernelMode->S = tcb->S;
+			tcbKernelMode->X = tcb->X;
+			tcb->tidMaximo=tidMaximo;
 			tcbKernelMode->P = tcb->direccionSyscallPendiente;
 			int * socketCpuAux = list_remove(listaCpuLibres, 0);
 			int socketCpu = *socketCpuAux;
@@ -61,8 +66,8 @@ void * manejoCpuLibres(void * arg) {
 		}
 		//else { //Me cuesta imaginar un caso en donde se quede trabado en el sem_wait de hayEnReady, pensarlo bien. Podria ser si concluye la ejecucion de un proceso, en un lapso no pasa nada (en el cual se salta el if de listaBloq y colaKM), pero lo unico que llega despues es un KM, lo cual hace que no haya nada en ready pero si en el KM y en la lista bloq que ya considere. Ver que opinan.
 		//	pthread_mutex_unlock(&mutex);
-		else if(list_size(listaCpuLibres)&&list_size(listaReady)){
-		//sem_wait(&hayEnReady);
+		else if (list_size(listaCpuLibres) && list_size(listaReady)) {
+			//sem_wait(&hayEnReady);
 			//pthread_mutex_lock(&mutex);
 			t_tcb * tcb = malloc(sizeof(t_tcb));
 			tcb = list_remove(listaReady, 0);
@@ -105,6 +110,7 @@ int main(int argc, char ** argv) {
 
 	//inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
 
+	tidMaximo=1;
 	t_config * kernel_config;
 	kernel_config = config_create(argv[1]);
 
@@ -232,6 +238,9 @@ int main(int argc, char ** argv) {
 									socketCliente);
 							pid++;
 							tid++;
+							if(tid>tidMaximo){
+								tidMaximo = tid;
+							}
 							t_reservarSegmentos tcb_resultado;//NO RECUERDO PORQUE HICE QUE recibir_serializado_beso DEVUELVA SERIALIZADO, POR ESO LOS CASTEOS EN LA LLAMADA A ESTA FUNCION.
 							tcb_resultado = reservarSegmentos(pid,
 									*(int *) sizeConBeso,
@@ -484,15 +493,15 @@ int main(int argc, char ** argv) {
 										tcbBloqueado = removerTcbConElTid(
 												listaBloq, tcbCpu->tid);
 										tcbBloqueado->registroA.valores =
-												tcbCpu->registroA.valores;
+												tcbCpu->registroA.valores;printf("tcbDesbloqueado tid:%d\n",tcbBloqueado->tid);printf("tcbDesbloqueado registroA:%d\n",tcbBloqueado->registroA.valores);
 										tcbBloqueado->registroB.valores =
 												tcbCpu->registroB.valores;
 										tcbBloqueado->registroC.valores =
 												tcbCpu->registroC.valores;
 										tcbBloqueado->registroD.valores =
 												tcbCpu->registroD.valores;
-										tcbBloqueado->registroA.valores =
-												tcbCpu->registroA.valores;
+										tcbBloqueado->registroE.valores =
+												tcbCpu->registroE.valores;
 										list_add(listaReady, tcbBloqueado);
 										sem_post(&hayEnReady);
 									}//FIN DEL if(hayNodoJoinConElTidPropio...)
@@ -523,9 +532,11 @@ int main(int argc, char ** argv) {
 									list_add(listaExit, tcbCpu);
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
-
+								printf("hayNodoJoin:%d\n",
+										hayNodoJoinConElTid(listaBloqJoin,
+												tcbCpu->tid));
 								if (hayNodoJoinConElTid(listaBloqJoin,
-										tcbCpu->pid, tcbCpu->tid)) {
+										tcbCpu->tid)) {
 									t_join * nodoRemovido =
 											removerNodoJoinDelTid(listaBloqJoin,
 													tcbCpu->pid, tcbCpu->tid);
@@ -720,6 +731,9 @@ int main(int argc, char ** argv) {
 									list_add(listaExit, tcbCpu);//***hay que agregarlo a la lista exit al tcb recibido para Crea?
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
+								if(tcbCpu->tid>tidMaximo){
+									tidMaximo = tcbCpu->tid;
+								}
 								t_listaHilos * nodo = malloc(
 										sizeof(t_listaHilos));
 								int pidHilo = tcbCpu->pid;
@@ -737,6 +751,8 @@ int main(int argc, char ** argv) {
 
 								int tidLlamador = recibirInt(i);
 								int tidAEsperar = recibirInt(i);
+								printf("tidLlamador:%d\n tidAEsperar %d\n",
+										tidLlamador, tidAEsperar);
 								pthread_mutex_lock(&mutex);
 								t_tcb * tcbEjecutandose =
 										obtenerTcbConElSocketCpu(listaExec, i);	//VA A SER EL KM (NO LO SACA DE LA LISTA!)
