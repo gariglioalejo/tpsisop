@@ -76,18 +76,14 @@ int fnFREE (t_tcb * tcb){
 
 int fnINNN (t_tcb * tcb){
 
-	if (tcb->km != 1){
+		if (tcb->km != 1){
 			printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
-
-
-		tcb->P=tcb->P+4;
+			tcb->P=tcb->P+4;
 			return -1;
 		}
 
 		int codigo = 4; //Entrada Standard
 		int tipo = 0; //0 es INNN, 1 es INNC
-
-
 
 		int32_t valorIngresado = 0;
 
@@ -173,7 +169,8 @@ int fnOUTN (t_tcb * tcb){
 		return -1;
 	}
 
-		char * cadena;
+		char cadena[10];
+
 		int i;
 		int codigo = 5; //Salida Standard
 
@@ -242,7 +239,7 @@ int fnOUTC (t_tcb * tcb){
 	return 0;
 }
 
-int fnCREA (t_tcb * tcb){//TODO REVISAR EL PID!!!!
+int fnCREA (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
@@ -325,7 +322,7 @@ int fnJOIN (t_tcb * tcb){
 }
 
 
-int fnBLOK (t_tcb * tcb){ //TODO SEGF
+int fnBLOK (t_tcb * tcb){
 
 	if (tcb->km != 1){
 		printf("El proceso %d no tiene permisos para ejecutar la funcion privilegiada\n",tcb->pid);
