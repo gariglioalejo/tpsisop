@@ -1,12 +1,16 @@
 /*
  ============================================================================
- Name        : msp.c
+ Name        : testCo.c
  Author      : 
  Version     :
  Copyright   : Your copyright notice
  Description : Hello World in C, Ansi-style
  ============================================================================
  */
+
+
+//26/11 desde el lab aa
+
 
 #include <commons/string.h>
 #include <stdlib.h>
@@ -195,14 +199,12 @@ uint32_t iret1;
 
 void gestionarConexiones(){
 	uint32_t listenningSocket=crearServer(puerto);
-	uint32_t cantidadConexiones=0;
-	if (cantidadConexiones==0) {
-			log_info(archivoLogMSP,"Se establecio conexion con el Kernel");
-			cantidadConexiones++;
-	}
-	else log_info(archivoLogMSP,"Se establecio conexion con CPU");
+
+	aceptarConexiones(listenningSocket);
+	log_info(archivoLogMSP,"Se estableció conexion con el Kernel");
 	while(1){
 		aceptarConexiones(listenningSocket);
+		log_info(archivoLogMSP,"Se estableció conexion con una Cpu");
 	}
 
 }
@@ -877,11 +879,13 @@ void sacarDeMemoria(uint32_t PID, uint32_t segmento, uint32_t pagina){
 	pthread_mutex_lock(&mutexComparador);
 	enteroParaComparaciones=PID+256*pagina+1048576*segmento;
 	nodo=list_remove_by_condition(direccionColaMarcos->elements,esLaPagina);
-	pthread_mutex_unlock(&mutexColaMarcos);pthread_mutex_unlock(&mutexComparador);
+	pthread_mutex_unlock(&mutexColaMarcos);
+	pthread_mutex_unlock(&mutexComparador);
 	pthread_rwlock_unlock(&semaforoCola_memoria);
 	pthread_mutex_lock(&mutexColaMarcosLibres);
 	queue_push(colaMarcosLibres,nodo->numMarco);
 	pthread_mutex_unlock(&mutexColaMarcosLibres);
+	log_info(archivoLogMSP,"Se desasigna un marco al PID %u",PID);
 	}
 
 
@@ -953,7 +957,9 @@ void llevarAMemoria(uint32_t PID, uint32_t segmento, uint32_t pagina){
 	if(!hayMarcoDisponible())
 		hacerSwap();//falta hacer marco disp y swap
 	ingresar(PID,segmento,pagina,bytes);//falta hacer ingresar
-	pthread_mutex_unlock(&mutexColaMarcos);}
+	pthread_mutex_unlock(&mutexColaMarcos);
+
+}
 
 int hayMarcoDisponible(){int i;
 				pthread_mutex_lock(&mutexColaMarcosLibres);
@@ -969,6 +975,7 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	pthread_rwlock_wrlock(&semaforoCola_memoria);
 	nodo=queue_pop(direccionColaMarcos);
 	pthread_rwlock_unlock(&semaforoCola_memoria);
+	log_info(archivoLogMSP,"Se desasigna el marco %u al PID %u",nodo->numMarco,nodo->PID);
 	nombreArchivo=string_new();
 	string_append_with_format(&nombreArchivo,"archivos/%u_%u_%u.txt",nodo->PID,nodo->segmento,nodo->pagina);
 	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);
@@ -998,7 +1005,7 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 		nodo->referencia=0;
 		queue_push(direccionColaMarcos,nodo);
 		nodo=queue_pop(direccionColaMarcos);}
-
+	log_info(archivoLogMSP,"Se desasigna el marco %u al PID %u",nodo->numMarco,nodo->PID);
 	pthread_rwlock_unlock(&semaforoCola_memoria);
 	string_append_with_format(&nombreArchivo,"archivos/%u_%u_%u.txt",nodo->PID,nodo->segmento,nodo->pagina);
 	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);direccion=(nodo->segmento)*1048576;
@@ -1036,7 +1043,9 @@ void ingresar(uint32_t PID,uint32_t segmento, uint32_t pagina, char* bytes){
 	elementoDeCola->direccionMarco=auxiliar->direccionMarco; //esta bien esto? lo cambie porque antes decia elemdeCola->dir=elemdeCola->dir.
 	elementoDeCola->referencia=0;//IDEM
 	queue_push(direccionColaMarcos,elementoDeCola);
-	pthread_rwlock_unlock(&semaforoCola_memoria);}
+	pthread_rwlock_unlock(&semaforoCola_memoria);
+	log_info(archivoLogMSP,"Se asigno el marco %u de memoria al PID %u",elementoDeCola->numMarco,PID);
+}
 
 
 
