@@ -91,8 +91,9 @@ int main(int argc, char ** argv) {
 			printf("%s\n", mensaje);
 			free(mensaje);
 			break;
-		case (2):
+		case (2):{
 			inputMax = recibirInt(socketKernel);
+			int cpuAEnviar = recibirInt(socketKernel);
 			j = 1;
 			while (j) {
 				printf("Ingrese un string de un tamanio maximo de: %d\n",
@@ -102,18 +103,22 @@ int main(int argc, char ** argv) {
 					printf("String ingresado correctamente\n");
 					printf("%s\n", stringIngresado);
 											///agregado para probar el list sattisfy consola
+					enviarInt(1,socketKernel);
 					 enviar_serializado(-1, stringIngresado, socketKernel);
+					 enviarInt(cpuAEnviar,socketKernel);
 					free(stringIngresado);
 					j = 0;
 				} else {
 					printf("String ingresado incorrectamente\n");
 				}
 			}
-			break;
+			break;}
 
-		case 3:
+		case 3:{
+			int cpuAEnviar = recibirInt(socketKernel);
 			valor = 0;
 			valorIngresado = 0;
+
 			printf(
 					"Ingrese  un interger con valor entre –2.147.483.648 y 2.147.483.647: \n");
 			int input = scanf("%f", &valorIngresado);
@@ -135,10 +140,13 @@ int main(int argc, char ** argv) {
 			valor = (int32_t) valorIngresado;
 			printf("Valor integer: %d\n", valor);
 			getchar();			//asco pero corre :P
-
+			enviarInt(0,socketKernel);
 			enviarInt(valor, socketKernel);
-			break;
+			enviarInt(cpuAEnviar,socketKernel);
 
+
+			break;
+		}
 		}
 
 	}
