@@ -1887,6 +1887,7 @@ int shif(t_tcb * tcb){
 		solicitador.direccion=tcb->P+8;
 		solicitador.tamanio=1;
 
+		send(socketM,&codigoSolicitarMemoria,sizeof(int),0);
 
 		enviarInt(solicitador.PID,socketM);
 		enviarInt32(solicitador.direccion,socketM);
@@ -1896,7 +1897,10 @@ int shif(t_tcb * tcb){
 		//recv(socketM,&devolucion,sizeof(t_devolucion),0);
 
 		devolucion.exito = recibirInt(socketM);
-		recv(socketM,&registro,sizeof(char),0);
+		//recv(socketM,&registro,sizeof(char),0);
+		devolucion.respuesta = recibirInt(socketM);
+
+		registro = (char) devolucion.respuesta;
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -1974,6 +1978,10 @@ int shif(t_tcb * tcb){
 					break;
 
 		}
+
+		tcb->P=tcb->P+9;
+
+		printf("Termino SHIF\n");
 
 	return 0;
 }
