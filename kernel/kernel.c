@@ -52,9 +52,10 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->registroC.valores = tcb->registroC.valores;
 			tcbKernelMode->registroD.valores = tcb->registroD.valores;
 			tcbKernelMode->registroE.valores = tcb->registroE.valores;
-			tcbKernelMode->S = tcb->S;
-			tcbKernelMode->X = tcb->X;
-			tcb->tidMaximo=tidMaximo;printf("este es tid maxiomo%u",tidMaximo);
+			tcbKernelMode->pointerDatos= tcb->S;
+			tcbKernelMode->baseDatos = tcb->X;
+
+			tcb->tidMaximo=tidMaximo;printf("este es tid maxiomo%u\n",tidMaximo);
 			tcbKernelMode->P = tcb->direccionSyscallPendiente;
 			int * socketCpuAux = list_remove(listaCpuLibres, 0);
 			int socketCpu = *socketCpuAux;

@@ -257,10 +257,11 @@ int fnCREA (t_tcb * tcb){
 	copiarTcb(tcb,nuevotcb);
 
 	nuevotcb->P = tcb->registroB.valores;
-	nuevotcb->tid = tcb->tid + 1;
+
+	nuevotcb->tid = tcb->tidMaximo;
 	nuevotcb->km = 0;
 	tcb->registroA.valores=nuevotcb->tid;
-
+printf("se le asigni tid %u",nuevotcb->tid);
 //	nuevotcb->pid = tcb->registroA.valores;
 
 

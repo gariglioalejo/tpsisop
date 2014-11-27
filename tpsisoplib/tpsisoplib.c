@@ -747,7 +747,7 @@ int duplicarStack(t_tcb * tcb, t_tcb * nuevotcb, int socketMSP, int * segf){
 		//	recv(socketMSP,contenidoStack,sizeof(contenidoStack),0);
 		printf("viejoSegmento %u",tcb->X);printf("viejoSP %u",tcb->S);
 
-			diferenciaStack = (tcb->S - tcb->X);printf("difStack %u",diferenciaStack);
+			diferenciaStack = (tcb->pointerDatos - tcb->baseDatos);printf("difStack %u",diferenciaStack);
 			nuevotcb->X = resultado->base;
 			nuevotcb->S =( nuevotcb->X + diferenciaStack);printf("nuevoStackP %u",nuevotcb->S);
 

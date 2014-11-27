@@ -59,6 +59,8 @@ typedef struct {
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
 	int tidMaximo;
+	int baseDatos;
+	int pointerDatos;
 } t_tcb;
 
 typedef struct {

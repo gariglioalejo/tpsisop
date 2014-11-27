@@ -1816,7 +1816,7 @@ int push(t_tcb * tcb){
 		tcb->P=tcb->P+9;
 		
 		printf("HOLA MARTIN BASILE; ES LA VENGANZA MUAJAJAJAJA \n");
-		
+		printf("este es el tid %u",tcb->tid);
 		printf("Termino PUSH\n");
 
 	return 0;
@@ -2091,6 +2091,7 @@ int setm(t_tcb* tcb){
 	 	void* bytesApush;
 		uint32_t direccionAgrabar;
 		int pidAux;
+		
 		if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 		//Numero
 		solicitador.PID=pidAux;
@@ -2188,7 +2189,7 @@ int setm(t_tcb* tcb){
 	segmentatioFault++;
 	printf("no se pudo escribir en memoria\n");
 	}
-		free(bytesApush);
+		free(bytesApush);printf("esta terminando tid %u",tcb->tid);
 		tcb->P=tcb->P+10;
 		printf("Termino setm\n");
 
