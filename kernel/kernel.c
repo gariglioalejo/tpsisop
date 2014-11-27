@@ -168,7 +168,6 @@ int main(int argc, char ** argv) {
 	tcbKM->km = 1;
 	tcbKM->pid = pid;
 	tcbKM->tid = tidMaximo;
-	tidMaximo++;
 	tcbKM->registroA.nombre = 'A';
 	tcbKM->registroB.nombre = 'B';
 	tcbKM->registroC.nombre = 'C';
@@ -233,7 +232,7 @@ int main(int argc, char ** argv) {
 								//ACA IBA ANTES EL PID ++ y TID++
 								tcb->km = 0;
 								tcb->pid = pid;
-								tcb->tid = tidMaximo;
+								tcb->tid = tid;
 								if(tid>tidMaximo){
 									tidMaximo = tid;
 								}
@@ -286,7 +285,6 @@ int main(int argc, char ** argv) {
 							int * socketClienteAux = malloc(sizeof(int));//AGREGO A LA COLA DE SOCKETS DE CPUS AL SOCKET CLIENTE
 							*socketClienteAux = socketCliente;
 							list_add(listaSocketsCpu, socketClienteAux);
-							int quantum = 3;
 							enviarInt(quantum, socketCliente);
 							pthread_mutex_lock(&mutex);
 							list_add(listaCpuLibres, socketClienteAux);	//AGREGO A LA COLA DE CPUS LIBRES AL SOCKET CLIENTE Y SUBO EL SEMAFORO PARA EL HILO
@@ -755,6 +753,8 @@ int main(int argc, char ** argv) {
 							case CREAR_HILO: {
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
+								tid++;
+								tidMaximo = tcbCpu->tid;
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
 									list_add(listaExit, tcbCpu);//***hay que agregarlo a la lista exit al tcb recibido para Crea?

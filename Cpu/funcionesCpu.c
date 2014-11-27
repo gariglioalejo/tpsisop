@@ -258,7 +258,7 @@ int fnCREA (t_tcb * tcb){
 
 	nuevotcb->P = tcb->registroB.valores;
 
-	nuevotcb->tid = tcb->tidMaximo;
+	nuevotcb->tid = tcb->tidMaximo+1;
 	nuevotcb->km = 0;
 	tcb->registroA.valores=nuevotcb->tid;
 printf("se le asigni tid %u",nuevotcb->tid);
