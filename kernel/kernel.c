@@ -54,7 +54,6 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->registroD.valores = tcb->registroD.valores;
 			tcbKernelMode->registroE.valores = tcb->registroE.valores;
 			tcbKernelMode->pointerDatos = tcb->S;
-			tcbKernelMode->X = tcb->X;
 			tcbKernelMode->baseDatos=tcb->X;
 			tcb->tidMaximo = tidMaximo;
 			printf("este es tid maxiomo%u", tidMaximo);
