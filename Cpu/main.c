@@ -107,9 +107,7 @@ int main(int argc, char** argv) {
 					printf("TCB KM ENVIADO A SEGMENTATION FAULT \n");
 					printf("--------------- \n");
 				}
-		}
-
-		else {
+		}}else {
 			//mientras el quantum deje y no haya una llamada al sistema
 			while ((i < quantum) && (!systemcall) && (!ultimainstruccion)
 					&& (!segmentatioFault)) {
