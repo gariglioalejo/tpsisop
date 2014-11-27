@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 
 		if (tcb->km == 1) {
 
-			while (!ultimainstruccion) {
+			while ((!ultimainstruccion)&(!segmentatioFault) {
 
 				log_info(log_de_cpu, "EJECUTANDO KERNEL MODE");
 
