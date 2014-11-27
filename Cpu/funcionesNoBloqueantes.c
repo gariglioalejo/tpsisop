@@ -2184,8 +2184,10 @@ int setm(t_tcb* tcb){
 
 		}
 
-	if(!escribirMemoria(pidAux,direccionAgrabar,numero,(char *)bytesApush,socketM)) printf("no se pudo escribir en memoria\n");
-		
+	if(!escribirMemoria(pidAux,direccionAgrabar,numero,(char *)bytesApush,socketM)){
+	segmentatioFault++;
+	printf("no se pudo escribir en memoria\n");
+	}
 		free(bytesApush);
 		tcb->P=tcb->P+10;
 		printf("Termino setm\n");
