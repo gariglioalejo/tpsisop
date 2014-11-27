@@ -59,8 +59,6 @@ typedef struct {
 	int socketCpu;
 	uint32_t direccionSyscallPendiente;
 	int tidMaximo;
-	int baseDatos;
-	int pointerDatos;
 } t_tcb;
 
 typedef struct {
@@ -501,6 +499,7 @@ t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso,
 			enviar_serializado(1,
 					"No hay memoria disponible para crear segmento de codigo",
 					socketCliente);
+			enviarInt(0,socketCliente);
 		}
 		tcb_resultado.exito = false;
 		return tcb_resultado;
@@ -512,9 +511,11 @@ t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso,
 	} else {
 		printf("Segmentation Fault al Escribir Memoria en reservarSegmentos\n");
 		if (socketCliente != -1) {
+			destruirSegmento(pid,tcb->M ,socketMsp);
 			enviar_serializado(1,
 					"Segmentation Fault al escribir el segmento de codigo",
 					socketCliente);
+			enviarInt(0,socketCliente);
 		}
 		tcb_resultado.exito = false;
 		return tcb_resultado;
@@ -526,9 +527,11 @@ t_reservarSegmentos reservarSegmentos(int pid, int sizeBeso, char * beso,
 	} else {
 		printf("No pudo crear segmento para el stack en reservarSegmentos\n");
 		if (socketCliente != -1) {
+			destruirSegmento(pid,tcb->M ,socketMsp);
 			enviar_serializado(1,
 					"No hay memoria disponible para crear segmento de stack",
 					socketCliente);
+			enviarInt(0,socketCliente);
 		}
 		tcb_resultado.exito = false;
 		return tcb_resultado;
