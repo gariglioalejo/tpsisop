@@ -91,17 +91,23 @@ int main(int argc, char** argv) {
 				sleep(retardo / 1000);
 
 			}
-			//Devuelvo el TCB KM1
-			int devuelvoKernelMode = 0;
-			send(socketK, &devuelvoKernelMode, sizeof(int), 0);
-			//send(socketK,&tcb,sizeof(t_tcb),0);
-			printf("tcb KM enviado\n", tcb->pid);
-			enviarTcb(tcb, socketK);
-			printf("---------------\n");
-
-		}
-
-		else {
+			
+			if (ultimainstruccion > 0) {
+				int encolarEnExit = 0;
+				send(socketK, &encolarEnExit, sizeof(int), 0);
+				enviarTcb(tcb, socketK);
+				printf("TCB KM ENVIADO A EXIT \n");
+				printf("--------------- \n");
+			} else {
+				//SegmentationFault
+				if (segmentatioFault > 0) {
+					int encolarSegFault = 2;
+					send(socketK, &encolarSegFault, sizeof(int), 0);
+					enviarTcb(tcb, socketK);
+					printf("TCB KM ENVIADO A SEGMENTATION FAULT \n");
+					printf("--------------- \n");
+				}
+		}}else {
 			//mientras el quantum deje y no haya una llamada al sistema
 			while ((i < quantum) && (!systemcall) && (!ultimainstruccion)
 					&& (!segmentatioFault)) {
