@@ -54,7 +54,6 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->registroD.valores = tcb->registroD.valores;
 			tcbKernelMode->registroE.valores = tcb->registroE.valores;
 			tcbKernelMode->pointerDatos = tcb->S;
-			tcbKernelMode->X = tcb->X;
 			tcbKernelMode->baseDatos=tcb->X;
 			tcb->tidMaximo = tidMaximo;
 			printf("este es tid maxiomo%u", tidMaximo);
@@ -235,7 +234,9 @@ int main(int argc, char ** argv) {
 								tcb->km = 0;
 								tcb->pid = pid;
 								tcb->tid = tidMaximo;
-								tidMaximo++;
+								if(tid>tidMaximo){
+									tidMaximo = tid;
+								}
 								tcb->socketConsola = socketCliente;
 								t_listaHilos * nodoListaHilos = malloc(	//CREA UN NUEVO NODO EN LA LISTA HILOS PARA EL PROCESO NUEVO Y LE ASIGNA UN VALOR DE 1 A SU CANTIDAD DE HILOS (VA A IR AUMENTANDO ESTE VALOR A MEDIDA QUE SE USE CREA).
 										sizeof(t_listaHilos));
