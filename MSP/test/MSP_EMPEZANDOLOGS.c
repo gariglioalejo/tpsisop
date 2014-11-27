@@ -1,12 +1,14 @@
 /*
  ============================================================================
- Name        : msp.c
+ Name        : pruebaaaaaa.c
  Author      : 
  Version     :
  Copyright   : Your copyright notice
  Description : Hello World in C, Ansi-style
  ============================================================================
  */
+
+
 
 #include <commons/log.h>
 #include <commons/string.h>
@@ -105,7 +107,7 @@ bool marcoMenor(t_list_ord*,t_list_ord*);
 
 
 int main(void) {t_config * archivoConfiguracion;
-	
+
 	archivoLogMSP=log_create("./Logs/log.txt","MSP",0,LOG_LEVEL_TRACE);
  	archivoConfiguracion=config_create("archiconf/MSP.cfg");
 	puerto=config_get_string_value(archivoConfiguracion,"PUERTO");
@@ -265,7 +267,7 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		tamanio=recibirInt(socketCliente);
 		log_info(archivoLogMSP,"Solicitud de leer memoria PID:%u. Tamaño:%u. Direccion:%u.",PID,tamanio,direccion);
 		respuesta=solicitarMemoria(PID,direccion,tamanio);
-		if(respuesta.exito<1){char fruta='a';enviarInt(-1,socketCliente);enviarBeso(tamanio,fruta,socketCliente);}
+		if(respuesta.exito<1){char* fruta=malloc(tamanio);enviarInt(-1,socketCliente);enviarBeso(tamanio,fruta,socketCliente);free(fruta);}
 		else{ enviarInt(1,socketCliente);
 		algo=respuesta.direccion;
 		enviarBeso(tamanio,algo,socketCliente);}
@@ -717,7 +719,7 @@ uint32_t destruirSegmento(uint32_t PID,uint32_t baseSegmento){
 	proceso=list_find(direccionListaProcesos,esElPID);
 	pthread_mutex_unlock(&mutexTablaProceso);
 	pthread_mutex_unlock(&mutexComparador);
-	if (proceso==NULL) {if (proceso==NULL) {log_error(archivoLogMSP,"Se quiso eliminarSegmento de un PID inexistente PID:%u",PID);return 0;} //no existia el proceso
+	if (proceso==NULL) {log_error(archivoLogMSP,"Se quiso eliminarSegmento de un PID inexistente PID:%u",PID);return 0;} //no existia el proceso
 	pthread_mutex_lock(&mutexComparador);
 	enteroParaComparaciones=numSegmento;
 	pthread_mutex_lock(&mutexTablaSegmento);
