@@ -93,10 +93,10 @@ int main(int argc, char** argv) {
 			}
 			
 			if (ultimainstruccion > 0) {
-				int encolarEnExit = 0;
-				send(socketK, &encolarEnExit, sizeof(int), 0);
+				int encolarBien = 0;
+				send(socketK, &encolarBien, sizeof(int), 0);
 				enviarTcb(tcb, socketK);
-				printf("TCB KM ENVIADO A EXIT \n");
+				printf("TCB KM ENVIADO A TERMINO EJECUCION \n");
 				printf("--------------- \n");
 			} else {
 				//SegmentationFault
