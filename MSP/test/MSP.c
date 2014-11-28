@@ -246,7 +246,7 @@ if(i==3){int i;int PID; uint32_t direccion;int tamanio; char* bytes;
 		direccion=recibirInt32(socketCliente);//fede lo tiene que mandar como int32
 		tamanio=recibirInt(socketCliente);
 		bytes=	recibirBeso(tamanio, socketCliente);
-		i=escribirMemoria(PID,direccion,bytes,tamanio);
+		i=escribirMemoria(PID,direccion,bytes,tamanio);free(bytes);
 		if(i<1) enviarInt(0,socketCliente);
 		else enviarInt(1,socketCliente);}
 if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo;
@@ -257,7 +257,7 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		if(respuesta.exito<1){char fruta='a';enviarInt(-1,socketCliente);enviarBeso(tamanio,fruta,socketCliente);}
 		else{ enviarInt(1,socketCliente);
 		algo=respuesta.direccion;
-		enviarBeso(tamanio,algo,socketCliente);}}
+		enviarBeso(tamanio,algo,socketCliente);}free(respuesta.direccion);}
 
 recibido = recv(socketCliente, &i, sizeof(int), 0);
 	if (( recibido== -1)){
@@ -949,7 +949,7 @@ int hayMarcoDisponible(){int i;
 
 void hacerSwap(){
 			if(algoritmo=='L') LRU();else CLOCK();}
-
+void escribirEnArchivo(FILE*,char*);
 void LRU()	{elem_tipoColaAuxiliar *nodo;FILE* archivoSwap; char* nombreArchivo;elem_colaMarcosLibres* auxiliar;char txtAux[257];
 respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSegmentos;uint32_t direccion;
 	pthread_rwlock_wrlock(&semaforoCola_memoria);
@@ -960,7 +960,7 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);
 	modificar(txtAux,nodo->direccionMarco,0,256);
 	txtAux[256]='\0';
-	txt_write_in_file(archivoSwap,txtAux);
+	escribirEnArchivo(archivoSwap,txtAux);//txt_write_in_file(archivoSwap,txtAux);
 	auxiliar=malloc(8);
 	auxiliar->direccionMarco=nodo->direccionMarco;
 	auxiliar->numMarco=nodo->numMarco;
@@ -993,8 +993,7 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	auxiliar->numMarco=nodo->numMarco;
 	queue_push(colaMarcosLibres,auxiliar);
 	modificar(txtAux,nodo->direccionMarco,0,256);
-	txtAux[256]='\0';
-	txt_write_in_file(archivoSwap,txtAux);
+	escribirEnArchivo(archivoSwap,txtAux);
 	pthread_mutex_unlock(&mutexColaMarcosLibres);
 	fclose(archivoSwap);
 	respuesta_tablaSegmentos=obtenerTablaSegmentos(nodo->PID);
@@ -1005,6 +1004,13 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 }
 
 
+void escribirEnArchivo(FILE* archivo,char* marco){int i;
+	for(i=0;i<256;i++){
+
+		fputc(*marco,archivo);marco++;
+		}
+
+}
 
 void ingresar(uint32_t PID,uint32_t segmento, uint32_t pagina, char* bytes){
 	char* marco;elem_tipoColaAuxiliar *elementoDeCola;elem_colaMarcosLibres* auxiliar;
