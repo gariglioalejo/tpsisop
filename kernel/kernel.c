@@ -32,10 +32,15 @@ t_list * listaBloq;
 t_queue * colaKM;
 
 int elTidEstaEnExit(int);
+
+
+
+
 void * manejoCpuLibres(void * arg) {
 
 	while (1) {
 		//sem_wait(&hayCpu);
+		sleep(800);
 		pthread_mutex_lock(&mutex);
 		if (list_size(listaBloq) && queue_size(colaKM)
 				&& list_size(listaCpuLibres)) {
@@ -149,6 +154,21 @@ int main(int argc, char ** argv) {
 	t_list * listaCpusEjecutandoUnBaneado;	//** es necesaria esta cola?
 	listaCpusEjecutandoUnBaneado = list_create();
 
+void invocarHilos(){
+		t_list * listaMadre = list_create();
+		pthread_mutex_lock(&mutex);
+		convertirCola(listaMadre,listaReady,READY);
+		convertirCola(listaMadre,listaExec,EXEC);
+		convertirCola(listaMadre,listaBloq,BLOCK);
+		convertirColaJoin(listaMadre,listaBloqJoin,BLOCK);
+		convertirColaRecurso(listaMadre,listaBloqRecurso,BLOCK);
+		convertirCola(listaMadre,listaExit,EXIT);
+		hilos(listaMadre);
+		pthread_mutex_unlock(&mutex);
+
+}
+
+
 	char * literal_syscalls;//{ROVISORIAMENTE SE PUEDE CAMBIAR EL PATH DE SYSCALLS EN EL CFG.
 	literal_syscalls = copiarArchivo(syscalls);	//COPIA EL ARCHIVO DE SYSCALLS Y DEVUELVE UN PUNTERO.
 
@@ -217,6 +237,8 @@ int main(int argc, char ** argv) {
 						codigo = recibirInt(socketCliente);	//PARA SABER SI ES CONSOLA O CPU (1=CONSOLA NUEVA,2=CPU NUEVA)
 						if (codigo == 1) {
 							//conexion_consola(socketCliente);
+							conexion_consola(socketCliente);
+
 							char * sizeConBeso;
 							sizeConBeso = recibir_serializado_beso(	//DEVUELVE SERIALIZADO EL TAMANIO Y EL SCRIPT MANDADO POR LA CONSOLA
 									socketCliente);
@@ -270,6 +292,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_unlock(&mutex);
 
 							} else {
+								desconexion_consola(socketCliente);
 								pid--;
 								tid--;
 
@@ -278,6 +301,7 @@ int main(int argc, char ** argv) {
 						}	//FIN codigo==1.
 						if (codigo == 123) {
 							//conexion_cpu(socketCliente);
+							conexion_cpu(socketCliente);
 							FD_SET(socketCliente, &master);
 							if (socketCliente > setmax) {
 								setmax = socketCliente;
@@ -306,6 +330,7 @@ int main(int argc, char ** argv) {
 						}	//FIN DEL recibido= recv(i,...).
 						if (recibido == 0) {
 							//desconexion_consola(i);
+							desconexion_consola(i);
 							pthread_mutex_lock(&mutex);
 							t_listaSocketsConsola * nodoRemovido =
 									removerDeLaListaSocketsConsola(
@@ -393,6 +418,7 @@ int main(int argc, char ** argv) {
 						}	//FIN DEL if((recibido=recv(i,...)).
 						if (recibido == 0) {
 							//desconexion_cpu(i);
+							desconexion_cpu(i);
 							pthread_mutex_lock(&mutex);
 							removerDeLaListaElInt(listaSocketsCpu, i);
 							removerDeLaListaElInt(listaCpuLibres, i);
@@ -453,7 +479,8 @@ int main(int argc, char ** argv) {
 								puts("Entro en Termino Quantum");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
-								printf("Pid Recibido:%d\n", tcbCpu->pid);
+								invocarHilos();
+
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
@@ -473,6 +500,7 @@ int main(int argc, char ** argv) {
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
 								pthread_mutex_lock(&mutex);
+
 								removerTcbConElSocketCpu(listaExec, i);
 								if (tcbCpu->km == 1) {
 									if (hayNodoJoinConElTidPropio(listaBloqJoin,
@@ -563,6 +591,7 @@ int main(int argc, char ** argv) {
 											"Concluyo ejecucion normalmente",
 											tcbCpu->socketConsola);
 									enviarInt(0, tcbCpu->socketConsola);
+									desconexion_consola(tcbCpu->socketConsola);
 									destruirSegmento(tcbCpu->pid, tcbCpu->M,
 											socketMsp);
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
@@ -589,10 +618,13 @@ int main(int argc, char ** argv) {
 												nodoConsola->socketConsola);
 										enviarInt(0,
 												nodoConsola->socketConsola);
+										desconexion_consola(nodoConsola->socketConsola);
 									}
 									puts(
 											"Aborta el Kernel por ejecucion erronea de un KM");
+
 									exit(1);
+									//QUEDA LIMPIAR LA MSP
 								}
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
@@ -650,6 +682,7 @@ int main(int argc, char ** argv) {
 										"Concluyo ejecucion por ejecucion erronea",
 										tcbCpu->socketConsola);
 								enviarInt(0, tcbCpu->socketConsola);
+								desconexion_consola(tcbCpu->socketConsola);
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
 								list_add(listaCpuLibres, iAux);
