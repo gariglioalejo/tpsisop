@@ -40,7 +40,7 @@ void * manejoCpuLibres(void * arg) {
 
 	while (1) {
 		//sem_wait(&hayCpu);
-		sleep(800);
+
 		pthread_mutex_lock(&mutex);
 		if (list_size(listaBloq) && queue_size(colaKM)
 				&& list_size(listaCpuLibres)) {
@@ -52,8 +52,8 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->tid = tcb->tid; //es super importante esto, para poder saber cual llamo
 			tcbKernelMode->socketConsola = tcb->socketConsola;
 			tcbKernelMode->registroA.valores = tcb->registroA.valores;
-			printf("tcbKM a enviar registroA:%d\n",
-					tcbKernelMode->registroA.valores);
+			//printf("tcbKM a enviar registroA:%d\n",
+				//	tcbKernelMode->registroA.valores);
 			tcbKernelMode->registroB.valores = tcb->registroB.valores;
 			tcbKernelMode->registroC.valores = tcb->registroC.valores;
 			tcbKernelMode->registroD.valores = tcb->registroD.valores;
@@ -61,13 +61,13 @@ void * manejoCpuLibres(void * arg) {
 			tcbKernelMode->pointerDatos = tcb->S;
 			tcbKernelMode->baseDatos=tcb->X;
 			tcb->tidMaximo = tidMaximo;
-			printf("este es tid maxiomo%u", tidMaximo);
+			//printf("este es tid maxiomo%u", tidMaximo);
 			tcbKernelMode->P = tcb->direccionSyscallPendiente;
 			int * socketCpuAux = list_remove(listaCpuLibres, 0);
 			int socketCpu = *socketCpuAux;
 			//No hay que mandarle nada para indicarle que es el KM,no? Se da cuenta mirando el campo KM del tcb.
 			enviarTcb(tcbKernelMode, socketCpu);
-			printf("%d\n || %d\n", tcbKernelMode->km, tcbKernelMode->pid);
+			//printf("%d\n || %d\n", tcbKernelMode->km, tcbKernelMode->pid);
 			tcbKernelMode->socketCpu = socketCpu;
 			list_add(listaExec, tcbKernelMode);
 			//pthread_mutex_unlock(&mutex); 
@@ -80,10 +80,10 @@ void * manejoCpuLibres(void * arg) {
 			t_tcb * tcb = malloc(sizeof(t_tcb));
 			tcb = list_remove(listaReady, 0);
 			int * socketCpu = list_remove(listaCpuLibres, 0);
-			printf("Pid a Enviar:%d\n", tcb->pid);
-			printf("%c\n", tcb->registroB.nombre);
-			printf("%d\n", tcb->registroA.valores);
-			printf("%d\n", tcb->registroB.valores);
+			//printf("Pid a Enviar:%d\n", tcb->pid);
+			//printf("%c\n", tcb->registroB.nombre);
+			//printf("%d\n", tcb->registroA.valores);
+			//printf("%d\n", tcb->registroB.valores);
 			enviarTcb(tcb, *socketCpu);
 			tcb->socketCpu = *socketCpu;
 			list_add(listaExec, tcb);
@@ -97,6 +97,7 @@ void * manejoCpuLibres(void * arg) {
 int main(int argc, char ** argv) {
 	checkArgument(2, argc);
 
+	inicializar_panel(KERNEL, "/home/utnso/tp-2014-2c-nmi/panel");
 	//inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
 
 	tidMaximo = 1;
@@ -396,7 +397,7 @@ void invocarHilos(){
 								enviarInt(intIngresado, cpuAEnviar);
 							}
 							if (codigoEE == 1) {
-								puts("iiii");
+								//puts("iiii");
 								char * string;
 								string = recibir_serializado(i);
 								printf("%s\n", string);
@@ -476,7 +477,7 @@ void invocarHilos(){
 						else {
 							switch (unaOperacion) {
 							case TERMINO_QUANTUM: {
-								puts("Entro en Termino Quantum");
+							//	puts("Entro en Termino Quantum");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 								tcbCpu = recibirTcb(i);
 								invocarHilos();
@@ -517,10 +518,10 @@ void invocarHilos(){
 												listaBloq, tcbCpu->tid);
 										tcbBloqueado->registroA.valores =
 												tcbCpu->registroA.valores;
-										printf("tcbDesbloqueado tid:%d\n",
-												tcbBloqueado->tid);
-										printf("tcbDesbloqueado registroA:%d\n",
-												tcbBloqueado->registroA.valores);
+										//printf("tcbDesbloqueado tid:%d\n",
+										//		tcbBloqueado->tid);
+									//	printf("tcbDesbloqueado registroA:%d\n",
+										//		tcbBloqueado->registroA.valores);
 										tcbBloqueado->registroB.valores =
 												tcbCpu->registroB.valores;
 										tcbBloqueado->registroC.valores =
@@ -534,8 +535,8 @@ void invocarHilos(){
 									}//FIN DEL if(hayNodoJoinConElTidPropio...)
 								} else {
 									list_add(listaReady, tcbCpu);
-									puts("Agregue a Ready el recibido");
-									printf("%c\n", tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
+							//		puts("Agregue a Ready el recibido");
+									//printf("%c\n", tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
 									sem_post(&hayEnReady);
 								}			//FIN DEL if(tcbCpu->km==1).
 								int * iAux = malloc(sizeof(int));
@@ -561,9 +562,9 @@ void invocarHilos(){
 									list_add(listaExit, tcbCpu);
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
-								printf("hayNodoJoin:%d\n",
-										hayNodoJoinConElTid(listaBloqJoin,
-												tcbCpu->tid));
+								//printf("hayNodoJoin:%d\n",
+									//	hayNodoJoinConElTid(listaBloqJoin,
+										//		tcbCpu->tid));
 								if (hayNodoJoinConElTid(listaBloqJoin,
 										tcbCpu->tid)) {
 									t_join * nodoRemovido =
@@ -813,8 +814,8 @@ void invocarHilos(){
 
 								int tidLlamador = recibirInt(i);
 								int tidAEsperar = recibirInt(i);
-								printf("tidLlamador:%d\n tidAEsperar %d\n",
-										tidLlamador, tidAEsperar);
+							//	printf("tidLlamador:%d\n tidAEsperar %d\n",
+								//		tidLlamador, tidAEsperar);
 								pthread_mutex_lock(&mutex);
 								t_tcb * tcbEjecutandose =
 										obtenerTcbConElSocketCpu(listaExec, i);	//VA A SER EL KM (NO LO SACA DE LA LISTA!)
