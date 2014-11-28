@@ -1206,8 +1206,8 @@ int jpnz(t_tcb * tcb){
 
 	printf("No se hace nada porque es jump NO zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
 			tcb->P=tcb->P+8;
-			list_clean(parametros);
-			ejecucion_instruccion("JPNZ", parametros);
+			//list_clean(parametros);
+			//ejecucion_instruccion("JPNZ", parametros);
 
 			printf("Se salio del jmpnz \n");
 			return 0;
