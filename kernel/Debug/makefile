@@ -24,11 +24,14 @@ endif
 # All Target
 all: kernel
 
+dependents:
+	-cd /home/utnso/ansisop-panel/Release && $(MAKE) clean all
+
 # Tool invocations
-kernel: $(OBJS) $(USER_OBJS)
+kernel: $(OBJS) $(USER_OBJS) /home/utnso/ansisop-panel/Release/libansisop-panel.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/ansisop-panel/Release" -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -39,5 +42,6 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
+/home/utnso/ansisop-panel/Release/libansisop-panel.so:
 
 -include ../makefile.targets
