@@ -9,9 +9,9 @@ int main(int argc, char** argv) {
 	char* ip_kernel;
 	char* ip_memoria;
 	int retardo;
-	int dirsyscall;
+
 	t_tcb * tcb;
-	int instruccion = 0;
+
 	int i;
 
 	t_log * log_de_cpu;
@@ -24,6 +24,14 @@ int main(int argc, char** argv) {
 		log_error(log_de_cpu, "Insuficientes parametros recibidos, ABORTO\n");
 		exit(1);
 	}
+
+	//PANEL
+	inicializar_panel(CPU,"/home/utnso/git/tp-2014-2c-nmi/panel");
+	t_registros_cpu registrosPanel;
+	t_hilo * hiloPanel = malloc(sizeof(t_hilo));
+
+
+
 
 	//Leo el archivo de cf
 	t_config* config = config_create(argv[1]);
@@ -73,6 +81,13 @@ int main(int argc, char** argv) {
 		//se recibe el tcb del kernel
 		tcb = recibirTcb(socketK);
 
+		//==Hola soy un Panel
+		//==Hola Panel, como estas?
+		copiarHiloPanel(hiloPanel,tcb);
+		copiarRegistrosPanel(&registrosPanel,tcb);
+		comienzo_ejecucion(hiloPanel,quantum);
+
+
 		i = 0;
 		ultimainstruccion = 0;
 		systemcall = 0;
@@ -87,6 +102,8 @@ int main(int argc, char** argv) {
 				primeras4 = pedirPrimeraPalabraKM(socketM, tcb);
 				primeras4[4] = '\0';
 				parseador(primeras4, tcb);
+				copiarRegistrosPanel(&registrosPanel,tcb);
+				cambio_registros(registrosPanel);
 
 				sleep(retardo / 1000);
 
@@ -124,6 +141,10 @@ int main(int argc, char** argv) {
 				//LLama al parser creado por cada instruccion y a dicha funcion
 
 				parseador(primeras4, tcb);
+				copiarRegistrosPanel(&registrosPanel,tcb);
+
+				cambio_registros(registrosPanel);
+
 
 				sleep(retardo / 1000);
 
@@ -133,6 +154,7 @@ int main(int argc, char** argv) {
 				int encolarEnExit = 1;
 				send(socketK, &encolarEnExit, sizeof(int), 0);
 				enviarTcb(tcb, socketK);
+				fin_ejecucion();
 				printf("TCB ENVIADO A EXIT \n");
 				printf("--------------- \n");
 			} else {
@@ -141,6 +163,7 @@ int main(int argc, char** argv) {
 					int encolarSegFault = 2;
 					send(socketK, &encolarSegFault, sizeof(int), 0);
 					enviarTcb(tcb, socketK);
+					fin_ejecucion();
 					printf("TCB ENVIADO A SEGMENTATION FAULT \n");
 					printf("--------------- \n");
 				} else {
@@ -150,6 +173,7 @@ int main(int argc, char** argv) {
 						//int encolarEnBloqueado=3;
 						//send(socketK,&encolarEnBloqueado,sizeof(int),0);
 						//enviarTcb(tcb,socketK);
+						fin_ejecucion();
 					} else {
 
 						if (quantum == i) {
@@ -157,9 +181,9 @@ int main(int argc, char** argv) {
 							send(socketK, &encolarEnReady, sizeof(int), 0);
 							//send(socketK,&tcb,sizeof(t_tcb),0);
 							enviarTcb(tcb, socketK);
+							fin_ejecucion();
 							printf("TCB ENVIADO A READY \n");
-							printf(
-									"mensaje oculto: MARTIN BASILE Y SU CHEESCAKE \n");
+							printf("mensaje oculto: MARTIN BASILE Y SU CHEESCAKE \n");
 							printf("--------------- \n");
 
 						}
@@ -178,6 +202,142 @@ int main(int argc, char** argv) {
 		}
 
 	}
+
+	free(hiloPanel);
 	log_info(log_de_cpu, "-x-x-x-x-x-x---CPU CERRADA---x-x-x-x-x-x-");
 	return 0;
 }
+
+
+//==PANEL AUX
+
+void copiarHiloPanel(t_hilo * hiloPanel, t_tcb * tcb) {
+	hiloPanel->base_stack = tcb->X;
+	hiloPanel->cola = EXEC;
+	hiloPanel->cursor_stack = tcb->S;
+	hiloPanel->kernel_mode = (tcb->km == 1);
+	hiloPanel->pid = tcb->pid;
+	hiloPanel->puntero_instruccion = tcb->P;
+	hiloPanel->registros[0] = tcb->registroA.valores;
+	hiloPanel->registros[1] = tcb->registroB.valores;
+	hiloPanel->registros[2] = tcb->registroC.valores;
+	hiloPanel->registros[3] = tcb->registroD.valores;
+	hiloPanel->registros[4] = tcb->registroE.valores;
+	hiloPanel->segmento_codigo = tcb->M;
+	hiloPanel->segmento_codigo_size = tcb->tam_seg_cod;
+	hiloPanel->tid = tcb->tid;
+
+}
+
+void copiarRegistrosPanel(t_registros_cpu * registrosPanel, t_tcb * tcb) {
+
+
+	registrosPanel->I = tcb->pid;
+	registrosPanel->K = tcb->km;
+	registrosPanel->M = tcb->M;
+	registrosPanel->P = tcb->P;
+	registrosPanel->S = tcb->S;
+	registrosPanel->X = tcb->X;
+	registrosPanel->registros_programacion[0] = tcb->registroA.valores;
+	registrosPanel->registros_programacion[1] = tcb->registroB.valores;
+	registrosPanel->registros_programacion[2] = tcb->registroC.valores;
+	registrosPanel->registros_programacion[3] = tcb->registroD.valores;
+	registrosPanel->registros_programacion[4] = tcb->registroE.valores;
+
+}
+
+
+
+
+void panel_instruccion(char** params, int cant, char* instruccion) {
+	t_list* argumentos = list_create();
+	int i;
+	for (i = 0; i < cant; i++) {
+		list_add(argumentos, string_duplicate(params[i]));
+	}
+
+	ejecucion_instruccion(instruccion, argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+}
+
+
+
+//===INICIO PANEL
+void inicializar_panel(t_tipo_proceso tipo_proceso, char* path){
+	char* tipo_proceso_str;
+
+	if (tipo_proceso == KERNEL)
+		tipo_proceso_str = "kernel";
+	else if (tipo_proceso == CPU)
+		tipo_proceso_str = "cpu";
+	else
+		tipo_proceso_str = "?";
+
+	char* logFile = string_duplicate(path);
+	string_append(&logFile, tipo_proceso_str);
+	string_append(&logFile, ".log");
+
+	remove(logFile);
+	logp = log_create(logFile, tipo_proceso_str, true, LOG_LEVEL_INFO);
+
+	log_info(logp, "Inicializando panel para %s, en \"%s\"", tipo_proceso_str, logFile);
+
+	free(logFile);
+
+}
+
+
+
+
+
+void comienzo_ejecucion(t_hilo* hilo, uint32_t quantum) {
+	char* mensaje = string_new();
+
+	string_append_with_format(&mensaje, "Ejecuta hilo { PID: %d, TID: %d }", hilo->pid, hilo->tid);
+	if (hilo->kernel_mode) string_append(&mensaje, " en modo kernel");
+
+	log_info(logp, mensaje);
+	free(mensaje);
+}
+
+void fin_ejecucion() {
+	log_info(logp, "Empieza a estar iddle");
+}
+
+void ejecucion_instruccion(char* mnemonico, t_list* parametros) {
+	char* mensaje = string_new();
+
+	string_append_with_format(&mensaje, "Instrucción %s [", mnemonico);
+
+	bool primero = true;
+	void _imprimirParametro(char* parametro) {
+		if (!primero) string_append(&mensaje, ", ");
+		string_append_with_format(&mensaje, "%s", parametro);
+		primero = false;
+	}
+	list_iterate(parametros, (void*) _imprimirParametro);
+
+	string_append(&mensaje, "]");
+
+	log_info(logp, mensaje);
+	free(mensaje);
+}
+
+void cambio_registros(t_registros_cpu registros) {
+	log_info(logp, "Registros: { A: %d, B: %d, C: %d, D: %d, E: %d, M: %d, P: %d, S: %d, K: %d, I: %d }",
+		registros.registros_programacion[0],
+		registros.registros_programacion[1],
+		registros.registros_programacion[2],
+		registros.registros_programacion[3],
+		registros.registros_programacion[4],
+		registros.M, registros.P, registros.S, registros.K, registros.I
+	);
+}
+
+//-------------------------------------------------
+//Retrocompatibilidad con el ejemplo del enunciado:
+void ejecucion_hilo(t_hilo* hilo, uint32_t quantum) {
+	comienzo_ejecucion(hilo, quantum);
+}
+//===FIN PANEL

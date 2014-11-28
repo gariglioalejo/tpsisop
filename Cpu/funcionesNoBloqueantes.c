@@ -23,8 +23,9 @@
 
 #include "cpu.h"
 
-int load(t_tcb * tcb){uint32_t pidAux;
-if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
+int load(t_tcb * tcb){
+	uint32_t pidAux;
+	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 
 	char registro;
@@ -37,6 +38,7 @@ if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 	t_solicitarMemoria solicitador;
 	t_devolucion devolucion;
+
 
 	solicitador.PID=pidAux;
 	solicitador.direccion=tcb->P+4;
@@ -90,6 +92,18 @@ if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 
 	valor=(int32_t)devolucion.respuesta;
 
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=registro;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[10];
+	sprintf(pan2,"%d",valor);
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("LOAD", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
 	if(registro==tcb->registroA.nombre){
 		tcb->registroA.valores=valor;
 		printf("Al registro: %c, se le asigno: %d \n",tcb->registroA.nombre,valor);
@@ -116,6 +130,7 @@ if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
 	}
 
 	tcb->P=tcb->P+9;
+
 
 	printf("Termino LOAD \n");
 
@@ -180,6 +195,21 @@ int movr(t_tcb * tcb){
 	}
 
 	registro2=(char)devolucion.respuesta;
+
+
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=registro1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan[0]=registro2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("LOAD", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
+
 
 	if(registro2==tcb->registroA.nombre){
 			aux=tcb->registroA.valores;
@@ -288,6 +318,14 @@ int getm(t_tcb * tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
+
+		t_list* argumentos = list_create();
+		char pan[2];pan[0]=reg1;pan[1]='\0';
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		ejecucion_instruccion("GETM", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
 
 	if(reg2==tcb->registroA.nombre){
 
@@ -484,6 +522,15 @@ int decr(t_tcb * tcb){
 
 	registro=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=registro;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	ejecucion_instruccion("DECR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 	if(registro==tcb->registroA.nombre){
 		tcb->registroA.valores=tcb->registroA.valores-1;
 	}
@@ -544,6 +591,15 @@ int incr(t_tcb * tcb){
 
 	registro=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=registro;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	ejecucion_instruccion("INCR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 	if(registro==tcb->registroA.nombre){
 		tcb->registroA.valores=tcb->registroA.valores+1;
 	}
@@ -575,6 +631,12 @@ int nopp(t_tcb * tcb){
 
 	printf("Se consumió un ciclo de quantum \n");
 
+	t_list* argumentos = list_create();
+	ejecucion_instruccion("NOPP", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 	tcb->P=tcb->P+4;
 	
 	printf("Se salio de NOPP\n");
@@ -588,6 +650,14 @@ int inte(t_tcb * tcb){
 	uint32_t dirSyscall = pedirDireccion(socketM, tcb);
 
 	int codigo = 3;
+
+	t_list* argumentos = list_create();
+	char pan[10];sprintf(pan,"%d",dirSyscall);
+	list_add(argumentos, string_duplicate(pan));
+	ejecucion_instruccion("GETM", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
 
 	tcb->P=tcb->P+8;
 	enviarInt(codigo,socketK);
@@ -620,6 +690,7 @@ int addr(t_tcb * tcb){
 	solicitador.direccion=tcb->P+4;
 	solicitador.tamanio=1;
 	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
 
 
 	
@@ -657,6 +728,17 @@ int addr(t_tcb * tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
+
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("ADDR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
 	printf("%c %c",reg2,reg1);
 	switch(reg2){
 
@@ -782,6 +864,18 @@ int subr(t_tcb * tcb){
 
 	reg2=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("SUBR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
 	switch(reg2){
 
 	case 'A':
@@ -893,6 +987,16 @@ int mulr(t_tcb * tcb){
 
 	reg2=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("MULR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
 	switch(reg2){
 
 	case 'A':
@@ -982,6 +1086,16 @@ int gotoo(t_tcb * tcb){
 
 	reg=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	ejecucion_instruccion("GOTO", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
 	switch(reg){
 
 	case 'A':
@@ -1013,53 +1127,73 @@ int gotoo(t_tcb * tcb){
 	return 0;
 }
 
-int jmpz(t_tcb * tcb){
+int jmpz(t_tcb * tcb) {
 
-	if(tcb->registroA.valores==0){
+	if (tcb->registroA.valores == 0) {
 
-	int solicitarMemoria=4;
-	uint32_t nuevadir;
+		int solicitarMemoria = 4;
+		uint32_t nuevadir;
 
-	t_devolucion devolucion;
-	t_solicitarMemoria solicitador;
-	int pidAux;
-	if(tcb->km==1) pidAux=1;else pidAux=tcb->pid;
-	send(socketM,&solicitarMemoria,sizeof(int),0);
+		t_devolucion devolucion;
+		t_solicitarMemoria solicitador;
+		int pidAux;
+		if (tcb->km == 1)
+			pidAux = 1;
+		else
+			pidAux = tcb->pid;
+		send(socketM, &solicitarMemoria, sizeof(int), 0);
 
-	solicitador.PID=pidAux;
-	solicitador.direccion=tcb->P+4;
-	solicitador.tamanio=4;
+		solicitador.PID = pidAux;
+		solicitador.direccion = tcb->P + 4;
+		solicitador.tamanio = 4;
 
-	//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
 
-	send(socketM,&solicitador.PID,sizeof(int),0);
-	send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
-	send(socketM,&solicitador.tamanio,sizeof(int),0);
+		send(socketM, &solicitador.PID, sizeof(int), 0);
+		send(socketM, &solicitador.direccion, sizeof(uint32_t), 0);
+		send(socketM, &solicitador.tamanio, sizeof(int), 0);
 
-	devolucion.exito=recibirInt(socketM);
-	devolucion.respuesta=recibirInt32(socketM);
+		devolucion.exito = recibirInt(socketM);
+		devolucion.respuesta = recibirInt32(socketM);
 
-	if(devolucion.exito<0){
-		segmentatioFault++;
-		return 0;
-	}
+		if (devolucion.exito < 0) {
+			segmentatioFault++;
+			return 0;
+		}
 
-	nuevadir=devolucion.respuesta;
+		nuevadir = devolucion.respuesta;
 
-	tcb->P=nuevadir+tcb->M;
 
-	printf("Se cambio la ejecución porque A vale 0, al pc: %u \n",nuevadir);
 
-	}
-	else{
-		printf("No se hace nada porque es jump zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
-		tcb->P=tcb->P+8;
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",nuevadir);
+		list_add(argumentos, string_duplicate(pan));
+		ejecucion_instruccion("JMPZ", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+		tcb->P = nuevadir + tcb->M;
+
+		printf("Se cambio la ejecución porque A vale 0, al pc: %u \n",
+				nuevadir);
+
+	} else {
+		printf(
+				"No se hace nada porque es jump zero, y el valor del reg A es: %d \n",
+				tcb->registroA.valores);
+
+		list_clean(parametros);
+		ejecucion_instruccion("JMPZ", parametros);
+
+		tcb->P = tcb->P + 8;
 		printf("Se salio del jmpz\n");
 		return 0;
 	}
 
 	printf("Se salio del jmpz \n");
-	
+
 	return 0;
 }
 
@@ -1072,6 +1206,9 @@ int jpnz(t_tcb * tcb){
 
 	printf("No se hace nada porque es jump NO zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
 			tcb->P=tcb->P+8;
+			list_clean(parametros);
+			ejecucion_instruccion("JPNZ", parametros);
+
 			printf("Se salio del jmpnz \n");
 			return 0;
 	}
@@ -1097,7 +1234,7 @@ int jpnz(t_tcb * tcb){
 		send(socketM,&solicitador.tamanio,sizeof(int),0);
 
 		devolucion.exito=recibirInt(socketM);
-	devolucion.respuesta=recibirInt32(socketM);
+		devolucion.respuesta=recibirInt32(socketM);
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -1105,6 +1242,17 @@ int jpnz(t_tcb * tcb){
 		}
 
 		nuevadir=devolucion.respuesta;
+
+
+
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",nuevadir);
+		list_add(argumentos, string_duplicate(pan));
+		ejecucion_instruccion("JPNZ", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
 
 		tcb->P=nuevadir+tcb->M;
 
@@ -1173,6 +1321,18 @@ int comp(t_tcb * tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
+
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("COMP", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 
 	switch(reg1){
 
@@ -1319,6 +1479,18 @@ int cgeq(t_tcb * tcb){
 
 	reg2=(char)devolucion.respuesta;
 
+
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("CGEQ", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 	switch(reg1){
 
 		case 'A':
@@ -1437,6 +1609,18 @@ int cleq(t_tcb * tcb){
 
 	reg2=(char)devolucion.respuesta;
 
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("CLEQ", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
 	switch(reg1){
 
 			case 'A':
@@ -1554,6 +1738,17 @@ int divr(t_tcb* tcb){
 	}
 
 	reg2=(char)devolucion.respuesta;
+
+
+	t_list* argumentos = list_create();
+	char pan[2];pan[0]=reg1;pan[1]='\0';
+	list_add(argumentos, string_duplicate(pan));
+	char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+	list_add(argumentos, string_duplicate(pan2));
+	ejecucion_instruccion("DIVR", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
 
 	switch(reg1){
 
@@ -1676,6 +1871,15 @@ int modr(t_tcb* tcb){
 
 		reg2=(char)devolucion.respuesta;
 
+		t_list* argumentos = list_create();
+		char pan[2];pan[0]=reg1;pan[1]='\0';
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=reg2;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		ejecucion_instruccion("MODR", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
 		switch(reg1){
 
 		case 'A':
@@ -1772,6 +1976,18 @@ int push(t_tcb * tcb){
 
 		recv(socketM,&exito,sizeof(int),0);
 		recv(socketM,&registro,sizeof(char),0);
+
+
+
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",numero);
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=registro;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		ejecucion_instruccion("PUSH", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
 
 
 		bytesApush = malloc(numero);
@@ -1895,6 +2111,19 @@ int take(t_tcb * tcb){
 		recv(socketM,bytesApop,numero,0);
 		
 
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",numero);
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=registro;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		ejecucion_instruccion("TAKE", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
+
 		switch(registro){
 
 		case 'A':
@@ -1937,7 +2166,6 @@ int shif(t_tcb * tcb){
 		char registro;
 		int numero;
 		int codigoSolicitarMemoria=4;
-		int exito;
 		t_solicitarMemoria solicitador;
 		t_devolucion devolucion;
 		int pidAux;
@@ -1952,8 +2180,6 @@ int shif(t_tcb * tcb){
 		enviarInt(solicitador.PID,socketM);
 		enviarInt32(solicitador.direccion,socketM);
 		enviarInt(solicitador.tamanio,socketM);
-
-
 
 
 		devolucion.exito = recibirInt(socketM);
@@ -1976,13 +2202,22 @@ int shif(t_tcb * tcb){
 		enviarInt(solicitador.tamanio,socketM);
 
 
-		//recv(socketM,&devolucion,sizeof(t_devolucion),0);
-
 		devolucion.exito = recibirInt(socketM);
-		//recv(socketM,&registro,sizeof(char),0);
 		devolucion.respuesta = recibirInt(socketM);
 
 		registro = (char) devolucion.respuesta;
+
+
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",numero);
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=registro;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		ejecucion_instruccion("SHIF", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
 
 		if(devolucion.exito<0){
 			segmentatioFault++;
@@ -2072,6 +2307,18 @@ int shif(t_tcb * tcb){
 
 int xxxx(t_tcb* tcb){
 
+
+
+
+	t_list* argumentos = list_create();
+	ejecucion_instruccion("XXXX", argumentos);
+	list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
+
+
 	tcb->P=tcb->P+4;
 
 	ultimainstruccion++;
@@ -2136,7 +2383,23 @@ int setm(t_tcb* tcb){
 
 		bytesApush = malloc(numero);
 		//memcpy(bytesApush,(void*)tcb->registroA.valores,numero);
-	
+
+
+
+
+		t_list* argumentos = list_create();
+		char pan[10];
+		sprintf(pan,"%d",numero);
+		list_add(argumentos, string_duplicate(pan));
+		char pan2[2];pan2[0]=registro1;pan2[1]='\0';
+		list_add(argumentos, string_duplicate(pan2));
+		char pan3[2];pan3[0]=registro2;pan3[1]='\0';
+		list_add(argumentos, string_duplicate(pan3));
+		ejecucion_instruccion("SETM", argumentos);
+		list_destroy_and_destroy_elements(argumentos, free);
+
+
+
 		switch(registro2){
 
 		case 'A':

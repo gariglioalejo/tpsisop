@@ -38,7 +38,7 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="commons"/>
 								</option>
 								<option id="gnu.c.link.option.paths.717404842" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpsisoplib/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tpsisoplib/Debug}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1926848838" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -60,7 +60,7 @@
 				<externalSettings containerId="tpsisoplib;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
 					<externalSetting>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/tpsisoplib"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/tpsisoplib/Release"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/tpsisoplib/Debug"/>
 						<entry flags="RESOLVED" kind="libraryFile" name="tpsisoplib" srcPrefixMapping="" srcRootPath=""/>
 					</externalSetting>
 				</externalSettings>
@@ -156,4 +156,5 @@
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
