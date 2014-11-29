@@ -483,7 +483,8 @@ void convertirColaKM(t_list * listaMadre, t_queue * colaKM, int tipoLista) {
 			return (void *) hilo;
 		}
 	if(queue_size(colaKM)){
-		t_hilo * hiloTcb = convertirTcb(queue_pop(colaKM));
+		t_hilo * hiloTcb = convertirTcb(queue_peek(colaKM));
+
 		list_add(listaMadre,hiloTcb);
 	}
 }

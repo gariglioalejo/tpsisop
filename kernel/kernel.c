@@ -513,6 +513,7 @@ int main(int argc, char ** argv) {
 										queue_push(colaKM, tcbCpu);
 										invocarHilos();
 										//ACA HAY QUE DESTRUIR EL STACK DEL HILO QUE INVOCO LA SYSCALL
+
 									}
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
@@ -526,7 +527,6 @@ int main(int argc, char ** argv) {
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
 								pthread_mutex_lock(&mutex);
-
 								removerTcbConElSocketCpu(listaExec, i);
 								if (tcbCpu->km == 1) {
 									if (hayNodoJoinConElTidPropio(listaBloqJoin,
@@ -585,12 +585,13 @@ int main(int argc, char ** argv) {
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-									pthread_mutex_unlock(&mutex);
+
 									sem_post(&hayCpu);
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
 											socketMsp);
 									list_add(listaExit, tcbCpu);
 									invocarHilos();
+									pthread_mutex_unlock(&mutex);
 									break;
 								}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
 								 //printf("hayNodoJoin:%d\n",
