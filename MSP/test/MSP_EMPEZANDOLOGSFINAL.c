@@ -1,6 +1,6 @@
 /*
  ============================================================================
- Name        : pruebaaaaaa.c
+ Name        : msp_prueba.c
  Author      : 
  Version     :
  Copyright   : Your copyright notice
@@ -103,7 +103,7 @@ int aceptarConexion(int);int crearServer(char *);void gestionarMemoria();void im
 void imprimirInformacionSegmento(elem_tipoSegmento*);
 void imprimirInformacionPaginas();
 bool marcoMenor(t_list_ord*,t_list_ord*);
-
+void escribirEnArchivo(FILE*,char*);
 
 
 int main(void) {t_config * archivoConfiguracion;
@@ -256,11 +256,12 @@ if(i==3){int i;int PID; uint32_t direccion;int tamanio; char* bytes;
 		PID=recibirInt(socketCliente);
 		direccion=recibirInt32(socketCliente);//fede lo tiene que mandar como int32
 		tamanio=recibirInt(socketCliente);
-		bytes=	recibirBeso(tamanio, socketCliente);
+		bytes=recibirBeso(tamanio, socketCliente);
 		log_info(archivoLogMSP,"Solicitud de escribir memoria PID:%u. Tamaño:%u. Direccion:%u. Bytes:%s.",PID,tamanio,direccion,bytes);
 		i=escribirMemoria(PID,direccion,bytes,tamanio);
 		if(i<1) enviarInt(0,socketCliente);
-		else enviarInt(1,socketCliente);}
+		else enviarInt(1,socketCliente);
+		free(bytes);}
 if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo;
 		PID=recibirInt(socketCliente);
 		direccion=recibirInt32(socketCliente);//fede lo tiene que mandar como int32
@@ -271,6 +272,7 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		else{ enviarInt(1,socketCliente);
 		algo=respuesta.direccion;
 		enviarBeso(tamanio,algo,socketCliente);}
+		free(respuesta.direccion);
 }
 pthread_mutex_unlock(&mutexPrueba);
 recibido = recv(socketCliente, &i, sizeof(int), 0);
@@ -704,8 +706,10 @@ uint32_t escribirMarco(uint32_t PID, uint32_t segmento,uint32_t pagina,
 	pthread_mutex_unlock(&mutexComparador);
 	return 0;}
 
+
+
 uint32_t destruirSegmento(uint32_t PID,uint32_t baseSegmento){
-	uint32_t numSegmento=baseSegmento/1048576;
+	uint32_t numSegmento=extraerSegmento(baseSegmento);
 	elem_tipoProceso * proceso;
 	elem_tipoSegmento * segmento;
 	int cantDePags;
@@ -732,8 +736,8 @@ uint32_t destruirSegmento(uint32_t PID,uint32_t baseSegmento){
 	cantDePags=i/256;
 	pthread_mutex_lock(&mutexLlevarAMemoria);
 	for(i=0;i!=cantDePags;i++){
-		if(segmento->direccion_tablaPaginas+i=='M') sacarDeMemoria(PID,numSegmento,i);//faltaba hacerlas
-		if(segmento->direccion_tablaPaginas+i=='S') borrarSwap(PID,numSegmento,i);}//faltaba hacerlas
+		if(*(char*)((segmento->direccion_tablaPaginas)+i)=='M') sacarDeMemoria(PID,numSegmento,i);//faltaba hacerlas
+		if(*(char*)((segmento->direccion_tablaPaginas)+i)=='S') borrarSwap(PID,numSegmento,i);}//faltaba hacerlas
 	free(segmento->direccion_tablaPaginas);
 	pthread_mutex_unlock(&mutexLlevarAMemoria);
 	pthread_mutex_lock(&mutexCantidadMemoriaDisponible);
@@ -875,7 +879,7 @@ uint32_t hayMemoria(uint32_t tamanio){
 
 
 void sacarDeMemoria(uint32_t PID, uint32_t segmento, uint32_t pagina){
-	elem_tipoColaAuxiliar *nodo;
+	elem_tipoColaAuxiliar *nodo;elem_colaMarcosLibres* pedazoDeMierda;
 	pthread_mutex_lock(&mutexColaMarcos);
 	pthread_rwlock_wrlock(&semaforoCola_memoria);
 	pthread_mutex_lock(&mutexComparador);
@@ -884,7 +888,9 @@ void sacarDeMemoria(uint32_t PID, uint32_t segmento, uint32_t pagina){
 	pthread_mutex_unlock(&mutexColaMarcos);pthread_mutex_unlock(&mutexComparador);
 	pthread_rwlock_unlock(&semaforoCola_memoria);
 	pthread_mutex_lock(&mutexColaMarcosLibres);
-	queue_push(colaMarcosLibres,nodo->numMarco);
+	pedazoDeMierda=malloc(sizeof(elem_colaMarcosLibres));
+	pedazoDeMierda->numMarco=nodo->numMarco;pedazoDeMierda->direccionMarco=nodo->direccionMarco;
+	queue_push(colaMarcosLibres,pedazoDeMierda);
 	pthread_mutex_unlock(&mutexColaMarcosLibres);
 	log_info(archivoLogMSP,"Se desasigna un marco al PID %u",PID);
 	}
@@ -924,7 +930,8 @@ respuesta_t entraYDirTablaPags(t_list * tablaSegmentos,uint32_t direccion,uint32
 	respuesta_t respuestaAux;
 	pthread_mutex_lock(&mutexComparador);
 	pthread_mutex_lock(&mutexTablaSegmento);
-	enteroParaComparaciones=numeroSegmentoBuscado;if(list_is_empty(tablaSegmentos)){pthread_mutex_unlock(&mutexTablaSegmento);
+	enteroParaComparaciones=numeroSegmentoBuscado;
+	if(list_is_empty(tablaSegmentos)){pthread_mutex_unlock(&mutexTablaSegmento);
 	pthread_mutex_unlock(&mutexComparador);respuestaAux.exito=-1;return respuestaAux;}
 	someSegment=list_find(tablaSegmentos,esElSegmento);
 	pthread_mutex_unlock(&mutexTablaSegmento);
@@ -977,10 +984,10 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	log_info(archivoLogMSP,"Se desasigna el marco %u al PID %u",nodo->numMarco,nodo->PID);
 	nombreArchivo=string_new();
 	string_append_with_format(&nombreArchivo,"archivos/%u_%u_%u.txt",nodo->PID,nodo->segmento,nodo->pagina);
-	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);
+	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);free(nombreArchivo);
 	modificar(txtAux,nodo->direccionMarco,0,256);
 	txtAux[256]='\0';
-	txt_write_in_file(archivoSwap,txtAux);
+	escribirEnArchivo(archivoSwap,txtAux);
 	auxiliar=malloc(8);
 	auxiliar->direccionMarco=nodo->direccionMarco;
 	auxiliar->numMarco=nodo->numMarco;
@@ -989,7 +996,7 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	respuesta_tablaSegmentos=obtenerTablaSegmentos(nodo->PID);
 	respuesta_entra=entraYDirTablaPags(respuesta_tablaSegmentos.direccion,direccion,0);
 	dirTablaPaginas=respuesta_entra.direccion;
-	*(dirTablaPaginas+(nodo->pagina))='S';
+	*(dirTablaPaginas+(nodo->pagina))='S';free(nodo);
 }
 
 
@@ -1009,19 +1016,19 @@ respuesta_t respuesta_entra;char* dirTablaPaginas;respuesta_t respuesta_tablaSeg
 	log_info(archivoLogMSP,"Se desasigna el marco %u al PID %u",nodo->numMarco,nodo->PID);
 	string_append_with_format(&nombreArchivo,"archivos/%u_%u_%u.txt",nodo->PID,nodo->segmento,nodo->pagina);
 	archivoSwap=fopen(nombreArchivo,"w+");pthread_mutex_lock(&mutexColaMarcosLibres);direccion=(nodo->segmento)*1048576;
-	auxiliar=malloc(8);
+	auxiliar=malloc(8);free(nombreArchivo);
 	auxiliar->direccionMarco=nodo->direccionMarco;
 	auxiliar->numMarco=nodo->numMarco;
 	queue_push(colaMarcosLibres,auxiliar);
 	modificar(txtAux,nodo->direccionMarco,0,256);
 	txtAux[256]='\0';
-	txt_write_in_file(archivoSwap,txtAux);
+	escribirEnArchivo(archivoSwap,txtAux);
 	pthread_mutex_unlock(&mutexColaMarcosLibres);
 	fclose(archivoSwap);
 	respuesta_tablaSegmentos=obtenerTablaSegmentos(nodo->PID);
 	respuesta_entra=entraYDirTablaPags(respuesta_tablaSegmentos.direccion,direccion,0);
 	dirTablaPaginas=respuesta_entra.direccion;
-	*(dirTablaPaginas+(nodo->pagina))='S';
+	*(dirTablaPaginas+(nodo->pagina))='S';free(nodo);
 
 }
 
@@ -1042,7 +1049,7 @@ void ingresar(uint32_t PID,uint32_t segmento, uint32_t pagina, char* bytes){
 	elementoDeCola->numMarco=auxiliar->numMarco;//no se como se llaman estos campos
 	elementoDeCola->direccionMarco=auxiliar->direccionMarco; //esta bien esto? lo cambie porque antes decia elemdeCola->dir=elemdeCola->dir.
 	elementoDeCola->referencia=0;//IDEM
-	queue_push(direccionColaMarcos,elementoDeCola);
+	queue_push(direccionColaMarcos,elementoDeCola);free(auxiliar);
 	pthread_rwlock_unlock(&semaforoCola_memoria);
 	log_info(archivoLogMSP,"Se asigno el marco %u de memoria al PID %u",elementoDeCola->numMarco,PID);
 }
@@ -1307,3 +1314,10 @@ char * recibirBeso(int size_beso, int socket) {
 	return literal_beso;
 }
 
+void escribirEnArchivo(FILE* archivo,char* marco){int i;
+	for(i=0;i<256;i++){
+
+		fputc(*marco,archivo);marco++;
+		}
+
+}
