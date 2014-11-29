@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
 							enviarTcb(tcb, socketK);
 							fin_ejecucion();
 							printf("TCB ENVIADO A READY \n");
-							printf("mensaje oculto: MARTIN BASILE Y SU CHEESCAKE \n");
+							//printf("mensaje oculto: MARTIN BASILE Y SU CHEESCAKE \n");
 							printf("--------------- \n");
 
 						}
