@@ -763,6 +763,8 @@ int main(int argc, char ** argv) {
 								case SYSCALL: {
 									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
 									tcbCpu = recibirTcb(i);
+									instruccionProtegida("SYSCALL", tcbCpu,
+											READY);
 									uint32_t direccionSyscall = recibirInt32(i);
 									if (estaEnLaListaElInt(listaPidBaneados,
 											tcbCpu->pid)) {
@@ -797,6 +799,7 @@ int main(int argc, char ** argv) {
 									int tipoEE;
 									pidEE = recibirInt(i);//TIPO EE PARA SABER SI HAY QUE INGRESAR UN INT O UN STRING(0=Int,1=String)
 									tipoEE = recibirInt(i);
+
 									if (estaEnLaListaElInt(listaPidBaneados,
 											pidEE)) {
 										if (tipoEE == 0) {
@@ -815,6 +818,9 @@ int main(int argc, char ** argv) {
 										t_tcb * tcbBloqueado =
 												obtenerTcbConElPid(listaBloq,
 														pidEE);
+										instruccionProtegida(
+												"ENTRADAESTANDAR(Int)",
+												tcbBloqueado, READY);
 										enviarInt(3,
 												tcbBloqueado->socketConsola);
 										enviarInt(i,
@@ -828,6 +834,9 @@ int main(int argc, char ** argv) {
 										t_tcb * tcbBloqueado =
 												obtenerTcbConElPid(listaBloq,
 														pidEE);
+										instruccionProtegida(
+												"ENTRADAESTANDAR(String)",
+												tcbBloqueado, READY);
 										pthread_mutex_unlock(&mutex);
 										enviarInt(2,
 												tcbBloqueado->socketConsola);
@@ -851,6 +860,8 @@ int main(int argc, char ** argv) {
 									pthread_mutex_lock(&mutex);
 									t_tcb * tcbBloqueado = obtenerTcbConElPid(
 											listaBloq, pidSE);
+									instruccionProtegida("SALIDAESTANDAR",
+											tcbBloqueado, READY);
 									pthread_mutex_unlock(&mutex);
 									enviarInt(1, tcbBloqueado->socketConsola);
 									enviar_serializado(-1, string,
@@ -862,6 +873,13 @@ int main(int argc, char ** argv) {
 									tcbCpu = recibirTcb(i);
 									tid++;
 									tidMaximo = tcbCpu->tid;
+									pthread_mutex_lock(&mutex);
+									t_tcb * tcbEjecutandose =
+											obtenerTcbConElSocketCpu(listaExec,
+													i);
+									instruccionProtegida("CREARHILO",
+											tcbEjecutandose, READY);
+									pthread_mutex_unlock(&mutex);
 									if (estaEnLaListaElInt(listaPidBaneados,
 											tcbCpu->pid)) {
 										list_add(listaExit, tcbCpu);//***hay que agregarlo a la lista exit al tcb recibido para Crea?
@@ -886,7 +904,6 @@ int main(int argc, char ** argv) {
 									break;
 								}	//FIN DEL case CREA
 								case JOIN: {
-
 									int tidLlamador = recibirInt(i);
 									int tidAEsperar = recibirInt(i);
 									//	printf("tidLlamador:%d\n tidAEsperar %d\n",
@@ -895,6 +912,8 @@ int main(int argc, char ** argv) {
 									t_tcb * tcbEjecutandose =
 											obtenerTcbConElSocketCpu(listaExec,
 													i);	//VA A SER EL KM (NO LO SACA DE LA LISTA!)
+									instruccionProtegida("JOIN",
+																				tcbEjecutandose, READY);
 									if (estaEnLaListaElInt(listaPidBaneados,
 											tcbEjecutandose->pid)) {
 										pthread_mutex_unlock(&mutex);
@@ -921,6 +940,8 @@ int main(int argc, char ** argv) {
 									t_tcb * tcbEjecutandose =
 											obtenerTcbConElSocketCpu(listaExec,
 													i);
+									instruccionProtegida("BLOQUEAR",
+																				tcbEjecutandose, READY);
 									if (estaEnLaListaElInt(listaPidBaneados,
 											tcbEjecutandose->pid)) {
 										pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
@@ -941,6 +962,8 @@ int main(int argc, char ** argv) {
 									t_tcb * tcbEjecutandose =
 											obtenerTcbConElSocketCpu(listaExec,
 													i);
+									instruccionProtegida("DESPERTAR",
+																				tcbEjecutandose, READY);
 									if (estaEnLaListaElInt(listaPidBaneados,
 											tcbEjecutandose->pid)) {
 										pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
