@@ -15,7 +15,7 @@ int fnMALC(t_tcb * tcb) {
 
 	t_list* argumentos = list_create();
 	ejecucion_instruccion("MALC", argumentos);
-	list_destroy_and_destroy_elements(argumentos, free);
+	//list_destroy_and_destroy_elements(argumentos, free);
 
 	//t_devolucion devolucion;
 
@@ -37,7 +37,7 @@ int fnMALC(t_tcb * tcb) {
 	}
 
 	free(segmentoCreado);
-	list_destroy(parametros);
+	//list_destroy(parametros);
 	printf("MALC Ejecutada \n");
 
 	tcb->P = tcb->P + 4;
