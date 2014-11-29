@@ -64,6 +64,7 @@ void * manejoCpuLibres(void * arg) {
 			int socketCpu = *socketCpuAux;
 			//No hay que mandarle nada para indicarle que es el KM,no? Se da cuenta mirando el campo KM del tcb.
 			enviarTcb(tcbKernelMode, socketCpu);
+			instruccionProtegida("enviarKM", tcbKernelMode, READY);
 			//printf("%d\n || %d\n", tcbKernelMode->km, tcbKernelMode->pid);
 			tcbKernelMode->socketCpu = socketCpu;
 			list_add(listaExec, tcbKernelMode);
@@ -82,6 +83,7 @@ void * manejoCpuLibres(void * arg) {
 			//printf("%d\n", tcb->registroA.valores);
 			//printf("%d\n", tcb->registroB.valores);
 			enviarTcb(tcb, *socketCpu);
+			instruccionProtegida("enviarTCBCOMUN", tcb, READY);
 			tcb->socketCpu = *socketCpu;
 			list_add(listaExec, tcb);
 
@@ -157,12 +159,8 @@ int main(int argc, char ** argv) {
 	t_list * listaPidBaneados;
 	listaPidBaneados = list_create();
 
-	t_list * listaCpusEjecutandoUnBaneado;	//** es necesaria esta cola?
-	listaCpusEjecutandoUnBaneado = list_create();
-
 	void invocarHilos() {
 		t_list * listaMadre = list_create();
-		pthread_mutex_lock(&mutex);
 		convertirCola(listaMadre, listaReady, READY);
 		convertirColaKM(listaMadre, colaKM, READY);
 		convertirCola(listaMadre, listaExec, EXEC);
@@ -171,7 +169,6 @@ int main(int argc, char ** argv) {
 		convertirColaRecurso(listaMadre, listaBloqRecurso, BLOCK);
 		convertirCola(listaMadre, listaExit, EXIT);
 		hilos(listaMadre);
-		pthread_mutex_unlock(&mutex);
 		free(listaMadre);
 	}
 
@@ -402,596 +399,573 @@ int main(int argc, char ** argv) {
 										socketMsp);
 								destruirSegmento(*pidBaneado, baseStackBaneado,
 										socketMsp);
-								pthread_mutex_unlock(&mutex);
-							} else {
-								int cpuAEnviar;
-								if (codigoEE == 0) {
-									int intIngresado;
-									intIngresado = recibirInt(i);
-									cpuAEnviar = recibirInt(i);
-									enviarInt(intIngresado, cpuAEnviar);
-								}
-								if (codigoEE == 1) {
-									//puts("iiii");
-									char * string;
-									string = recibir_serializado(i);
-									printf("%s\n", string);
-									cpuAEnviar = recibirInt(i);
-									enviar_serializado(-1, string, cpuAEnviar);
-								}
-
 							}
-							//FIN DEL recibido==0.
+							pthread_mutex_unlock(&mutex);
+							//ESTA PARA EL ORTO LO DE BORRAR LO DE MEMORIA
+						} else {
+							int cpuAEnviar;
+							if (codigoEE == 0) {
+								int intIngresado;
+								intIngresado = recibirInt(i);
+								cpuAEnviar = recibirInt(i);
+								enviarInt(intIngresado, cpuAEnviar);
+							}
+							if (codigoEE == 1) {
+								//puts("iiii");
+								char * string;
+								string = recibir_serializado(i);
+								printf("%s\n", string);
+								cpuAEnviar = recibirInt(i);
+								enviar_serializado(-1, string, cpuAEnviar);
+							}
 
-						}//FIN DEL if (estaEnlaListaSocketsConsola(listaSocketsConsola, i).
-						if (estaEnLaListaElInt(listaSocketsCpu, i)) {
-							int recibido;
-							int unaOperacion;
-							if ((recibido = recv(i, &unaOperacion, sizeof(int),
-									0)) == -1) {
-								printf("Fallo el recv de la Cpu: %d\n", i);
-								exit(1);
-							}	//FIN DEL if((recibido=recv(i,...)).
-							if (recibido == 0) {
-								//desconexion_cpu(i);
-								desconexion_cpu(i);
-								pthread_mutex_lock(&mutex);
-								removerDeLaListaElInt(listaSocketsCpu, i);
-								removerDeLaListaElInt(listaCpuLibres, i);
-								if (hayTcbConElSocketCpu(listaExec, i)) {//***recordar que es importante en el hilo asignarle la CPU a la que se lo manda al TCB.
-									t_tcb * tcbQueSeEjecutaba =
-											removerTcbConElSocketCpu(listaExec,
-													i);	//SE REMUEVE DE LA LISTA EXEC EL TCB QUE SE EJECUTABA EN LA CPU QUE SE DESCONECTO. SE DEJAN EN LA LISTA EXEC LOS TCBS ASOCIADOS AL PID DEL QUE SE REMOVIO.
+						}
+						//FIN DEL recibido==0.
+
+					}//FIN DEL if (estaEnlaListaSocketsConsola(listaSocketsConsola, i).
+					if (estaEnLaListaElInt(listaSocketsCpu, i)) {
+						int recibido;
+						int unaOperacion;
+						if ((recibido = recv(i, &unaOperacion, sizeof(int), 0))
+								== -1) {
+							printf("Fallo el recv de la Cpu: %d\n", i);
+							exit(1);
+						}	//FIN DEL if((recibido=recv(i,...)).
+						if (recibido == 0) {
+							//desconexion_cpu(i);
+							desconexion_cpu(i);
+							pthread_mutex_lock(&mutex);
+							removerDeLaListaElInt(listaSocketsCpu, i);
+							removerDeLaListaElInt(listaCpuLibres, i);
+							if (hayTcbConElSocketCpu(listaExec, i)) {//***recordar que es importante en el hilo asignarle la CPU a la que se lo manda al TCB.
+								t_tcb * tcbQueSeEjecutaba =
+										removerTcbConElSocketCpu(listaExec, i);	//SE REMUEVE DE LA LISTA EXEC EL TCB QUE SE EJECUTABA EN LA CPU QUE SE DESCONECTO. SE DEJAN EN LA LISTA EXEC LOS TCBS ASOCIADOS AL PID DEL QUE SE REMOVIO.
+								invocarHilos();
+								list_add(listaExit, tcbQueSeEjecutaba);
+								invocarHilos();
+								int * pidBaneado = malloc(sizeof(int));
+								*pidBaneado = tcbQueSeEjecutaba->pid;
+								list_add(listaPidBaneados, pidBaneado);
+								while (hayTcbConElPid(listaReady, *pidBaneado)) {//SE REMUEVEN DE TODAS LAS LISTAS MENOS LA DE EXEC LOS NODOS ASOCIADOS AL PID DEL TCB QUE SE EJECUTABA EN LA CPU DESCONECTADA.
+									t_tcb * tcbRemovido = removerTcbConElPid(
+											listaReady, *pidBaneado);//ACA SE SACAN TODOS LOS NODOS ASOCIADOS AL PID,EXCEPTO EL KM EN CASO DE QUE ESTE ASOCIADO.
 									invocarHilos();
-									list_add(listaExit, tcbQueSeEjecutaba);
+									list_add(listaExit, tcbRemovido);// ***se tienen que mandar los hijos tambien a la cola de exit, no?
 									invocarHilos();
-									int * pidBaneado = malloc(sizeof(int));
-									*pidBaneado = tcbQueSeEjecutaba->pid;
-									list_add(listaPidBaneados, pidBaneado);
-									while (hayTcbConElPid(listaReady,
-											*pidBaneado)) {	//SE REMUEVEN DE TODAS LAS LISTAS MENOS LA DE EXEC LOS NODOS ASOCIADOS AL PID DEL TCB QUE SE EJECUTABA EN LA CPU DESCONECTADA.
-										t_tcb * tcbRemovido =
-												removerTcbConElPid(listaReady,
-														*pidBaneado);//ACA SE SACAN TODOS LOS NODOS ASOCIADOS AL PID,EXCEPTO EL KM EN CASO DE QUE ESTE ASOCIADO.
-										invocarHilos();
-										list_add(listaExit, tcbRemovido);// ***se tienen que mandar los hijos tambien a la cola de exit, no?
-										invocarHilos();
-									}//FIN DEL while(hayTcbConElPid(listaReady,...).
-									while (hayTcbConElPid(listaBloq,
-											*pidBaneado)) {
-										t_tcb * tcbRemovido =
-												removerTcbConElPid(listaBloq,
-														*pidBaneado);
-										invocarHilos();
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayTcbConElPid(listaBloq,...).
-									while (hayNodoJoinConElPid(listaBloqJoin,
-											*pidBaneado)) {
-										t_join * nodoRemovido =
-												removerNodoJoinDelPid(
-														listaBloqJoin,
-														*pidBaneado);
-										invocarHilos();
-										t_tcb * tcbRemovido = nodoRemovido->tcb;
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
-									while (hayNodoHilosConElPid(listaHilos,
-											*pidBaneado)) {
-										removerNodoHilosDelPid(listaHilos,
-												*pidBaneado);
-									}	//FIN DEL while(hayNodoHilosCon...)
-									while (hayNodoRecursoConElPid(
-											listaBloqRecurso, *pidBaneado)) {
-										t_nodoRecurso * nodoRemovido =
-												removerNodoRecursoDelPid(
-														listaBloqRecurso,
-														*pidBaneado);
-										invocarHilos();
-										t_tcb * tcbRemovido = nodoRemovido->tcb;
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayNodoRecursoConElPid(listaBloqRecurso,...).
-									enviar_serializado(1,
-											"Concluyo ejecucion abruptamente por desconexion de una CPU que atendia el proceso",
-											tcbQueSeEjecutaba->socketConsola);
-									enviarInt(0,
-											tcbQueSeEjecutaba->socketConsola);
-									destruirSegmento(*pidBaneado,
-											tcbQueSeEjecutaba->M, socketMsp);
-									destruirSegmento(*pidBaneado,
-											tcbQueSeEjecutaba->X, socketMsp);
-									//FALTARIA VER COMO BORRAR LOS DEL PID QUE RESTAN
-								}//FIN DEL if(hayTcbConElSocketCpu(listaExec,...).
-								pthread_mutex_unlock(&mutex);
-							}			//FIN DEL if(recibido==0).
-							else {
-								switch (unaOperacion) {
-								case TERMINO_QUANTUM: {
-									//	puts("Entro en Termino Quantum");
-									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-									tcbCpu = recibirTcb(i);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbCpu->pid)) {
-										pthread_mutex_lock(&mutex);
-										if (tcbCpu->km == 1) {
-											sacarElKM(listaExec);
-											invocarHilos();
-											queue_push(colaKM, tcbCpu);
-											invocarHilos();
-											//ACA HAY QUE DESTRUIR EL STACK DEL HILO QUE INVOCO LA SYSCALL
-										}
-										int * iAux = malloc(sizeof(int));
-										*iAux = i;
-										list_add(listaCpuLibres, iAux);
-										list_add(listaExit, tcbCpu);
-										invocarHilos();
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-										pthread_mutex_unlock(&mutex);
-										sem_post(&hayCpu);
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
+								}//FIN DEL while(hayTcbConElPid(listaReady,...).
+								while (hayTcbConElPid(listaBloq, *pidBaneado)) {
+									t_tcb * tcbRemovido = removerTcbConElPid(
+											listaBloq, *pidBaneado);
+									invocarHilos();
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayTcbConElPid(listaBloq,...).
+								while (hayNodoJoinConElPid(listaBloqJoin,
+										*pidBaneado)) {
+									t_join * nodoRemovido =
+											removerNodoJoinDelPid(listaBloqJoin,
+													*pidBaneado);
+									invocarHilos();
+									t_tcb * tcbRemovido = nodoRemovido->tcb;
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
+								while (hayNodoHilosConElPid(listaHilos,
+										*pidBaneado)) {
+									removerNodoHilosDelPid(listaHilos,
+											*pidBaneado);
+								}	//FIN DEL while(hayNodoHilosCon...)
+								while (hayNodoRecursoConElPid(listaBloqRecurso,
+										*pidBaneado)) {
+									t_nodoRecurso * nodoRemovido =
+											removerNodoRecursoDelPid(
+													listaBloqRecurso,
+													*pidBaneado);
+									invocarHilos();
+									t_tcb * tcbRemovido = nodoRemovido->tcb;
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayNodoRecursoConElPid(listaBloqRecurso,...).
+								enviar_serializado(1,
+										"Concluyo ejecucion abruptamente por desconexion de una CPU que atendia el proceso",
+										tcbQueSeEjecutaba->socketConsola);
+								enviarInt(0, tcbQueSeEjecutaba->socketConsola);
+								destruirSegmento(*pidBaneado,
+										tcbQueSeEjecutaba->M, socketMsp);
+								destruirSegmento(*pidBaneado,
+										tcbQueSeEjecutaba->X, socketMsp);
+								//FALTARIA VER COMO BORRAR LOS DEL PID QUE RESTAN
+							}//FIN DEL if(hayTcbConElSocketCpu(listaExec,...).
+							pthread_mutex_unlock(&mutex);
+						}			//FIN DEL if(recibido==0).
+						else {
+							switch (unaOperacion) {
+							case TERMINO_QUANTUM: {
+								//	puts("Entro en Termino Quantum");
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
-
-									removerTcbConElSocketCpu(listaExec, i);
 									if (tcbCpu->km == 1) {
-										if (hayNodoJoinConElTidPropio(
-												listaBloqJoin, tcbCpu->tid)
-												|| hayNodoRecursoConElTid(
-														listaBloqRecurso,
-														tcbCpu->tid)) {
-											queue_push(colaKM, tcbCpu);
-											invocarHilos();
-										} else {
-
-											queue_push(colaKM, tcbCpu);
-											invocarHilos();
-											t_tcb * tcbBloqueado;
-											tcbBloqueado = removerTcbConElTid(
-													listaBloq, tcbCpu->tid);
-											invocarHilos();
-											tcbBloqueado->registroA.valores =
-													tcbCpu->registroA.valores;
-											//printf("tcbDesbloqueado tid:%d\n",
-											//		tcbBloqueado->tid);
-											//	printf("tcbDesbloqueado registroA:%d\n",
-											//		tcbBloqueado->registroA.valores);
-											tcbBloqueado->registroB.valores =
-													tcbCpu->registroB.valores;
-											tcbBloqueado->registroC.valores =
-													tcbCpu->registroC.valores;
-											tcbBloqueado->registroD.valores =
-													tcbCpu->registroD.valores;
-											tcbBloqueado->registroE.valores =
-													tcbCpu->registroE.valores;
-											list_add(listaReady, tcbBloqueado);
-											invocarHilos();
-											sem_post(&hayEnReady);
-										}//FIN DEL if(hayNodoJoinConElTidPropio...)
-									} else {
-										list_add(listaReady, tcbCpu);
+										sacarElKM(listaExec);
 										invocarHilos();
-										//		puts("Agregue a Ready el recibido");
-										//printf("%c\n", tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
-										sem_post(&hayEnReady);
-									}			//FIN DEL if(tcbCpu->km==1).
-									int * iAux = malloc(sizeof(int));
-									*iAux = i;
-									list_add(listaCpuLibres, iAux);
-									pthread_mutex_unlock(&mutex);
-									sem_post(&hayCpu);
-									break;
-								}			//FIN DEL case TERMINO_QUANTUM.
-								case CONCLUYO_EJECUCION: {
-									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-									tcbCpu = recibirTcb(i);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbCpu->pid)) {
-										pthread_mutex_lock(&mutex);
-										int * iAux = malloc(sizeof(int));
-										*iAux = i;
-										list_add(listaCpuLibres, iAux);
-										pthread_mutex_unlock(&mutex);
-										sem_post(&hayCpu);
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-										list_add(listaExit, tcbCpu);
+										queue_push(colaKM, tcbCpu);
 										invocarHilos();
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
-									 //printf("hayNodoJoin:%d\n",
-									 //	hayNodoJoinConElTid(listaBloqJoin,
-									 //		tcbCpu->tid));
-									if (hayNodoJoinConElTid(listaBloqJoin,
-											tcbCpu->tid)) {
-										t_join * nodoRemovido =
-												removerNodoJoinDelTid(
-														listaBloqJoin,
-														tcbCpu->pid,
-														tcbCpu->tid);
-										invocarHilos();
-										t_tcb * tcbDesbloqueado =
-												nodoRemovido->tcb;
-										pthread_mutex_lock(&mutex);
-										list_add(listaReady, tcbDesbloqueado);
-										invocarHilos();
-										pthread_mutex_unlock(&mutex);
-										sem_post(&hayEnReady);
+										//ACA HAY QUE DESTRUIR EL STACK DEL HILO QUE INVOCO LA SYSCALL
 									}
-									t_listaHilos * nodoRemovido =
-											removerNodoHilosDelPid(listaHilos,
-													tcbCpu->pid);
-									pthread_mutex_lock(&mutex);
-									removerTcbConElSocketCpu(listaExec, i);
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-									pthread_mutex_unlock(&mutex);
-									sem_post(&hayCpu);
 									list_add(listaExit, tcbCpu);
 									invocarHilos();
-									if (nodoRemovido->hilos == 1) {	//de aca hasta...
-										enviar_serializado(1,
-												"Concluyo ejecucion normalmente",
-												tcbCpu->socketConsola);
-										enviarInt(0, tcbCpu->socketConsola);
-										desconexion_consola(
-												tcbCpu->socketConsola);
-										destruirSegmento(tcbCpu->pid, tcbCpu->M,
-												socketMsp);
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-									} else {
-										nodoRemovido->hilos =
-												nodoRemovido->hilos - 1;
-										list_add(listaHilos, nodoRemovido);
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,//DESTRUYO EL STACK DEL HILO
-												socketMsp);
-									}//...aca, saque para probar Despertar y Bloquear
-									break;
-								}	//FIN DEL case CONCLUYO EJECUCION.
-								case EJECUCION_ERRONEA: {
-									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-									tcbCpu = recibirTcb(i);
-									if (tcbCpu->km == 1) {
-										while (list_size(listaSocketsConsola)) {
-											t_listaSocketsConsola * nodoConsola =
-													list_remove(
-															listaSocketsConsola,
-															0);
-											enviar_serializado(1,
-													"Concluyo ejecucion por ejecucion erronea del KM",
-													nodoConsola->socketConsola);
-											enviarInt(0,
-													nodoConsola->socketConsola);
-											desconexion_consola(
-													nodoConsola->socketConsola);
-										}
-										puts(
-												"Aborta el Kernel por ejecucion erronea de un KM");
-
-										exit(1);
-										//QUEDA LIMPIAR LA MSP
-									}
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbCpu->pid)) {
-										pthread_mutex_lock(&mutex);
-										int * iAux = malloc(sizeof(int));
-										*iAux = i;
-										list_add(listaCpuLibres, iAux);
-										pthread_mutex_unlock(&mutex);
-										sem_post(&hayCpu);
-										list_add(listaExit, tcbCpu);
-										invocarHilos();
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-										break;
-									}
-									pthread_mutex_lock(&mutex);
-									t_tcb * tcbQueSeEjecutaba =
-											removerTcbConElSocketCpu(listaExec,
-													i);
-									invocarHilos();
-									list_add(listaExit, tcbCpu);
-									invocarHilos();
-									int * pidBaneado = malloc(sizeof(int));
-									*pidBaneado = tcbCpu->pid;
-									list_add(listaPidBaneados, pidBaneado);
-									while (hayTcbConElPid(listaReady,
-											tcbCpu->pid)) {	//SE REMUEVEN DE TODAS LAS LISTAS MENOS LA DE EXEC LOS NODOS ASOCIADOS AL PID DEL TCB QUE SE EJECUTABA EN LA CPU DESCONECTADA.
-										t_tcb * tcbRemovido =
-												removerTcbConElPid(listaReady,
-														tcbCpu->pid);//ACA SE SACAN TODOS LOS NODOS ASOCIADOS AL PID,EXCEPTO EL KM EN CASO DE QUE ESTE ASOCIADO.
-										invocarHilos();
-										list_add(listaExit, tcbRemovido);// ***se tienen que mandar los hijos tambien a la cola de exit, no?
-										invocarHilos();
-									}//FIN DEL while(hayTcbConElPid(listaReady,...).
-									while (hayTcbConElPid(listaBloq,
-											tcbCpu->pid)) {
-										t_tcb * tcbRemovido =
-												removerTcbConElPid(listaBloq,
-														tcbCpu->pid);
-										invocarHilos();
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayTcbConElPid(listaBloq,...).
-									while (hayNodoJoinConElPid(listaBloqJoin,
-											tcbCpu->pid)) {
-										t_join * nodoRemovido =
-												removerNodoJoinDelPid(
-														listaBloqJoin,
-														tcbCpu->pid);
-										invocarHilos();
-										t_tcb * tcbRemovido = nodoRemovido->tcb;
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
-									while (hayNodoHilosConElPid(listaHilos,
-											tcbCpu->pid)) {
-										removerNodoHilosDelPid(listaHilos,
-												tcbCpu->pid);
-									}	//FIN DEL while(hayNodoHilosCon...)
-									while (hayNodoRecursoConElPid(
-											listaBloqRecurso, tcbCpu->pid)) {
-										t_nodoRecurso * nodoRemovido =
-												removerNodoRecursoDelPid(
-														listaBloqRecurso,
-														tcbCpu->pid);
-										invocarHilos();
-										t_tcb * tcbRemovido = nodoRemovido->tcb;
-										list_add(listaExit, tcbRemovido);
-										invocarHilos();
-									}//FIN DEL while(hayNodoRecursoConElPid(listaBloqRecurso,...).
-									enviar_serializado(1,
-											"Concluyo ejecucion por ejecucion erronea",
-											tcbCpu->socketConsola);
-									enviarInt(0, tcbCpu->socketConsola);
-									desconexion_consola(tcbCpu->socketConsola);
-									int * iAux = malloc(sizeof(int));
-									*iAux = i;
-									list_add(listaCpuLibres, iAux);
-									destruirSegmento(tcbCpu->pid, tcbCpu->M,
-											socketMsp);
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
 											socketMsp);
 									pthread_mutex_unlock(&mutex);
 									sem_post(&hayCpu);
 									break;
-								}	//FIN DEL case EJECUCION_ERRONEA
-								case SYSCALL: {
-									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-									tcbCpu = recibirTcb(i);
-									instruccionProtegida("SYSCALL", tcbCpu,
-											READY);
-									uint32_t direccionSyscall = recibirInt32(i);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbCpu->pid)) {
-										pthread_mutex_lock(&mutex);
-										int * iAux = malloc(sizeof(int));
-										*iAux = i;
-										list_add(listaCpuLibres, iAux);
-										pthread_mutex_unlock(&mutex);
-										sem_post(&hayCpu);
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-										list_add(listaExit, tcbCpu);
+								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
+								pthread_mutex_lock(&mutex);
+
+								removerTcbConElSocketCpu(listaExec, i);
+								if (tcbCpu->km == 1) {
+									if (hayNodoJoinConElTidPropio(listaBloqJoin,
+											tcbCpu->tid)
+											|| hayNodoRecursoConElTid(
+													listaBloqRecurso,
+													tcbCpu->tid)) {
+										queue_push(colaKM, tcbCpu);
 										invocarHilos();
-										break;
-									}//FIN del if(estaEnLaListaElInt(listaPid...,...).
-									tcbCpu->direccionSyscallPendiente =
-											direccionSyscall;
-									pthread_mutex_lock(&mutex);
-									removerTcbConElSocketCpu(listaExec, i);
+									} else {
+
+										queue_push(colaKM, tcbCpu);
+										invocarHilos();
+										t_tcb * tcbBloqueado;
+										tcbBloqueado = removerTcbConElTid(
+												listaBloq, tcbCpu->tid);
+										invocarHilos();
+										tcbBloqueado->registroA.valores =
+												tcbCpu->registroA.valores;
+										//printf("tcbDesbloqueado tid:%d\n",
+										//		tcbBloqueado->tid);
+										//	printf("tcbDesbloqueado registroA:%d\n",
+										//		tcbBloqueado->registroA.valores);
+										tcbBloqueado->registroB.valores =
+												tcbCpu->registroB.valores;
+										tcbBloqueado->registroC.valores =
+												tcbCpu->registroC.valores;
+										tcbBloqueado->registroD.valores =
+												tcbCpu->registroD.valores;
+										tcbBloqueado->registroE.valores =
+												tcbCpu->registroE.valores;
+										list_add(listaReady, tcbBloqueado);
+										invocarHilos();
+										sem_post(&hayEnReady);
+									}//FIN DEL if(hayNodoJoinConElTidPropio...)
+								} else {
+									list_add(listaReady, tcbCpu);
 									invocarHilos();
+									//		puts("Agregue a Ready el recibido");
+									//printf("%c\n", tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
+									sem_post(&hayEnReady);
+								}			//FIN DEL if(tcbCpu->km==1).
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
+								pthread_mutex_unlock(&mutex);
+								sem_post(&hayCpu);
+								break;
+							}			//FIN DEL case TERMINO_QUANTUM.
+							case CONCLUYO_EJECUCION: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbCpu->pid)) {
+									pthread_mutex_lock(&mutex);
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-									list_add(listaBloq, tcbCpu);
-									invocarHilos();
 									pthread_mutex_unlock(&mutex);
 									sem_post(&hayCpu);
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,
+											socketMsp);
+									list_add(listaExit, tcbCpu);
+									invocarHilos();
 									break;
-								}	//FIN DEL case SYSCALL
-								case ENTRADA_ESTANDAR: {
-									int pidEE;
-									int tipoEE;
-									pidEE = recibirInt(i);//TIPO EE PARA SABER SI HAY QUE INGRESAR UN INT O UN STRING(0=Int,1=String)
-									tipoEE = recibirInt(i);
+								}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
+								 //printf("hayNodoJoin:%d\n",
+								 //	hayNodoJoinConElTid(listaBloqJoin,
+								 //		tcbCpu->tid));
+								if (hayNodoJoinConElTid(listaBloqJoin,
+										tcbCpu->tid)) {
+									t_join * nodoRemovido =
+											removerNodoJoinDelTid(listaBloqJoin,
+													tcbCpu->pid, tcbCpu->tid);
+									pthread_mutex_lock(&mutex);
+									invocarHilos();
+									t_tcb * tcbDesbloqueado = nodoRemovido->tcb;
 
-									if (estaEnLaListaElInt(listaPidBaneados,
-											pidEE)) {
-										if (tipoEE == 0) {
-											enviarInt(7, i);//BASURA,LO MANDO PARA QUE CONTIENE LA CPU EJECUTANDO
-										}	//FIN DEL if(tipoEE==0)
-										if (tipoEE == 1) {
-											int inputMax;
-											inputMax = recibirInt(i);//***anda enviar el "a" asi, no?
-											enviar_serializado(-1, "a", i); //BASURA,LO MANDO PARA QuE CONTIENE LA CPU EJECUTANDO
-										}	//FIN DEL if(tipoEE==1)
+									list_add(listaReady, tcbDesbloqueado);
+									invocarHilos();
+									pthread_mutex_unlock(&mutex);
+									sem_post(&hayEnReady);
+								}
+								t_listaHilos * nodoRemovido =
+										removerNodoHilosDelPid(listaHilos,
+												tcbCpu->pid);
+								pthread_mutex_lock(&mutex);
+								removerTcbConElSocketCpu(listaExec, i);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
 
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
+								sem_post(&hayCpu);
+								list_add(listaExit, tcbCpu);
+								invocarHilos();
+								if (nodoRemovido->hilos == 1) {	//de aca hasta...
+									enviar_serializado(1,
+											"Concluyo ejecucion normalmente",
+											tcbCpu->socketConsola);
+									enviarInt(0, tcbCpu->socketConsola);
+									desconexion_consola(tcbCpu->socketConsola);
+									destruirSegmento(tcbCpu->pid, tcbCpu->M,
+											socketMsp);
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,
+											socketMsp);
+								} else {
+									nodoRemovido->hilos = nodoRemovido->hilos
+											- 1;
+									list_add(listaHilos, nodoRemovido);
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,//DESTRUYO EL STACK DEL HILO
+											socketMsp);
+								}//...aca, saque para probar Despertar y Bloquear
+								pthread_mutex_unlock(&mutex);
+								break;
+							}	//FIN DEL case CONCLUYO EJECUCION.
+							case EJECUCION_ERRONEA: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								if (tcbCpu->km == 1) {
+									while (list_size(listaSocketsConsola)) {
+										t_listaSocketsConsola * nodoConsola =
+												list_remove(listaSocketsConsola,
+														0);
+										enviar_serializado(1,
+												"Concluyo ejecucion por ejecucion erronea del KM",
+												nodoConsola->socketConsola);
+										enviarInt(0,
+												nodoConsola->socketConsola);
+										desconexion_consola(
+												nodoConsola->socketConsola);
+									}
+									puts(
+											"Aborta el Kernel por ejecucion erronea de un KM");
+
+									exit(1);
+									//QUEDA LIMPIAR LA MSP
+								}
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbCpu->pid)) {
+									pthread_mutex_lock(&mutex);
+									int * iAux = malloc(sizeof(int));
+									*iAux = i;
+									list_add(listaCpuLibres, iAux);
+
+									sem_post(&hayCpu);
+									list_add(listaExit, tcbCpu);
+									invocarHilos();
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,
+											socketMsp);
+									pthread_mutex_unlock(&mutex);
+									break;
+								}
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbQueSeEjecutaba =
+										removerTcbConElSocketCpu(listaExec, i);
+								invocarHilos();
+								list_add(listaExit, tcbCpu);
+								invocarHilos();
+								int * pidBaneado = malloc(sizeof(int));
+								*pidBaneado = tcbCpu->pid;
+								list_add(listaPidBaneados, pidBaneado);
+								while (hayTcbConElPid(listaReady, tcbCpu->pid)) {//SE REMUEVEN DE TODAS LAS LISTAS MENOS LA DE EXEC LOS NODOS ASOCIADOS AL PID DEL TCB QUE SE EJECUTABA EN LA CPU DESCONECTADA.
+									t_tcb * tcbRemovido = removerTcbConElPid(
+											listaReady, tcbCpu->pid);//ACA SE SACAN TODOS LOS NODOS ASOCIADOS AL PID,EXCEPTO EL KM EN CASO DE QUE ESTE ASOCIADO.
+									invocarHilos();
+									list_add(listaExit, tcbRemovido);// ***se tienen que mandar los hijos tambien a la cola de exit, no?
+									invocarHilos();
+								}//FIN DEL while(hayTcbConElPid(listaReady,...).
+								while (hayTcbConElPid(listaBloq, tcbCpu->pid)) {
+									t_tcb * tcbRemovido = removerTcbConElPid(
+											listaBloq, tcbCpu->pid);
+									invocarHilos();
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayTcbConElPid(listaBloq,...).
+								while (hayNodoJoinConElPid(listaBloqJoin,
+										tcbCpu->pid)) {
+									t_join * nodoRemovido =
+											removerNodoJoinDelPid(listaBloqJoin,
+													tcbCpu->pid);
+									invocarHilos();
+									t_tcb * tcbRemovido = nodoRemovido->tcb;
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
+								while (hayNodoHilosConElPid(listaHilos,
+										tcbCpu->pid)) {
+									removerNodoHilosDelPid(listaHilos,
+											tcbCpu->pid);
+								}	//FIN DEL while(hayNodoHilosCon...)
+								while (hayNodoRecursoConElPid(listaBloqRecurso,
+										tcbCpu->pid)) {
+									t_nodoRecurso * nodoRemovido =
+											removerNodoRecursoDelPid(
+													listaBloqRecurso,
+													tcbCpu->pid);
+									invocarHilos();
+									t_tcb * tcbRemovido = nodoRemovido->tcb;
+									list_add(listaExit, tcbRemovido);
+									invocarHilos();
+								}//FIN DEL while(hayNodoRecursoConElPid(listaBloqRecurso,...).
+								enviar_serializado(1,
+										"Concluyo ejecucion por ejecucion erronea",
+										tcbCpu->socketConsola);
+								enviarInt(0, tcbCpu->socketConsola);
+								desconexion_consola(tcbCpu->socketConsola);
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
+								destruirSegmento(tcbCpu->pid, tcbCpu->M,
+										socketMsp);
+								destruirSegmento(tcbCpu->pid, tcbCpu->X,
+										socketMsp);
+								pthread_mutex_unlock(&mutex);
+								sem_post(&hayCpu);
+								break;
+							}	//FIN DEL case EJECUCION_ERRONEA
+							case SYSCALL: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								instruccionProtegida("SYSCALL", tcbCpu, READY);
+								uint32_t direccionSyscall = recibirInt32(i);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbCpu->pid)) {
+									pthread_mutex_lock(&mutex);
+									int * iAux = malloc(sizeof(int));
+									*iAux = i;
+									list_add(listaCpuLibres, iAux);
+
+									sem_post(&hayCpu);
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,
+											socketMsp);
+									list_add(listaExit, tcbCpu);
+									invocarHilos();
+									pthread_mutex_unlock(&mutex);
+									break;
+								}//FIN del if(estaEnLaListaElInt(listaPid...,...).
+								tcbCpu->direccionSyscallPendiente =
+										direccionSyscall;
+								pthread_mutex_lock(&mutex);
+								removerTcbConElSocketCpu(listaExec, i);
+								invocarHilos();
+								int * iAux = malloc(sizeof(int));
+								*iAux = i;
+								list_add(listaCpuLibres, iAux);
+								list_add(listaBloq, tcbCpu);
+								invocarHilos();
+								pthread_mutex_unlock(&mutex);
+								sem_post(&hayCpu);
+								break;
+							}	//FIN DEL case SYSCALL
+							case ENTRADA_ESTANDAR: {
+								int pidEE;
+								int tipoEE;
+								pidEE = recibirInt(i);//TIPO EE PARA SABER SI HAY QUE INGRESAR UN INT O UN STRING(0=Int,1=String)
+								tipoEE = recibirInt(i);
+
+								if (estaEnLaListaElInt(listaPidBaneados,
+										pidEE)) {
 									if (tipoEE == 0) {
-										pthread_mutex_lock(&mutex);
-										t_tcb * tcbBloqueado =
-												obtenerTcbConElPid(listaBloq,
-														pidEE);
-										instruccionProtegida(
-												"ENTRADAESTANDAR(Int)",
-												tcbBloqueado, READY);
-										enviarInt(3,
-												tcbBloqueado->socketConsola);
-										enviarInt(i,
-												tcbBloqueado->socketConsola);
-										pthread_mutex_unlock(&mutex);
-									}	//FIN DEL if(tipoEE==0).
+										enviarInt(7, i);//BASURA,LO MANDO PARA QUE CONTIENE LA CPU EJECUTANDO
+									}	//FIN DEL if(tipoEE==0)
 									if (tipoEE == 1) {
 										int inputMax;
-										inputMax = recibirInt(i);
-										pthread_mutex_lock(&mutex);
-										t_tcb * tcbBloqueado =
-												obtenerTcbConElPid(listaBloq,
-														pidEE);
-										instruccionProtegida(
-												"ENTRADAESTANDAR(String)",
-												tcbBloqueado, READY);
-										pthread_mutex_unlock(&mutex);
-										enviarInt(2,
-												tcbBloqueado->socketConsola);
-										enviarInt(inputMax,
-												tcbBloqueado->socketConsola);
-										enviarInt(i,
-												tcbBloqueado->socketConsola);
+										inputMax = recibirInt(i);//***anda enviar el "a" asi, no?
+										enviar_serializado(-1, "a", i); //BASURA,LO MANDO PARA QuE CONTIENE LA CPU EJECUTANDO
+									}	//FIN DEL if(tipoEE==1)
 
-									}		//FIN DEL if(tipoEE==1).
 									break;
-								}	//FIN DEL case ENTRADA_ESTANDAR
-								case SALIDA_ESTANDAR: {
-									int pidSE;
-									char * string;
-									pidSE = recibirInt(i);
-									string = recibir_serializado(i);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											pidSE)) {
-										break;
-									}//FIN DEL if(estaEnLAListaElInt(listaPidBaneados,pidSE).
+								}//FIN DEL if(estaEnLaListaElInt(listaPid...,...).
+								if (tipoEE == 0) {
 									pthread_mutex_lock(&mutex);
 									t_tcb * tcbBloqueado = obtenerTcbConElPid(
-											listaBloq, pidSE);
-									instruccionProtegida("SALIDAESTANDAR",
+											listaBloq, pidEE);
+									instruccionProtegida("ENTRADAESTANDAR(Int)",
+											tcbBloqueado, READY);
+									enviarInt(3, tcbBloqueado->socketConsola);
+									enviarInt(i, tcbBloqueado->socketConsola);
+									pthread_mutex_unlock(&mutex);
+								}	//FIN DEL if(tipoEE==0).
+								if (tipoEE == 1) {
+									int inputMax;
+									inputMax = recibirInt(i);
+									pthread_mutex_lock(&mutex);
+									t_tcb * tcbBloqueado = obtenerTcbConElPid(
+											listaBloq, pidEE);
+									instruccionProtegida(
+											"ENTRADAESTANDAR(String)",
 											tcbBloqueado, READY);
 									pthread_mutex_unlock(&mutex);
-									enviarInt(1, tcbBloqueado->socketConsola);
-									enviar_serializado(-1, string,
+									enviarInt(2, tcbBloqueado->socketConsola);
+									enviarInt(inputMax,
 											tcbBloqueado->socketConsola);
-									break;
-								}	//FIN DEL case SALIDA_ESTANDAR
-								case CREAR_HILO: {
-									t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-									tcbCpu = recibirTcb(i);
-									tid++;
-									tidMaximo = tcbCpu->tid;
-									pthread_mutex_lock(&mutex);
-									t_tcb * tcbEjecutandose =
-											obtenerTcbConElSocketCpu(listaExec,
-													i);
-									instruccionProtegida("CREARHILO",
-											tcbEjecutandose, READY);
-									pthread_mutex_unlock(&mutex);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbCpu->pid)) {
-										list_add(listaExit, tcbCpu);//***hay que agregarlo a la lista exit al tcb recibido para Crea?
-										invocarHilos();
-										destruirSegmento(tcbCpu->pid, tcbCpu->X,
-												socketMsp);
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
+									enviarInt(i, tcbBloqueado->socketConsola);
 
-									t_listaHilos * nodo = malloc(
-											sizeof(t_listaHilos));
-									int pidHilo = tcbCpu->pid;
-									nodo = removerNodoHilosDelPid(listaHilos,
-											pidHilo);
-									nodo->hilos = nodo->hilos + 1;
-									list_add(listaHilos, nodo);
+								}		//FIN DEL if(tipoEE==1).
+								break;
+							}	//FIN DEL case ENTRADA_ESTANDAR
+							case SALIDA_ESTANDAR: {
+								int pidSE;
+								char * string;
+								pidSE = recibirInt(i);
+								string = recibir_serializado(i);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										pidSE)) {
+									break;
+								}//FIN DEL if(estaEnLAListaElInt(listaPidBaneados,pidSE).
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbBloqueado = obtenerTcbConElPid(
+										listaBloq, pidSE);
+								instruccionProtegida("SALIDAESTANDAR",
+										tcbBloqueado, READY);
+								pthread_mutex_unlock(&mutex);
+								enviarInt(1, tcbBloqueado->socketConsola);
+								enviar_serializado(-1, string,
+										tcbBloqueado->socketConsola);
+								break;
+							}	//FIN DEL case SALIDA_ESTANDAR
+							case CREAR_HILO: {
+								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
+								tcbCpu = recibirTcb(i);
+								tid++;
+								tidMaximo = tcbCpu->tid;
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbEjecutandose =
+										obtenerTcbConElSocketCpu(listaExec, i);
+								instruccionProtegida("CREARHILO",
+										tcbEjecutandose, READY);
+								pthread_mutex_unlock(&mutex);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
-									list_add(listaReady, tcbCpu);
+									list_add(listaExit, tcbCpu);//***hay que agregarlo a la lista exit al tcb recibido para Crea?
 									invocarHilos();
-									pthread_mutex_unlock(&mutex);
-									sem_post(&hayEnReady);
-									break;
-								}	//FIN DEL case CREA
-								case JOIN: {
-									int tidLlamador = recibirInt(i);
-									int tidAEsperar = recibirInt(i);
-									//	printf("tidLlamador:%d\n tidAEsperar %d\n",
-									//		tidLlamador, tidAEsperar);
-									pthread_mutex_lock(&mutex);
-									t_tcb * tcbEjecutandose =
-											obtenerTcbConElSocketCpu(listaExec,
-													i);	//VA A SER EL KM (NO LO SACA DE LA LISTA!)
-									instruccionProtegida("JOIN",
-																				tcbEjecutandose, READY);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbEjecutandose->pid)) {
-										pthread_mutex_unlock(&mutex);
-										break;	//***no me olvido nada, no?
-									}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
-									if (!elTidEstaEnExit(tidAEsperar)) {
-										t_join * join = malloc(sizeof(t_join));
-										join->tcb = removerTcbConElTid(
-												listaBloq, tidLlamador);
-										invocarHilos();	//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
-										join->tidAEsperar = tidAEsperar;
-										list_add(listaBloqJoin, join);
-										invocarHilos();
-									}
+									destruirSegmento(tcbCpu->pid, tcbCpu->X,
+											socketMsp);
 									pthread_mutex_unlock(&mutex);
 									break;
-								}	//FIN DEL case JOIN.
-								case BLOQUEAR: {//NOTAR QUE ACA EN REALIDAD NO MANDA UN TCB(LO DIJO JOACO) SINO QUE BLOQUEO AL QUE INVOCO LA SYSCALL HASTA QUE SE LIBERE EL RECURSO CORRESPONDIENTE
-												//HABLAR CON LA CPU SOBRE ESTA SYSCALL, PUEDE QUE HAYAN INTERPRETADO EL ENUNCIADO COMO YO ANTES.
-									t_nodoRecurso * nodoAux = malloc(
-											sizeof(t_nodoRecurso));
-									int idRecursoAux = recibirInt(i);
-									pthread_mutex_lock(&mutex);
-									t_tcb * tcbEjecutandose =
-											obtenerTcbConElSocketCpu(listaExec,
-													i);
-									instruccionProtegida("BLOQUEAR",
-																				tcbEjecutandose, READY);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbEjecutandose->pid)) {
-										pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
-									nodoAux->tcb = removerTcbConElTid(listaBloq,
-											tcbEjecutandose->tid);
+								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
+
+								t_listaHilos * nodo = malloc(
+										sizeof(t_listaHilos));
+								int pidHilo = tcbCpu->pid;
+								nodo = removerNodoHilosDelPid(listaHilos,
+										pidHilo);
+								nodo->hilos = nodo->hilos + 1;
+								list_add(listaHilos, nodo);
+								pthread_mutex_lock(&mutex);
+								list_add(listaReady, tcbCpu);
+								invocarHilos();
+								pthread_mutex_unlock(&mutex);
+								sem_post(&hayEnReady);
+								break;
+							}	//FIN DEL case CREA
+							case JOIN: {
+								int tidLlamador = recibirInt(i);
+								int tidAEsperar = recibirInt(i);
+								//	printf("tidLlamador:%d\n tidAEsperar %d\n",
+								//		tidLlamador, tidAEsperar);
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbEjecutandose =
+										obtenerTcbConElSocketCpu(listaExec, i);	//VA A SER EL KM (NO LO SACA DE LA LISTA!)
+								instruccionProtegida("JOIN", tcbEjecutandose,
+										READY);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbEjecutandose->pid)) {
+									pthread_mutex_unlock(&mutex);
+									break;	//***no me olvido nada, no?
+								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...)).
+								if (!elTidEstaEnExit(tidAEsperar)) {
+									t_join * join = malloc(sizeof(t_join));
+									join->tcb = removerTcbConElTid(listaBloq,
+											tidLlamador);
 									invocarHilos();	//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
-									nodoAux->idRecurso = idRecursoAux;
-									list_add(listaBloqRecurso, nodoAux);
+									join->tidAEsperar = tidAEsperar;
+									list_add(listaBloqJoin, join);
 									invocarHilos();
-									pthread_mutex_unlock(&mutex);
+								}
+								pthread_mutex_unlock(&mutex);
+								break;
+							}	//FIN DEL case JOIN.
+							case BLOQUEAR: {//NOTAR QUE ACA EN REALIDAD NO MANDA UN TCB(LO DIJO JOACO) SINO QUE BLOQUEO AL QUE INVOCO LA SYSCALL HASTA QUE SE LIBERE EL RECURSO CORRESPONDIENTE
+											//HABLAR CON LA CPU SOBRE ESTA SYSCALL, PUEDE QUE HAYAN INTERPRETADO EL ENUNCIADO COMO YO ANTES.
+								t_nodoRecurso * nodoAux = malloc(
+										sizeof(t_nodoRecurso));
+								int idRecursoAux = recibirInt(i);
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbEjecutandose =
+										obtenerTcbConElSocketCpu(listaExec, i);
+								instruccionProtegida("BLOQUEAR",
+										tcbEjecutandose, READY);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbEjecutandose->pid)) {
+									pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
 									break;
-								}						//FIN DEL case BLOQUEAR.
-								case DESPERTAR: {
-									int idRecurso = recibirInt(i);
-									pthread_mutex_lock(&mutex);
-									t_tcb * tcbEjecutandose =
-											obtenerTcbConElSocketCpu(listaExec,
-													i);
-									instruccionProtegida("DESPERTAR",
-																				tcbEjecutandose, READY);
-									if (estaEnLaListaElInt(listaPidBaneados,
-											tcbEjecutandose->pid)) {
-										pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
-										break;
-									}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
-									t_nodoRecurso * nodoDesperto =
-											removerNodoRecursoPorRecurso(
-													listaBloqRecurso,
-													idRecurso);
-									invocarHilos();
-									t_tcb * tcbDesperto = nodoDesperto->tcb;
-									list_add(listaReady, tcbDesperto);
-									invocarHilos();
-									pthread_mutex_unlock(&mutex);
-									sem_post(&hayEnReady);
+								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
+								nodoAux->tcb = removerTcbConElTid(listaBloq,
+										tcbEjecutandose->tid);
+								invocarHilos();	//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
+								nodoAux->idRecurso = idRecursoAux;
+								list_add(listaBloqRecurso, nodoAux);
+								invocarHilos();
+								pthread_mutex_unlock(&mutex);
+								break;
+							}						//FIN DEL case BLOQUEAR.
+							case DESPERTAR: {
+								int idRecurso = recibirInt(i);
+								pthread_mutex_lock(&mutex);
+								t_tcb * tcbEjecutandose =
+										obtenerTcbConElSocketCpu(listaExec, i);
+								instruccionProtegida("DESPERTAR",
+										tcbEjecutandose, READY);
+								if (estaEnLaListaElInt(listaPidBaneados,
+										tcbEjecutandose->pid)) {
+									pthread_mutex_unlock(&mutex);//***no me olvido nada, no?
 									break;
-								}					//FIN DEL case DESPERTAR.
-								}			//FIN del switch.
-							}			//FIN DEL else.
-						}	//FIN DEL if(estaEnLaListaElInt(listaSocketsCpu,i).
-					}
-					//FIN DEL FD_ISSET(i,...).
+								}//FIN DEL if(estaEnLaListaElInt(listaPidBaneados,...).
+								t_nodoRecurso * nodoDesperto =
+										removerNodoRecursoPorRecurso(
+												listaBloqRecurso, idRecurso);
+								invocarHilos();
+								t_tcb * tcbDesperto = nodoDesperto->tcb;
+								list_add(listaReady, tcbDesperto);
+								invocarHilos();
+								pthread_mutex_unlock(&mutex);
+								sem_post(&hayEnReady);
+								break;
+							}					//FIN DEL case DESPERTAR.
+							}			//FIN del switch.
+						}			//FIN DEL else.
+					}	//FIN DEL if(estaEnLaListaElInt(listaSocketsCpu,i).
+				}
+				//FIN DEL FD_ISSET(i,...).
 
-				}	//FIN DEL FOR(i=0,...).
-			}	//FIN DEL ELSE.
-		} //FIN DEL WHILE(1).
+			}	//FIN DEL FOR(i=0,...).
+		}	//FIN DEL ELSE.
+	} //FIN DEL WHILE(1).
 
-		return 0;
+	return 0;
 
-	}
 }
+
