@@ -1,0 +1,1 @@
+[INFO] 01:45:25:362 MSP/(3761:3761): Inicia la MSP. Memoria principal=1 KB. Tamaño SWAP=1 MB.
