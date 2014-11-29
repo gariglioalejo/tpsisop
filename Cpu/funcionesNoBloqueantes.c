@@ -2031,7 +2031,7 @@ int push(t_tcb * tcb){
 		free(bytesApush);
 		tcb->P=tcb->P+9;
 		
-		printf("HOLA MARTIN BASILE; ES LA VENGANZA MUAJAJAJAJA \n");
+		//printf("HOLA MARTIN BASILE; ES LA VENGANZA MUAJAJAJAJA \n");
 		printf("este es el tid %u",tcb->tid);
 		printf("Termino PUSH\n");
 
