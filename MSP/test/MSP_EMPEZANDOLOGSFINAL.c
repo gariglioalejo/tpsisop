@@ -271,8 +271,8 @@ if(i==4){int PID;uint32_t direccion;int tamanio;respuesta_t respuesta;char* algo
 		if(respuesta.exito<1){char* fruta=malloc(tamanio);enviarInt(-1,socketCliente);enviarBeso(tamanio,fruta,socketCliente);free(fruta);}
 		else{ enviarInt(1,socketCliente);
 		algo=respuesta.direccion;
-		enviarBeso(tamanio,algo,socketCliente);}
-		free(respuesta.direccion);
+		enviarBeso(tamanio,algo,socketCliente);
+		free(respuesta.direccion);}
 }
 pthread_mutex_unlock(&mutexPrueba);
 recibido = recv(socketCliente, &i, sizeof(int), 0);
@@ -557,11 +557,11 @@ respuesta_t solicitarMemoria(uint32_t PID,uint32_t direccion,uint32_t tamanio){
 	uint32_t segmento; uint32_t pagina;char *dirTablaPaginas;
 	buffer=malloc(tamanio);
 	respuesta_tablaSegmentos=obtenerTablaSegmentos(PID);
-	if(!respuesta_tablaSegmentos.exito) {respuestaFinal.exito= -1;return respuestaFinal;};//exit, no exite PID(seg fault)
+	if(!respuesta_tablaSegmentos.exito) {respuestaFinal.exito= -1;free(buffer);return respuestaFinal;};//exit, no exite PID(seg fault)
 	auxiliar=respuesta_tablaSegmentos.direccion;
 	respuesta_entra=entraYDirTablaPags(auxiliar,direccion,tamanio);
-	if(respuesta_entra.exito==-1){respuestaFinal.exito= -2;return respuestaFinal;}//NO EXISTE EL SEGMENTO NPARA EL PID(seg fault)
-	if(respuesta_entra.exito==0){respuestaFinal.exito= 0;return respuestaFinal;}//excede el limite de segmento(seg fault)
+	if(respuesta_entra.exito==-1){respuestaFinal.exito= -2;free(buffer);return respuestaFinal;}//NO EXISTE EL SEGMENTO NPARA EL PID(seg fault)
+	if(respuesta_entra.exito==0){respuestaFinal.exito= 0;free(buffer);return respuestaFinal;}//excede el limite de segmento(seg fault)
 	segmento=extraerSegmento(direccion);
 	pagina=extraerPagina(direccion);
 	direccion=extraerOffset(direccion);//direccion se usa como offset
