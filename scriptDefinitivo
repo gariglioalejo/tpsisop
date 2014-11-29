@@ -1,0 +1,27 @@
+#!/bin/sh
+
+cd ..
+git clone https://github.com/sisoputnfrba/so-commons-library.git
+cd so-commons-library 
+sudo make install
+cd ..
+cd tp-2014-2c-nmi/
+cd kernel
+gcc funciones.h
+gcc -o kernel.out kernel.c -lcommons -lpthread
+cd ..
+cd tpsisoplib
+cd Debug
+sudo ./scriptLib.sh
+cd ..
+cd ..
+cd Cpu
+cd Debug
+sudo ./scriptCpu.sh
+cd ..
+cd ..
+cd consola
+gcc funciones.h
+gcc -o consola.out consola.c -lcommons -lpthread
+export ESO_CONFIG=./consola.cfg
+cd ..

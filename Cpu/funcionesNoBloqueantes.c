@@ -1184,8 +1184,48 @@ int jmpz(t_tcb * tcb) {
 				"No se hace nada porque es jump zero, y el valor del reg A es: %d \n",
 				tcb->registroA.valores);
 
-		//list_clean(parametros);
-		//ejecucion_instruccion("JMPZ", parametros);
+						
+					int solicitarMemoria = 4;
+					uint32_t nuevadir;
+			
+					t_devolucion devolucion;
+					t_solicitarMemoria solicitador;
+					int pidAux;
+					if (tcb->km == 1)
+						pidAux = 1;
+					else
+						pidAux = tcb->pid;
+					send(socketM, &solicitarMemoria, sizeof(int), 0);
+			
+					solicitador.PID = pidAux;
+					solicitador.direccion = tcb->P + 4;
+					solicitador.tamanio = 4;
+			
+					//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+			
+					send(socketM, &solicitador.PID, sizeof(int), 0);
+					send(socketM, &solicitador.direccion, sizeof(uint32_t), 0);
+					send(socketM, &solicitador.tamanio, sizeof(int), 0);
+			
+					devolucion.exito = recibirInt(socketM);
+					devolucion.respuesta = recibirInt32(socketM);
+			
+					if (devolucion.exito < 0) {
+						segmentatioFault++;
+						return 0;
+					}
+			
+					nuevadir = devolucion.respuesta;
+			
+			
+			
+					t_list* argumentos = list_create();
+					char pan[10];
+					sprintf(pan,"%d",nuevadir);
+					list_add(argumentos, string_duplicate(pan));
+					ejecucion_instruccion("JMPZ", argumentos);
+					list_destroy_and_destroy_elements(argumentos, free);
+			
 
 		tcb->P = tcb->P + 8;
 		printf("Se salio del jmpz\n");
@@ -1206,8 +1246,48 @@ int jpnz(t_tcb * tcb){
 
 	printf("No se hace nada porque es jump NO zero, y el valor del reg A es: %d \n",tcb->registroA.valores);
 			tcb->P=tcb->P+8;
-			//list_clean(parametros);
-			//ejecucion_instruccion("JPNZ", parametros);
+
+			int solicitarMemoria=4;
+			uint32_t nuevadir;
+	
+			t_devolucion devolucion;
+	
+			t_solicitarMemoria solicitador;
+	
+			send(socketM,&solicitarMemoria,sizeof(int),0);
+
+			solicitador.PID=pidAux;
+			solicitador.direccion=tcb->P+4;
+			solicitador.tamanio=4;
+
+		//send(socketM,&solicitador,sizeof(t_solicitarMemoria),0);
+
+			send(socketM,&solicitador.PID,sizeof(int),0);
+			send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
+			send(socketM,&solicitador.tamanio,sizeof(int),0);
+
+			devolucion.exito=recibirInt(socketM);
+			devolucion.respuesta=recibirInt32(socketM);
+
+			if(devolucion.exito<0){
+				segmentatioFault++;
+				return 0;
+			}
+
+			nuevadir=devolucion.respuesta;
+	
+
+
+			t_list* argumentos = list_create();
+			char pan[10];
+			sprintf(pan,"%d",nuevadir);
+			list_add(argumentos, string_duplicate(pan));
+			ejecucion_instruccion("JPNZ", argumentos);
+			list_destroy_and_destroy_elements(argumentos, free);
+
+
+
+
 
 			printf("Se salio del jmpnz \n");
 			return 0;
