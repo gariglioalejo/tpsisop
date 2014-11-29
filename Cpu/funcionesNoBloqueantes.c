@@ -1184,8 +1184,8 @@ int jmpz(t_tcb * tcb) {
 				"No se hace nada porque es jump zero, y el valor del reg A es: %d \n",
 				tcb->registroA.valores);
 
-		list_clean(parametros);
-		ejecucion_instruccion("JMPZ", parametros);
+		//list_clean(parametros);
+		//ejecucion_instruccion("JMPZ", parametros);
 
 		tcb->P = tcb->P + 8;
 		printf("Se salio del jmpz\n");
