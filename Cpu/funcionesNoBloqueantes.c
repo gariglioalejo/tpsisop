@@ -203,7 +203,7 @@ int movr(t_tcb * tcb){
 	list_add(argumentos, string_duplicate(pan));
 	char pan2[2];pan[0]=registro2;pan2[1]='\0';
 	list_add(argumentos, string_duplicate(pan2));
-	ejecucion_instruccion("LOAD", argumentos);
+	ejecucion_instruccion("MOVR", argumentos);
 	list_destroy_and_destroy_elements(argumentos, free);
 
 
@@ -654,7 +654,7 @@ int inte(t_tcb * tcb){
 	t_list* argumentos = list_create();
 	char pan[10];sprintf(pan,"%d",dirSyscall);
 	list_add(argumentos, string_duplicate(pan));
-	ejecucion_instruccion("GETM", argumentos);
+	ejecucion_instruccion("INTE", argumentos);
 	list_destroy_and_destroy_elements(argumentos, free);
 
 

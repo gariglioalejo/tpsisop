@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
 
 	//PANEL
 	inicializar_panel(CPU,"/home/utnso/tp-2014-2c-nmi/panel");
+//	inicializar_panel(CPU,"/home/utnso/git/tp-2014-2c-nmi/panel");
 	t_registros_cpu registrosPanel;
 	t_hilo * hiloPanel = malloc(sizeof(t_hilo));
 

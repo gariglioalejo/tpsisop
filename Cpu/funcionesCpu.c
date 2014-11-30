@@ -15,9 +15,8 @@ int fnMALC(t_tcb * tcb) {
 
 	t_list* argumentos = list_create();
 	ejecucion_instruccion("MALC", argumentos);
-	//list_destroy_and_destroy_elements(argumentos, free);
+	list_destroy_and_destroy_elements(argumentos, free);
 
-	//t_devolucion devolucion;
 
 	t_crearSegmento * segmentoCreado = malloc(sizeof(t_crearSegmento));
 	int result = 0;
@@ -37,7 +36,6 @@ int fnMALC(t_tcb * tcb) {
 	}
 
 	free(segmentoCreado);
-	//list_destroy(parametros);
 	printf("MALC Ejecutada \n");
 
 	tcb->P = tcb->P + 4;
@@ -136,14 +134,12 @@ int fnINNC(t_tcb * tcb) {
 	int32_t pid = tcb->pid;
 
 	char * cadenaIngresada = malloc(sizeof(char) * tamanioCadena);
-	//char  buff[tamanioCadena];
 
 	enviarInt(codigo, socketK);
 	enviarInt(tcb->pid, socketK);
 	enviarInt(tipo, socketK);
 	enviarInt(tamanioCadena, socketK);
 
-	//nbytes = recv(socketK, buff, sizeof(buff), 0);
 	cadenaIngresada = recibir_serializado(socketK);
 	printf("cadena: %s\n", cadenaIngresada);
 
@@ -188,14 +184,12 @@ int fnOUTN(t_tcb * tcb) {
 	int codigo = 5; //Salida Standard
 
 	int32_t valorAimprimir = tcb->registroA.valores;
-	//cadena = itoa(valorAimprimir,cadena,10);
 	sprintf(cadena, "%d", valorAimprimir);
 	printf("valor int: %s\n", cadena);
 
 	enviarInt(codigo, socketK);
 	enviarInt(tcb->pid, socketK);
 	enviar_serializado(-1, cadena, socketK);
-	//enviarInt(valorAimprimir,socketK);
 
 	printf("OUTN Ejecutada \n");
 
@@ -349,7 +343,26 @@ int fnBLOK(t_tcb * tcb) {
 
 	int codigo = 8; //Bloquear
 
-	int32_t recurso = tcb->registroB.valores;
+	int32_t direccionRecurso = tcb->registroB.valores;
+
+	//Obtener el Recurso
+	int codigoSolicitarMemoria = 4;
+	int pidKM = 1;
+	int tamanio = 4;
+	enviarInt(codigoSolicitarMemoria, socketM);
+	enviarInt(pidKM,socketM);
+	enviarInt(direccionRecurso,socketM);
+	enviarInt(tamanio,socketM);
+
+	int exito=0;
+	int32_t recurso;
+	exito = recibirInt(socketM);
+	recurso = recibirInt32(socketM);
+
+	if (exito < 0) {segmentatioFault++;return 0;}
+
+
+
 
 	enviarInt(codigo, socketK); //Aviso de un pedido de Bloqueo
 	enviarInt(recurso, socketK);
@@ -380,7 +393,27 @@ int fnWAKE(t_tcb * tcb) {
 
 	int codigo = 9;
 
-	int32_t recurso = tcb->registroB.valores;
+	int32_t direccionRecurso = tcb->registroB.valores;
+
+	//Obtener el Recurso
+	int codigoSolicitarMemoria = 4;
+	int pidKM = 1;
+	int tamanio = 4;
+	enviarInt(codigoSolicitarMemoria, socketM);
+	enviarInt(pidKM, socketM);
+	enviarInt(direccionRecurso, socketM);
+	enviarInt(tamanio, socketM);
+
+	int exito = 0;
+	int32_t recurso;
+	exito = recibirInt(socketM);
+	recurso = recibirInt32(socketM);
+
+	if (exito < 0) {
+		segmentatioFault++;
+		return 0;
+	}
+
 
 	enviarInt(codigo, socketK);
 	enviarInt(recurso, socketK);
