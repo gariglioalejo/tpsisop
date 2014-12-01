@@ -928,7 +928,7 @@ int main(int argc, char ** argv) {
 										tcbEjecutandose->tid);
 								invocarHilos();	//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
 								nodoAux->idRecurso = idRecursoAux;
-								list_add(listaBloqRecurso, nodoAux);
+								if(nodoAux->tcb!=NULL)list_add(listaBloqRecurso, nodoAux);
 								invocarHilos();
 								pthread_mutex_unlock(&mutex);
 								break;
