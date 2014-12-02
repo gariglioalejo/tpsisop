@@ -348,7 +348,7 @@ int fnBLOK(t_tcb * tcb) {
 	//Obtener el Recurso
 	int codigoSolicitarMemoria = 4;
 	int pidKM = 1;
-	int tamanio = 4;
+	int tamanio = 1;
 	enviarInt(codigoSolicitarMemoria, socketM);
 	enviarInt(pidKM,socketM);
 	enviarInt(direccionRecurso,socketM);
@@ -398,7 +398,7 @@ int fnWAKE(t_tcb * tcb) {
 	//Obtener el Recurso
 	int codigoSolicitarMemoria = 4;
 	int pidKM = 1;
-	int tamanio = 4;
+	int tamanio = 1;
 	enviarInt(codigoSolicitarMemoria, socketM);
 	enviarInt(pidKM, socketM);
 	enviarInt(direccionRecurso, socketM);
