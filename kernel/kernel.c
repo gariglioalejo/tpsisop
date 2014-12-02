@@ -501,14 +501,14 @@ int main(int argc, char ** argv) {
 						else {
 							switch (unaOperacion) {
 							case TERMINO_QUANTUM: {
-								//	puts("Entro en Termino Quantum");
+									puts("Entro en Termino Quantum");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-								tcbCpu = recibirTcb(i);
+								tcbCpu = recibirTcb(i);puts("recibio");
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
 									if (tcbCpu->km == 1) {
-										sacarElKM(listaExec);
+										sacarElKM(listaExec);puts("puto");
 										invocarHilos();
 										queue_push(colaKM, tcbCpu);
 										invocarHilos();
@@ -928,7 +928,8 @@ int main(int argc, char ** argv) {
 										tcbEjecutandose->tid);
 								invocarHilos();	//ACA HACER TRAMPA Y NO INVOCAR EL ANSISOP PANEL :P (O SI?)
 								nodoAux->idRecurso = idRecursoAux;
-								if(nodoAux->tcb!=NULL)list_add(listaBloqRecurso, nodoAux);
+								//if(nodoAux->tcb!=NULL)
+								list_add(listaBloqRecurso, nodoAux);
 								invocarHilos();
 								pthread_mutex_unlock(&mutex);
 								break;
@@ -938,6 +939,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutex);
 								t_tcb * tcbEjecutandose =
 										obtenerTcbConElSocketCpu(listaExec, i);
+								printf("\n\n\nrecurso %u\n",idRecurso);
 								instruccionProtegida("DESPERTAR",
 										tcbEjecutandose, READY);
 								if (estaEnLaListaElInt(listaPidBaneados,

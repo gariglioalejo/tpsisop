@@ -22,6 +22,7 @@
 */
 
 #include "cpu.h"
+int32_t * pasarA32 (uint8_t *);
 
 int load(t_tcb * tcb){
 	uint32_t pidAux;
@@ -263,7 +264,8 @@ int movr(t_tcb * tcb){
 	return 0;
 }
 int getm(t_tcb * tcb){
-
+	
+	uint8_t * intCorto;
 	char reg1;
 	char reg2;
 	int valor;
@@ -317,7 +319,7 @@ int getm(t_tcb * tcb){
 		return 0;
 	}
 
-	reg2=(char)devolucion.respuesta;
+	reg2=(char)devolucion.respuesta;printf("va a hacer getm de regitros %c despues %c",reg1,reg2);
 
 		t_list* argumentos = list_create();
 		char pan[2];pan[0]=reg1;pan[1]='\0';
@@ -366,11 +368,12 @@ int getm(t_tcb * tcb){
 		send(socketM,&solicitador.PID,sizeof(int),0);
 		send(socketM,&solicitador.direccion,sizeof(uint32_t),0);
 		send(socketM,&solicitador.tamanio,sizeof(int),0);
+		intCorto=malloc(1);
+		devolucion.exito=recibirInt(socketM);		
+		recv(socketM,intCorto,1,0);printf("INT %u",intCorto);
+		devolucion.respuesta=*(pasarA32 (intCorto));
 
-		devolucion.exito=recibirInt(socketM);
-		devolucion.respuesta=recibirInt32(socketM);
-
-			if(devolucion.exito<0){
+		if(devolucion.exito<0){
 				segmentatioFault++;
 				return 0;
 		}

@@ -1,5 +1,5 @@
 #include "cpu.h"
-
+int32_t * pasarA32 (uint8_t *);
 //Funciones Privilegiadas
 
 int fnMALC(t_tcb * tcb) {
@@ -342,24 +342,26 @@ int fnBLOK(t_tcb * tcb) {
 
 
 	int codigo = 8; //Bloquear
-
-	int32_t direccionRecurso = tcb->registroB.valores;
+int32_t recurso;
+	//int32_t direccionRecurso 
+recurso= tcb->registroB.valores;
 
 	//Obtener el Recurso
-	int codigoSolicitarMemoria = 4;
-	int pidKM = 1;
-	int tamanio = 1;
-	enviarInt(codigoSolicitarMemoria, socketM);
-	enviarInt(pidKM,socketM);
-	enviarInt(direccionRecurso,socketM);
-	enviarInt(tamanio,socketM);
+	//int codigoSolicitarMemoria = 4;
+	//int pidKM = 1;
+	//int tamanio = 1;
+	//enviarInt(codigoSolicitarMemoria, socketM);
+	//enviarInt(pidKM,socketM);
+	//enviarInt(direccionRecurso,socketM);
+	//enviarInt(tamanio,socketM);
+	//int8_t* intCorto=malloc(1);
+	//int exito = 0;
+	//int32_t recurso;
+	//exito = recibirInt(socketM);
+	//recv(socketM,intCorto,1,0);printf("INT %u",intCorto);
+	//recurso = *(pasarA32 (intCorto));
 
-	int exito=0;
-	int32_t recurso;
-	exito = recibirInt(socketM);
-	recurso = recibirInt32(socketM);
-
-	if (exito < 0) {segmentatioFault++;return 0;}
+	//if (exito < 0) {segmentatioFault++;return 0;}
 
 
 
@@ -373,7 +375,7 @@ int fnBLOK(t_tcb * tcb) {
 	return 0;
 }
 
-int fnWAKE(t_tcb * tcb) {
+int fnWAKE(t_tcb * tcb) {int8_t* intCorto=malloc(1);
 
 	if (tcb->km != 1) {
 		printf(
@@ -392,27 +394,30 @@ int fnWAKE(t_tcb * tcb) {
 
 
 	int codigo = 9;
-
-	int32_t direccionRecurso = tcb->registroB.valores;
+	int32_t recurso;
+	//int32_t direccionRecurso = 
+	recurso=tcb->registroB.valores;
 
 	//Obtener el Recurso
-	int codigoSolicitarMemoria = 4;
-	int pidKM = 1;
-	int tamanio = 1;
-	enviarInt(codigoSolicitarMemoria, socketM);
-	enviarInt(pidKM, socketM);
-	enviarInt(direccionRecurso, socketM);
-	enviarInt(tamanio, socketM);
+	//int codigoSolicitarMemoria = 4;
+	//int pidKM = 1;
+	//int tamanio = 1;
+	//enviarInt(codigoSolicitarMemoria, socketM);
+	//enviarInt(pidKM, socketM);
+	//enviarInt(direccionRecurso, socketM);
+	//enviarInt(tamanio, socketM);
 
-	int exito = 0;
-	int32_t recurso;
-	exito = recibirInt(socketM);
-	recurso = recibirInt32(socketM);
+	//int exito = 0;
+	
+	//exito = recibirInt(socketM);
+	//recv(socketM,intCorto,1,0);printf("INT %u",intCorto);
+	//recurso = *(pasarA32 (intCorto));
+	//printf("\n\nRecurso: %u\n\n",recurso);
 
-	if (exito < 0) {
+	/*if (exito < 0) {
 		segmentatioFault++;
 		return 0;
-	}
+	}*/
 
 
 	enviarInt(codigo, socketK);
@@ -422,4 +427,14 @@ int fnWAKE(t_tcb * tcb) {
 
 	tcb->P = tcb->P + 4;
 	return 0;
+}
+
+
+int32_t * pasarA32 (uint8_t * intCorto){
+	void* aux=intCorto;
+	aux=realloc(aux,sizeof(int32_t));
+	uint32_t valorDelInt=(*((int*)aux))%256;
+	if(*intCorto<128)return &valorDelInt;
+	valorDelInt=valorDelInt-256;
+	return(&valorDelInt);
 }

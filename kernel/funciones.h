@@ -1133,11 +1133,11 @@ t_tcb * removerTcbConElTid(t_list * lista, int tid) {
 t_tcb * removerTcbConElSocketCpu(t_list * lista, int socket) {
 	bool esElTcbDelSocketCpu(void * tcb) {
 		t_tcb * tcbAux = tcb;
-		if (tcbAux->km != 1) {
-			return tcbAux->socketCpu == socket;
-		} else {
-			return false;
-		}
+		//if (tcbAux->km != 1) {
+		return tcbAux->socketCpu == socket;
+		//} else {
+		//	return false;
+		//}
 	}
 	return list_remove_by_condition(lista, esElTcbDelSocketCpu);
 }
