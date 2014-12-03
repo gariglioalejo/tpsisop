@@ -33,7 +33,6 @@ t_queue * colaKM;
 
 sem_t cambioUnaCola;
 
-
 int elTidEstaEnExit(int);
 
 void * manejoCpuLibres(void * arg) {
@@ -357,8 +356,10 @@ int main(int argc, char ** argv) {
 								t_tcb * tcbRemovido = removerTcbConElPid(
 										listaReady, *pidBaneado);
 								invocarHilos();
-								baseCodigoBaneado = tcbRemovido->M;
-								baseStackBaneado = tcbRemovido->X;
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->M, socketMsp);
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->X, socketMsp);
 								list_add(listaExit, tcbRemovido);
 								invocarHilos();
 							}	//FIN DEL while(hayTcbConElPid(listaReady,...).
@@ -366,8 +367,10 @@ int main(int argc, char ** argv) {
 								t_tcb * tcbRemovido = removerTcbConElPid(
 										listaBloq, *pidBaneado);
 								invocarHilos();
-								baseCodigoBaneado = tcbRemovido->M;
-								baseStackBaneado = tcbRemovido->X;
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->M, socketMsp);
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->X, socketMsp);
 								list_add(listaExit, tcbRemovido);
 								invocarHilos();
 							}	//FIN DEL while(hayTcbConElPid(listaBloq,...).
@@ -377,8 +380,10 @@ int main(int argc, char ** argv) {
 										listaBloqJoin, *pidBaneado);
 								invocarHilos();
 								t_tcb * tcbRemovido = nodoRemovido->tcb;
-								baseCodigoBaneado = tcbRemovido->M;
-								baseStackBaneado = tcbRemovido->X;
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->M, socketMsp);
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->X, socketMsp);
 								list_add(listaExit, tcbRemovido);
 								invocarHilos();
 							}//FIN DEL while(hayNodoJoinConELPid(listaBloqJoin,...).
@@ -392,20 +397,19 @@ int main(int argc, char ** argv) {
 												listaBloqRecurso, *pidBaneado);
 								invocarHilos();
 								t_tcb * tcbRemovido = nodoRemovido->tcb;
-								baseCodigoBaneado = tcbRemovido->M;
-								baseStackBaneado = tcbRemovido->X;
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->M, socketMsp);
+								destruirSegmento(tcbRemovido->pid,
+										tcbRemovido->X, socketMsp);
 								list_add(listaExit, tcbRemovido);
 								invocarHilos();
 							}	//FIN DEL while(hayNodoRecursoConEl...)
 							if (hayTcbConElPid(listaExec, *pidBaneado)) {
 								t_tcb * tcbDelPid = obtenerTcbConElPid(
 										listaExec, *pidBaneado);
-								baseCodigoBaneado = tcbDelPid->M;
-								baseStackBaneado = tcbDelPid->X;
-
-								destruirSegmento(*pidBaneado, baseCodigoBaneado,
+								destruirSegmento(tcbDelPid->pid, tcbDelPid->M,
 										socketMsp);
-								destruirSegmento(*pidBaneado, baseStackBaneado,
+								destruirSegmento(tcbDelPid->pid, tcbDelPid->X,
 										socketMsp);
 							}
 							pthread_mutex_unlock(&mutex);
@@ -509,14 +513,16 @@ int main(int argc, char ** argv) {
 						else {
 							switch (unaOperacion) {
 							case TERMINO_QUANTUM: {
-									puts("Entro en Termino Quantum");
+								puts("Entro en Termino Quantum");
 								t_tcb * tcbCpu = malloc(sizeof(t_tcb));
-								tcbCpu = recibirTcb(i);puts("recibio");
+								tcbCpu = recibirTcb(i);
+								puts("recibio");
 								if (estaEnLaListaElInt(listaPidBaneados,
 										tcbCpu->pid)) {
 									pthread_mutex_lock(&mutex);
 									if (tcbCpu->km == 1) {
-										sacarElKM(listaExec);puts("puto");
+										sacarElKM(listaExec);
+										puts("puto");
 										invocarHilos();
 										queue_push(colaKM, tcbCpu);
 										sem_post(&cambioUnaCola);
@@ -959,7 +965,7 @@ int main(int argc, char ** argv) {
 								pthread_mutex_lock(&mutex);
 								t_tcb * tcbEjecutandose =
 										obtenerTcbConElSocketCpu(listaExec, i);
-								printf("\n\n\nrecurso %u\n",idRecurso);
+								printf("\n\n\nrecurso %u\n", idRecurso);
 								instruccionProtegida("DESPERTAR",
 										tcbEjecutandose, READY);
 								if (estaEnLaListaElInt(listaPidBaneados,
