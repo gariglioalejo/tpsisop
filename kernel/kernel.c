@@ -31,14 +31,18 @@ t_list * listaExec;
 t_list * listaBloq;
 t_queue * colaKM;
 
+sem_t cambioUnaCola;
+
+
 int elTidEstaEnExit(int);
 
 void * manejoCpuLibres(void * arg) {
 
 	while (1) {
-		//sem_wait(&hayCpu);
 
+		sem_wait(&cambioUnaCola);
 		pthread_mutex_lock(&mutex);
+
 		if (list_size(listaBloq) && queue_size(colaKM)
 				&& list_size(listaCpuLibres)) {
 			t_tcb * tcb;
@@ -106,6 +110,8 @@ int main(int argc, char ** argv) {
 
 	inicializar_panel(KERNEL, "/home/utnso/tp-2014-2c-nmi/panel");
 	//inicializar_panel(KERNEL, "/home/utnso/ansisop-panel/logs");
+
+	sem_init(&cambioUnaCola, 0, 0);
 
 	tidMaximo = 1;
 	t_config * kernel_config;
@@ -292,6 +298,7 @@ int main(int argc, char ** argv) {
 								tcb->registroE.valores = 0;
 								pthread_mutex_lock(&mutex);
 								list_add(listaReady, tcb);//AGREGA A LA LISTA DE READY Y SUBE EL SEMAFORO PARA QUE EL HILO CORRA
+								sem_post(&cambioUnaCola);
 								invocarHilos();
 								sem_post(&hayEnReady);
 								pthread_mutex_unlock(&mutex);
@@ -317,6 +324,7 @@ int main(int argc, char ** argv) {
 							enviarInt(quantum, socketCliente);
 							pthread_mutex_lock(&mutex);
 							list_add(listaCpuLibres, socketClienteAux);	//AGREGO A LA COLA DE CPUS LIBRES AL SOCKET CLIENTE Y SUBO EL SEMAFORO PARA EL HILO
+							sem_post(&cambioUnaCola);
 							sem_post(&hayCpu);
 							pthread_mutex_unlock(&mutex);
 						}	//FIN codigo==2.
@@ -511,6 +519,7 @@ int main(int argc, char ** argv) {
 										sacarElKM(listaExec);puts("puto");
 										invocarHilos();
 										queue_push(colaKM, tcbCpu);
+										sem_post(&cambioUnaCola);
 										invocarHilos();
 										//ACA HAY QUE DESTRUIR EL STACK DEL HILO QUE INVOCO LA SYSCALL
 
@@ -518,6 +527,7 @@ int main(int argc, char ** argv) {
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
+									sem_post(&cambioUnaCola);
 									list_add(listaExit, tcbCpu);
 									invocarHilos();
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
@@ -535,10 +545,12 @@ int main(int argc, char ** argv) {
 													listaBloqRecurso,
 													tcbCpu->tid)) {
 										queue_push(colaKM, tcbCpu);
+										sem_post(&cambioUnaCola);
 										invocarHilos();
 									} else {
 
 										queue_push(colaKM, tcbCpu);
+										sem_post(&cambioUnaCola);
 										invocarHilos();
 										t_tcb * tcbBloqueado;
 										tcbBloqueado = removerTcbConElTid(
@@ -559,11 +571,13 @@ int main(int argc, char ** argv) {
 										tcbBloqueado->registroE.valores =
 												tcbCpu->registroE.valores;
 										list_add(listaReady, tcbBloqueado);
+										sem_post(&cambioUnaCola);
 										invocarHilos();
 										sem_post(&hayEnReady);
 									}//FIN DEL if(hayNodoJoinConElTidPropio...)
 								} else {
 									list_add(listaReady, tcbCpu);
+									sem_post(&cambioUnaCola);
 									invocarHilos();
 									//		puts("Agregue a Ready el recibido");
 									//printf("%c\n", tcbCpu->registroB.nombre);//***chequear que no queden queue_push no asociados a la colaKM
@@ -572,6 +586,7 @@ int main(int argc, char ** argv) {
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
 								list_add(listaCpuLibres, iAux);
+								sem_post(&cambioUnaCola);
 								pthread_mutex_unlock(&mutex);
 								sem_post(&hayCpu);
 								break;
@@ -585,7 +600,7 @@ int main(int argc, char ** argv) {
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-
+									sem_post(&cambioUnaCola);
 									sem_post(&hayCpu);
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
 											socketMsp);
@@ -607,6 +622,7 @@ int main(int argc, char ** argv) {
 									t_tcb * tcbDesbloqueado = nodoRemovido->tcb;
 
 									list_add(listaReady, tcbDesbloqueado);
+									sem_post(&cambioUnaCola);
 									invocarHilos();
 									pthread_mutex_unlock(&mutex);
 									sem_post(&hayEnReady);
@@ -619,7 +635,7 @@ int main(int argc, char ** argv) {
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
 								list_add(listaCpuLibres, iAux);
-
+								sem_post(&cambioUnaCola);
 								sem_post(&hayCpu);
 								list_add(listaExit, tcbCpu);
 								invocarHilos();
@@ -671,7 +687,7 @@ int main(int argc, char ** argv) {
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-
+									sem_post(&cambioUnaCola);
 									sem_post(&hayCpu);
 									list_add(listaExit, tcbCpu);
 									invocarHilos();
@@ -737,6 +753,7 @@ int main(int argc, char ** argv) {
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
 								list_add(listaCpuLibres, iAux);
+								sem_post(&cambioUnaCola);
 								destruirSegmento(tcbCpu->pid, tcbCpu->M,
 										socketMsp);
 								destruirSegmento(tcbCpu->pid, tcbCpu->X,
@@ -756,7 +773,7 @@ int main(int argc, char ** argv) {
 									int * iAux = malloc(sizeof(int));
 									*iAux = i;
 									list_add(listaCpuLibres, iAux);
-
+									sem_post(&cambioUnaCola);
 									sem_post(&hayCpu);
 									destruirSegmento(tcbCpu->pid, tcbCpu->X,
 											socketMsp);
@@ -773,7 +790,9 @@ int main(int argc, char ** argv) {
 								int * iAux = malloc(sizeof(int));
 								*iAux = i;
 								list_add(listaCpuLibres, iAux);
+								sem_post(&cambioUnaCola);
 								list_add(listaBloq, tcbCpu);
+								sem_post(&cambioUnaCola);
 								invocarHilos();
 								pthread_mutex_unlock(&mutex);
 								sem_post(&hayCpu);
@@ -877,6 +896,7 @@ int main(int argc, char ** argv) {
 								list_add(listaHilos, nodo);
 								pthread_mutex_lock(&mutex);
 								list_add(listaReady, tcbCpu);
+								sem_post(&cambioUnaCola);
 								invocarHilos();
 								pthread_mutex_unlock(&mutex);
 								sem_post(&hayEnReady);
@@ -953,6 +973,7 @@ int main(int argc, char ** argv) {
 								invocarHilos();
 								t_tcb * tcbDesperto = nodoDesperto->tcb;
 								list_add(listaReady, tcbDesperto);
+								sem_post(&cambioUnaCola);
 								invocarHilos();
 								pthread_mutex_unlock(&mutex);
 								sem_post(&hayEnReady);

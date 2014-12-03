@@ -2,6 +2,6 @@
 
 rm -R archivos
 mkdir archivos
-gcc MSP.c -o MSP.out -lcommons -lpthread
+gcc MSP_EMPEZANDOLOGSFINAL.c -o MSP.out -lcommons -lpthread
 clear
 ./MSP.out
