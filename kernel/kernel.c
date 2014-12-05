@@ -304,6 +304,7 @@ int main(int argc, char ** argv) {
 
 							} else {
 								desconexion_consola(socketCliente);
+								FD_CLR(socketCliente, &master);
 								pid--;
 								tid--;
 
@@ -343,6 +344,7 @@ int main(int argc, char ** argv) {
 						if (recibido == 0) {
 							//desconexion_consola(i);
 							desconexion_consola(i);
+							FD_CLR(i, &master);
 							pthread_mutex_lock(&mutex);
 							t_listaSocketsConsola * nodoRemovido =
 									removerDeLaListaSocketsConsola(
@@ -446,6 +448,7 @@ int main(int argc, char ** argv) {
 						if (recibido == 0) {
 							//desconexion_cpu(i);
 							desconexion_cpu(i);
+							FD_CLR(i, &master);
 							pthread_mutex_lock(&mutex);
 							removerDeLaListaElInt(listaSocketsCpu, i);
 							removerDeLaListaElInt(listaCpuLibres, i);
