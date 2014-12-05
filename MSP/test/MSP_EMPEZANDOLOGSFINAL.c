@@ -245,8 +245,8 @@ if(i==1){ int PID;int tamanio;respuesta_t respuesta;
 		tamanio=recibirInt(socketCliente);
 		log_info(archivoLogMSP,"Solicitud de crear segmento PID:%u. Tamaño:%u.",PID,tamanio);
 		respuesta=crearSegmento(PID,tamanio);
-		enviarInt(respuesta.exito,socketCliente);
-		enviarInt32(respuesta.direccion,socketCliente);}
+		enviarInt(respuesta.exito,socketCliente);if(respuesta.exito==1){
+		enviarInt32(respuesta.direccion,socketCliente);}}
 if(i==2){int PID; uint32_t direccion;
 		PID=recibirInt(socketCliente);
 		direccion=recibirInt32(socketCliente);
