@@ -741,7 +741,7 @@ uint32_t destruirSegmento(uint32_t PID,uint32_t baseSegmento){
 	free(segmento->direccion_tablaPaginas);
 	pthread_mutex_unlock(&mutexLlevarAMemoria);
 	pthread_mutex_lock(&mutexCantidadMemoriaDisponible);
-	cantidadMemoriaDisponible=cantidadMemoriaDisponible+i;
+	cantidadMemoriaDisponible=cantidadMemoriaDisponible+i*256;
 	pthread_mutex_unlock(&mutexCantidadMemoriaDisponible);
 	free(segmento);
 	if(list_is_empty(proceso->direccion_tablaSegmentos)){
